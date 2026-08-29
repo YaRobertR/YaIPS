@@ -1,0 +1,102 @@
+;-------------------------------------------------------
+; YaIPS_GUI_InspColor.cpp
+;-------------------------------------------------------
+;
+; 43 entries
+;
+GUI_InspColor_Title                "Color testing"
+
+GUI_InspColor_TabA1                "Bright. test"
+
+GUI_InspColor_TabA1a               "Brightness test"
+
+GUI_InspColor_TabA2                "AOI"
+
+GUI_InspColor_TabA3a               "Position left edge AOI"
+
+GUI_InspColor_TabA4a               "Position upper edge AOI"
+
+GUI_InspColor_TabA5                "W"
+
+GUI_InspColor_TabA5a               "Width of the AOI"
+
+GUI_InspColor_TabA6                "H"
+
+GUI_InspColor_TabA6a               "Height of the AOI"
+
+GUI_InspColor_TabA7                "Mode:"
+
+GUI_InspColor_TabA8                "Average"
+
+GUI_InspColor_TabA8a               "Compute average gray values in the AOI."
+
+GUI_InspColor_TabA9                "Min"
+
+GUI_InspColor_TabA9a               "Compute % minimum gray values in the AOI."
+
+GUI_InspColor_TabA10               "Max"
+
+GUI_InspColor_TabA10a              "Compute % maximum gray values in the AOI."
+
+GUI_InspColor_TabA11               "n%Value"
+
+GUI_InspColor_TabA11a              "% value for min/max mode."
+
+GUI_InspColor_TabA12               "Thresholds:"
+
+GUI_InspColor_TabA13               "Relative"
+
+GUI_InspColor_TabA13a              "Selecting this computes the deviation from the\n"
+                                   "related value out of the reference image and\n"
+                                   "checks this deviation against the given thresholds."
+
+GUI_InspColor_TabA14               "Absolute"
+
+GUI_InspColor_TabA14a              "Selecting this leads to a bad inspection result,\n"
+                                   "if the computed value is higher than 'Bright Threshold'\n"
+                                   "or lower than 'Dark Threshold'."
+
+GUI_InspColor_TabA15a              "If set, the red value is used\n"
+                                   "for all three color channels."
+
+GUI_InspColor_TabA16               "Dark Thres."
+
+GUI_InspColor_TabA17               "Dark threshold for BW or red color component."
+
+GUI_InspColor_TabA18a              "Dark threshold for green color component."
+
+GUI_InspColor_TabA19a              "Dark threshold for blue color component."
+
+GUI_InspColor_TabA19               "Use"
+
+GUI_InspColor_TabA20a              "If set, test against dark thresholds."
+
+GUI_InspColor_TabA21               "Bright Thres."
+
+GUI_InspColor_TabA22a              "Bright threshold for BW or red color component."
+
+GUI_InspColor_TabA23a              "Bright threshold for green color component."
+
+GUI_InspColor_TabA24a              "Bright threshold for blue color component."
+
+GUI_InspColor_TabA25               "Use"
+
+GUI_InspColor_TabA25a              "If set, test against bright thresholds."
+
+GUI_InspColor_TabB1                "Bright. corr."
+
+GUI_InspColor_TabB1a               "Brightness correction"
+
+GUI_InspColor_TabB12               "Brightness Tolerance"
+
+GUI_InspColor_TabB12a              "Brightness Tolerance [Gray values].\n"
+                                   "Exceeding the given tolerance results\n"
+                                   "in a bad inspection result."
+
+GUI_InspColor_Insp1                "BT: "
+
+GUI_InspColor_Insp2                "BC: "
+
+;
+;
+; End Of File

@@ -1,0 +1,14 @@
+;-------------------------------------------------------
+; YaIPS_Utils_ImageCompare.cpp
+;-------------------------------------------------------
+;
+; 5 entries
+;
+Utils_ImgCompare_InspErr1          "Touch border!"
+Utils_ImgCompare_InspErr2          "Sum small blobs!"
+Utils_ImgCompare_InspErr3          "Large blobs!"
+Utils_ImgCompare_InspErr4          "Too many errors!"
+Utils_ImgCompare_Res1              "%d large blobs%s, %.2f%s sum small"
+;
+;
+; End Of File

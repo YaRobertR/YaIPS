@@ -1,0 +1,33 @@
+;-------------------------------------------------------
+; YaIPS_RGB_ShapeGen.cpp
+;-------------------------------------------------------
+;
+; 24 entries
+;
+ShapeType_NONE                     "---"
+ShapeType_MA_RECTANGLE             "Rectangle"
+ShapeType_MA_ELLIPSE               "Ellipse"
+ShapeType_BS_RECTANGLE             "Basic shapes/Rectangle"
+ShapeType_BS_SQUARE                "Basic shapes/Square"
+ShapeType_BS_ELLIPSE               "Basic shapes/Ellipse"
+ShapeType_BS_CIRCLE                "Basic shapes/Circle"
+ShapeType_BS_TRIANGLE              "Basic shapes/Triangle"
+ShapeType_BS_RECT_ROUNDED          "Basic shapes/Rounded rectangle"
+ShapeType_BS_SQUAE_ROUNDED         "Basic shapes/Rounded square"
+ShapeType_BS_PARALLEOGRAM          "Basic shapes/Parallelogram"
+ShapeType_BS_TRAPEZ                "Basic shapes/Trapez"
+ShapeType_BS_DIAMOND               "Basic shapes/Diamond"
+ShapeType_BS_HEART                 "Basic shapes/Heart"
+ShapeType_ARROW_LEFT               "Arrow/Arrow left"
+ShapeType_ARROW_RIGHT              "Arrow/Arrow right"
+ShapeType_ARROW_UP                 "Arrow/Arrow up"
+ShapeType_ARROW_DOWN               "Arrow/Arrow down"
+ShapeType_STAR_4                   "Star/Star 4-pointed"
+ShapeType_STAR_5                   "Star/Star 5-pointed"
+ShapeType_STAR_6                   "Star/Star 6-pointed"
+ShapeType_STAR_8                   "Star/Star 8-pointed"
+ShapeType_STAR_12                  "Star/Star 12-pointed"
+ShapeType_STAR_24                  "Star/Star 24-pointed"
+;
+;
+; End Of File

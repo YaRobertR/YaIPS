@@ -1,0 +1,81 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Calibrate.cpp
+;-------------------------------------------------------
+;
+; 31 entries
+;
+GUI_Calibrate_Title                "Kalibrierung"
+
+GUI_Calibrate_LabelX_Pix           "Faktor X"
+
+GUI_Calibrate_LabelX_Unit          "Faktor X [%s/Pixel]"
+
+GUI_Calibrate_LabelY_Pix           "Faktor Y"
+
+GUI_Calibrate_LabelY_Unit          "Faktor Y [%s/Pixel]"
+
+GUI_Calibrate_Group1               "Aktuelle Kalibrierung"
+
+GUI_Calibrate_Group2               "Kalibrierung"
+
+GUI_Calibrate_Group20              "Modus"
+
+GUI_Calibrate_Group21              "Bild"
+
+GUI_Calibrate_Group21a             "Zur Kalibrierung wird eine Bilddatei oder ein Kamerabild verwendet."
+
+GUI_Calibrate_Group22              "DPI"
+
+GUI_Calibrate_Group22a             "Zur Kalibrierung wird ein DPI-Wert verwendet."
+
+GUI_Calibrate_Group23              "Einheit"
+
+GUI_Calibrate_Group23a             "Kalibriereinheit auswählen."
+
+GUI_Calibrate_Group24              "DPI"
+
+GUI_Calibrate_Group24a             "Punkte pro Zoll/Inch.\n"
+                                   "Wird verwendet, um Millimeter- oder\n"
+                                   "Zollgrößen in Pixelgrößen umzurechnen."
+
+GUI_Calibrate_Group25a             "Einige typische DPI-Werte."
+
+GUI_Calibrate_DPI_96               "  96 Monitor"
+
+GUI_Calibrate_DPI_120              "120"
+
+GUI_Calibrate_DPI_150              "150 Entwurfsdrucke"
+
+GUI_Calibrate_DPI_200              "200"
+
+GUI_Calibrate_DPI_254              "254 10 Pixel = 1 mm"
+
+GUI_Calibrate_DPI_300              "300 Hochwertige Drucke"
+
+GUI_Calibrate_Group30              "Abstand X"
+
+GUI_Calibrate_Group30a             "Abstand zwischen den Kalibrierungsmarkierungen in X"
+
+GUI_Calibrate_Group31              "Abstand Y"
+
+GUI_Calibrate_Group31a             "Abstand zwischen den Kalibrierungsmarkierungen in Y"
+
+GUI_Calibrate_Group32              "Pixel ² "
+
+GUI_Calibrate_Group32a             "Wird für quadratische Pixel gesetzt.\n"
+                                   "Die Kalibrierfaktoren haben dann den gleichen Wert."
+
+GUI_Calibrate_Group33              "Kalibrieren"
+
+GUI_Calibrate_Group33a             "Zur Durchführung einer Kalibrierung muss im\n"
+                                   "Hauptfenster eine Abstandsmessung aktiv sein.\n"
+                                   "Platzieren Sie die Distanzmessung auf einer\n"
+                                   "Struktur bekannter Größe.\n"
+                                   "Ist 'Pixel ²' nicht gesetzt, müssen X und Y\n"
+                                   "separat kalibriert werden."
+
+
+
+;
+;
+; End Of File

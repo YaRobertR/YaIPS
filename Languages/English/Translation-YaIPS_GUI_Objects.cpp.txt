@@ -1,0 +1,178 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Objects.cpp
+;-------------------------------------------------------
+;
+; 73 entries
+;
+GUI_Objects_Title                  "Objects"
+
+GUI_Objects_TabA1                  "Binarization"
+
+GUI_Objects_TabA1a                 "Binarization converts an image into\n"
+                                   "RLCs (Run Length Codes).\n"
+                                   "These can be processed more efficiently\n"
+                                   "than color or black and white images."
+
+GUI_Objects_TabA3a                 "The intensity is used for a color image"
+
+GUI_Objects_TabA4a                 "The red color component is used for a color image"
+
+GUI_Objects_TabA5a                 "The green color component is used for a color image"
+
+GUI_Objects_TabA6a                 "The blue color component is used for a color image"
+
+GUI_Objects_TabA7                  "Binarization:"
+
+GUI_Objects_TabA8                  ">= T1"
+
+GUI_Objects_TabA8a                 "Objects are brighter than the 1. threshold."
+
+GUI_Objects_TabA9                  ">= T1 and < T2"
+
+GUI_Objects_TabA9a                 "Objects are brighter than the 1. threshold.\n"
+                                   "and darker than the 2. threshold."
+
+GUI_Objects_TabA20a                "Inverts the binarization."
+
+GUI_Objects_TabA10                 "Chroma"
+
+GUI_Objects_TabA10a                "Chroma keying or green screen.\n"
+                                   "In a color image, the color\n"
+                                   "value is used for binarization."
+
+GUI_Objects_TabA11                 "Auto"
+
+GUI_Objects_TabA11a                "Calculation of a binarization threshold through\n"
+                                   "histogram analysis. The brightness histogram of\n"
+                                   "the image must contain two distinct maxima. The\n"
+                                   "threshold is a % value between these maxima."
+
+GUI_Objects_TabA21                 "Threshold 1"
+
+GUI_Objects_TabA21a                "1. Brightness threshold for binarization.\n"
+                                   "Separates objects from the background."
+
+GUI_Objects_TabA22                 "Threshold 2"
+
+GUI_Objects_TabA22a                "2. Brightness threshold for binarization.\n"
+                                   "Separates objects from the background."
+
+GUI_Objects_TabA23                 "Chroma key"
+
+GUI_Objects_TabA24a                "Press to change the color"
+
+GUI_Objects_TabA25                 "Threshold"
+
+GUI_Objects_TabA25a                "Chroma key threshold color difference"
+
+GUI_Objects_TabA26                 "Threshold %"
+
+GUI_Objects_TabA26a                "Percent threshold for binarization.\n"
+                                   "% value between maxima of a bimodal histogram."
+
+GUI_Objects_TabB1                  "Actions"
+
+GUI_Objects_TabB1a                 "After binarization, additional\n"
+                                   "actions can be applied to the RLCs."
+
+GUI_Objects_TabB2                  "Action"
+
+GUI_Objects_TabB3                  "Argument"
+
+GUI_Objects_TabB3a                 "Auswahl einer Aktion"
+
+GUI_Objects_PostOp1                "---"
+
+GUI_Objects_PostOp2                "Erosion"
+
+GUI_Objects_PostOp2b               "Erosion-2"
+
+GUI_Objects_PostOp3                "Dilation"
+
+GUI_Objects_PostOp3b               "Dilation-2"
+
+GUI_Objects_PostOp4                "Closing"
+
+GUI_Objects_PostOp4b               "Closing-2"
+
+GUI_Objects_PostOp5                "Opening"
+
+GUI_Objects_PostOp5b               "Opening-2"
+
+GUI_Objects_PostOp6                "Inversion"
+
+GUI_Objects_PostOp7                "Remove largest object"
+
+GUI_Objects_PostOp8                "Keep largest object"
+
+GUI_Objects_PostOp9                "Remove size threshold"
+
+GUI_Objects_TabB4a                 "Argument for selected action"
+
+GUI_Objects_TabC1                  "Objects"
+
+GUI_Objects_TabC1a                 "RLCs are grouped into objects.\n"
+                                   "These contain information about an object.\n"
+                                   "For example, the position and size of an\n"
+                                   "enclosing rectangle, the number of binarized\n"
+                                   "pixels/area, the center of gravity, ..."
+
+GUI_Objects_TabC2                  "Label and display objects"
+
+GUI_Objects_TabC2a                 "Identification (labeling) of connected image parts"
+
+GUI_Objects_TabC3                  "Thresh. Size:"
+
+GUI_Objects_TabC4                  "T small"
+
+GUI_Objects_TabC4a                 "Smallest side length of a square in pixels.\n"
+                                   "The area of the square is the minimum\n"
+                                   "area of an object to be processed."
+
+GUI_Objects_TabC5                  "T large"
+
+GUI_Objects_TabC5a                 "Largest side length of a square in pixels.\n"
+                                   "The area of the square is the maximum\n"
+                                   "area of an object to be processed.\n"
+                                   "NOTE: must be greater than 'T small'."
+
+GUI_Objects_TabC6                  "Label:"
+
+GUI_Objects_TabC7                  "Nr"
+
+GUI_Objects_Tab7a                  "Label with consecutive numbering."
+
+GUI_Objects_TabC8                  "Si. Pix"
+
+GUI_Objects_TabC8a                 "Label with size in pixels."
+
+GUI_Objects_TabC9                  "Si. mm"
+
+GUI_Objects_TabC9a                 "Label with size in mm."
+
+GUI_Objects_TabC10                 "Ar. Pix²"
+
+GUI_Objects_TabC10a                "Label with area in pixels²."
+
+GUI_Objects_TabC11                 "Ar. mm²"
+
+GUI_Objects_TabC11a                "BLabel with area in mm²."
+
+GUI_Objects_TabC12                 "Center"
+
+GUI_Objects_TabC12a                "Marks the center of gravity\n"
+                                   "of the binarized area."
+
+GUI_Objects_TabC13                 "Bright."
+
+GUI_Objects_TabC13a                "Labeling with average brightness/color."
+
+GUI_Objects_Insp4a                 "--- objects"
+
+GUI_Objects_Insp4b                 "1 object"
+
+GUI_Objects_Insp4c                 "%d objects"
+
+;
+;
+; End Of File

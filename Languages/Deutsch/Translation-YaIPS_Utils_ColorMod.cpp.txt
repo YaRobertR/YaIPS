@@ -1,0 +1,22 @@
+;-------------------------------------------------------
+; YaIPS_Utils_ColorMod.cpp
+;-------------------------------------------------------
+;
+; 13 entries
+;
+Utils_ColMod_LUT_None              "---"
+Utils_ColMod_LUT_01                "Farbstufen"
+Utils_ColMod_LUT_02                "Farbverlauf"
+Utils_ColMod_LUT_03                "RGB"
+Utils_ColMod_LUT_04                "Wärme"
+Utils_ColMod_LUT_05                "Feuer"
+Utils_ColMod_LUT_06                "Eis"
+Utils_ColMod_LUT_07                "Spektrum"
+Utils_ColMod_LUT_08                "Kühl"
+Utils_ColMod_LUT_09                "Jet"
+Utils_ColMod_LUT_10                "Eisen"
+Utils_ColMod_LUT_11                "Kalt Heiß"
+Utils_ColMod_LUT_12                "Farbton (Hue)"
+;
+;
+; End Of File

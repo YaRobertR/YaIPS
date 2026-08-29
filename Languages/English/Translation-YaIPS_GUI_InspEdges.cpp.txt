@@ -1,0 +1,97 @@
+;-------------------------------------------------------
+; YaIPS_GUI_InspEdges.cpp
+;-------------------------------------------------------
+;
+; 42 entries
+;
+GUI_Edges_Title                    "Edges"
+
+GUI_Edges_GroupA1                  "Measure:"
+
+GUI_Edges_GroupA2                  "Distance"
+
+GUI_Edges_GroupA2a                 "Absolute measurement.\n"
+                                   "Distance between the detected edges."
+
+GUI_Edges_GroupA3                  "Difference(1 - 2)"
+
+GUI_Edges_GroupA3a                 "Differential measurement.\n"
+                                   "Position 1. AOI - position 2. AOI."
+
+GUI_Edges_GroupA4                  "Alignment:"
+
+GUI_Edges_GroupA5                  "Hor."
+
+GUI_Edges_GroupA5a                 "Edges are searched in the\n"
+                                   "horizontal direction."
+
+GUI_Edges_GroupA6                  "Vert."
+
+GUI_Edges_GroupA6a                 "Edges are searched in the\n"
+                                   "vertical direction."
+
+GUI_Edges_GroupA7                  "Free"
+
+GUI_Edges_GroupA7a                 "Edges are searched for in a\n"
+                                   "freely selectable direction."
+
+GUI_Edges_GroupA8                  "°"
+
+GUI_Edges_GroupA8a                 "Freely selectable angle direction."
+
+GUI_Edges_GroupB1                  "1. AOI"
+
+GUI_Edges_GroupB2                  "2. AOI"
+
+GUI_Edges_GroupB3                  "AOI pos."
+
+GUI_Edges_GroupB4a                 "Position left edge 1. AOI"
+
+GUI_Edges_GroupB5a                 "Position upper edge 1. AOI"
+
+GUI_Edges_GroupB6a                 "Position left edge 2. AOI"
+
+GUI_Edges_GroupB7a                 "Position upper edge 2. AOI"
+
+GUI_Edges_GroupB8                  "AOI size"
+
+GUI_Edges_GroupB9a                 "Width of the 1. AOI"
+
+GUI_Edges_GroupB10a                "Height of the 1. AOI"
+
+GUI_Edges_GroupB11a                "Width of the 2. AOI"
+
+GUI_Edges_GroupB12a                "Height of the 2. AOI"
+
+GUI_Edges_GroupB13                 "Direction"
+
+GUI_Edges_GroupB14a                "Reverse direction of edge detection 1. AOI."
+
+GUI_Edges_GroupB15a                "Reverse direction of edge detection 2. AOI."
+
+GUI_Edges_GroupB16                 "Min. cont. %"
+
+GUI_Edges_GroupB17a                "Minimum contrast 1. AOI in %"
+
+GUI_Edges_GroupB18a                "Minimum contrast 2. AOI in %"
+
+GUI_Edges_GroupC2                  "- Tolerance"
+
+GUI_Edges_GroupC2a                 "Error if the measured distance\n"
+                                   "is less than '- Tolerance'."
+
+GUI_Edges_GroupC3                  "Target dist."
+
+GUI_Edges_GroupC3a                 "Target distance between edges."
+
+GUI_Edges_GroupC4a                 "During teach-in, a measured distance\n"
+                                   "is taken as the target distance."
+
+GUI_Edges_GroupC5                  "+ Tolerance"
+
+GUI_Edges_GroupC5a                 "Error if the measured distance\n"
+                                   "is greater than '+ Tolerance'."
+
+;
+;
+; End Of File

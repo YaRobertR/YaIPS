@@ -1,0 +1,25 @@
+// Grüne Designs 2023.txt
+//
+// A YaIPS custom color file
+//
+//    R   G   B Color name
+//
+ 1:   0  85  56 Tanne
+ 2:   0 137  57 Klee
+ 3: 138 189  36 Grasshalm
+ 4: 245 241 233 Sand
+ 5:  11 161 221 Himmel
+ 6: 255 241 122 Sonne
+ 7: 255 255 255 Weiß
+ 8:   0   0   0 Schwarz
+ 9:   0   0   0 
+10:   0   0   0 
+11:   0   0   0 
+12:   0   0   0 
+13:   0   0   0 
+14:   0   0   0 
+15:   0   0   0 
+16:   0   0   0 
+//
+// End of file
+//

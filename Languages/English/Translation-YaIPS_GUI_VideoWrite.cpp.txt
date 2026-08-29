@@ -1,0 +1,118 @@
+;-------------------------------------------------------
+; YaIPS_GUI_VideoWrite.cpp
+;-------------------------------------------------------
+;
+; 42 entries
+;
+GUI_VideoW_Title                   "Video writer"
+
+GUI_VideoW_Save1                   "Video"
+
+GUI_VideoW_Save2                   "Save video"
+
+GUI_VideoW_ResFileSize             " %ld [Mbytes / Hour]"
+
+GUI_VideoW_Par_Group1              "Settings for new video"
+
+GUI_VideoW_Par_VideoWidtha         "Width for new videos.\n"
+                                   "Range: 240 to 2160 pixel."
+
+GUI_VideoW_Par_VideoHeighta        "Height for new videos.\n"
+                                   "Range: 240 to 2160 pixel."
+
+GUI_VideoW_Par_VideoSizes          "Sizes ..."
+
+GUI_VideoW_Par_VideoSizesa         "Some typical Sizes"
+
+GUI_VideoW_VideoSizes11            "16:9/640 x 360"
+
+GUI_VideoW_VideoSizes12            "16:9/854 x 480"
+
+GUI_VideoW_VideoSizes13            "16:9/1024 x 576"
+
+GUI_VideoW_VideoSizes14            "16:9/1280 x 720 (HD)"
+
+GUI_VideoW_VideoSizes15            "16:9/1920 x 1080 (FHD)"
+
+GUI_VideoW_VideoSizes21            "9:16/720 x 1280"
+
+GUI_VideoW_VideoSizes22            "9:16/1080 x 1920"
+
+GUI_VideoW_VideoSizes31            "1:1/1080 x 1080"
+
+GUI_VideoW_Par_VideoFPS            "Frame rate"
+
+GUI_VideoW_Par_VideoFPSa           "Frames per seconds for new videos.\n"
+                                   "Range: 24 to 60."
+
+GUI_VideoW_Par_VideoQuality        "Quality"
+
+GUI_VideoW_Par_VideoQualitya       "Video quality improvement.\n"
+                                   "Higher values ​​result in better detail\n"
+                                   "rendering and fewer artifacts.\n"
+                                   "Higher values ​​--> larger file sizes.\n"
+                                   "Range: 0.5 to 2.0\n"
+                                   "Recommended value: 1.0"
+
+GUI_VideoW_Par_VideoCodec          "Codec"
+
+GUI_VideoW_Par_VideoCodeca         "Codec used for data compression:\n"
+                                   " H.264 / AVC (best compatibility)\n"
+                                   " H.265 / HEVC (better compression, less compatible)"
+
+GUI_VideoW_VideoCodec1             "H.264"
+
+GUI_VideoW_VideoCodec2             "H.265"
+
+GUI_VideoW_Par_FileSize            "Resulting file size"
+
+GUI_VideoW_Par_FileSizea           "Shows the estimated file size\n"
+                                   "in megabytes per hour.\n"
+                                   "NOTE: is read only."
+
+GUI_VideoW_Par_Group2              "Timings [Seconds]"
+
+GUI_VideoW_Par_TimeTransition      "Transition"
+
+GUI_VideoW_Par_TimeTransitiona     "When an image changes,\n"
+                                   "a transition is created.\n"
+                                   "Range: 0 to 15 seconds."
+
+GUI_VideoW_Par_TimeAddImage        "Add image"
+
+GUI_VideoW_Par_TimeAddImagea       "Adding an image appends a video\n"
+                                   "clip of the specified length.\n"
+                                   "Range: 0 to 60 seconds."
+
+GUI_VideoW_Par_Group3              "Other"
+
+GUI_VideoW_Par_BGND_Color          "Background"
+
+GUI_VideoW_Par_BGND_Colora         "Color for background.\n"
+                                   "The background is visible when images with an aspect\n"
+                                   "ratio different from that of the video are used.\n"
+                                   "In this case, borders of this color appear at the top\n"
+                                   "and bottom, and on the left and right, respectively."
+
+GUI_VideoW_StartStop               "Toggle between start and stop record.\n"
+                                   "Shortcut: Enter"
+
+GUI_VideoW_RecordMode              "Toggle record mode between 'image' and 'video'.\n"
+                                   "For 'image' a new image is added for 'Add image' seconds.\n"
+                                   "For 'video' only the new image is added.\n"
+                                   "Shortcut: M, left or right"
+
+GUI_VideoW_RecordPause             "Toggle between 'Resume Recording' and 'pause'.\n"
+                                   "Shortcut: Spacebar"
+
+GUI_VideoW_VideoPaused             "  Pause"
+
+GUI_VideoW_ErrNoVideWrite          "ERROR: NO CCAP Video writer"
+
+GUI_VideoW_RecordModeImg           "Img"
+
+GUI_VideoW_RecordModeVideo         "Video"
+
+;
+;
+; End Of File

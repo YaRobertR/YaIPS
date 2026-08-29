@@ -1,0 +1,8 @@
+# Temporary subdirectories for compilation
+/Debug/
+/Release/
+/Downloads/
+
+# Compiled Object files
+*.o
+*.obj

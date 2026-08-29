@@ -1,0 +1,58 @@
+;-------------------------------------------------------
+; YaIPS_GUI_VideoRead.cpp
+;-------------------------------------------------------
+;
+; 15 entries
+;
+GUI_VideoR_Title                   "Video-Player"
+
+GUI_VideoR_Par_Autoplay            "Video automatisch abspielen"
+
+GUI_VideoR_Par_Autoplaya           "Nach dem Laden wird ein Video\n"
+                                   "automatisch abgespielt."
+
+GUI_VideoR_Par_VideoBufOn          "Videopuffer"
+
+GUI_VideoR_Par_VideoBufOna         "Bei Aktivierung wird ein Rücklaufpuffer verwendet.\n"
+                                   "Bei der Wiedergabe werden Videobilder gepuffert.\n"
+                                   "In der Pause können diese Bilder angesehen werden."
+
+GUI_VideoR_Par_VideoBufSize        "Größe"
+
+GUI_VideoR_Par_VideoBufSizea       "Größe des Rücklaufpuffers.\n"
+                                   "Bereich: 50 bis 500 Megabyte.\n"
+                                   "Empfohlener Wert: 100"
+
+GUI_VideoR_PlayPause               "Umschalten zwischen Wiedergabe und Pause.\n"
+                                   "Shortcut: Leertaste"
+
+GUI_VideoR_PosBegin                "Zurück zum Anfang des Videos.\n"
+                                   "Shortcut: B oder Pos1"
+
+GUI_VideoR_ButSkipBack             "Springe zurück.\n"
+                                   "Shortcut: N oder Links\n"
+                                   "   zurück 10 Sekunden\n"
+                                   "  + Strg:  1 Minute\n"
+                                   " + Shift: 10 Minuten"
+
+GUI_VideoR_ButSkipForward          "Springe vorwärts.\n"
+                                   "Shortcut: M oder Rechts\n"
+                                   " vorwärts 10 Sekunden\n"
+                                   "  + Strg:  1 Minute\n"
+                                   " + Shift: 10 Minuten"
+
+GUI_VideoR_ButSpeedDec             "Wiedergabegeschwindigkeit verringern.\n"
+                                   "Shortcut: J oder nach unten"
+
+GUI_VideoR_ButSpeedInc             "Wiedergabegeschwindigkeit erhöhen.\n"
+                                   "Shortcut: K oder nach oben"
+
+GUI_VideoR_ButOpen                 "Video aus Datei laden.\n"
+                                   "Shortcut: Strg+L"
+
+GUI_VideoR_ButRepeat               "Wiederholung des Videos ein-/ausschalten.\n"
+                                   "Shortcut: R"
+
+;
+;
+; End Of File

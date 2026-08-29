@@ -1,0 +1,185 @@
+;-------------------------------------------------------
+; YaIPS_GUI_InspPosCorr.cpp
+;-------------------------------------------------------
+;
+; 81 entries
+;
+GUI_PosCorr_Title                  "Position correction"
+
+GUI_PosCorr_TabA1a                 "General settings"
+
+GUI_PosCorr_TabA2                  "Perform position correction"
+
+GUI_PosCorr_TabA2a                 "The position correction is performed in the inspection mode.\n"
+                                   "The input image is shifted and rotated accordingly."
+
+GUI_PosCorr_TabA3                  "Color outside"
+
+GUI_PosCorr_TabA3a                 "Color for the area outside an image.\n"
+                                   "Rotating an image or performing other transformations\n"
+                                   "creates areas outside the image. These are colored\n"
+                                   "accordingly."
+
+GUI_PosCorr_TabA4                  "Hide outside area"
+
+GUI_PosCorr_TabA4a                 "Hide outside area.\n"
+                                   "If enabled, the area outside the image is hidden.\n"
+                                   "Otherwise, the area outside is visible."
+
+GUI_PosCorr_TabB1                  "Edges"
+
+GUI_PosCorr_TabB1a                 "Position correction with edge finding"
+
+GUI_PosCorr_TabB2                  "AOIs:"
+
+GUI_PosCorr_TabB3a                 "Uses 1 X AOI.\n"
+                                   "Correct only X position."
+
+GUI_PosCorr_TabB4a                 "Uses 1 Y AOI.\n"
+                                   "Correct only Y position."
+
+GUI_PosCorr_TabB5                  "XY"
+
+GUI_PosCorr_TabB5a                 "Uses 1 X and 1 Y AOI.\n"
+                                   "Correct the X position first and then the Y position."
+
+GUI_PosCorr_TabB6                  "YX"
+
+GUI_PosCorr_TabB6a                 "Uses 1 Y and 1 X AOI.\n"
+                                   "Correct the Y position first and then the X position."
+
+GUI_PosCorr_TabB7                  "XYY"
+
+GUI_PosCorr_TabB7a                 "Uses 1 X and 2 Y AOI.\n"
+                                   "Position and rotation correction."
+
+GUI_PosCorr_TabB8                  "XXY"
+
+GUI_PosCorr_TabB8a                 "Uses 2 X and 1 Y AOI.\n"
+                                   "Position and rotation correction."
+
+GUI_PosCorr_GroupB9a               "1. AOI"
+
+GUI_PosCorr_GroupB9b               "2. AOI"
+
+GUI_PosCorr_GroupB9c               "3. AOI"
+
+GUI_PosCorr_GroupB10               "AOI pos."
+
+GUI_PosCorr_GroupB11a              "Position left edge 1. AOI"
+
+GUI_PosCorr_GroupB12a              "Position upper edge 1. AOI"
+
+GUI_PosCorr_GroupB13a              "Position left edge 2. AOI"
+
+GUI_PosCorr_GroupB14a              "Position upper edge 2. AOI"
+
+GUI_PosCorr_GroupB15a              "Position left edge 3. AOI"
+
+GUI_PosCorr_GroupB16a              "Position upper edge 3. AOI"
+
+GUI_PosCorr_GroupB17               "AOI size"
+
+GUI_PosCorr_GroupB18a              "Width of the 1. AOI"
+
+GUI_PosCorr_GroupB19a              "Height of the 1. AOI"
+
+GUI_PosCorr_GroupB20a              "Width of the 2. AOI"
+
+GUI_PosCorr_GroupB21a              "Height of the 2. AOI"
+
+GUI_PosCorr_GroupB22a              "Width of the 3. AOI"
+
+GUI_PosCorr_GroupB23a              "Height of the 3. AOI"
+
+GUI_PosCorr_GroupB30               "Direction"
+
+GUI_PosCorr_GroupB31a              "Reverse direction of edge detection 1. AOI."
+
+GUI_PosCorr_GroupB32a              "Reverse direction of edge detection 2. AOI."
+
+GUI_PosCorr_GroupB33a              "Reverse direction of edge detection 3. AOI."
+
+GUI_PosCorr_GroupB34               "Min. cont. %"
+
+GUI_PosCorr_GroupB35a              "Minimum contrast 1. AOI in %"
+
+GUI_PosCorr_GroupB36a              "Minimum contrast 2. AOI in %"
+
+GUI_PosCorr_GroupB37a              "Minimum contrast 3. AOI in %"
+
+GUI_PosCorr_GroupB40               "Max. position deviation"
+
+GUI_PosCorr_GroupB42a              "Error if the position deviation\n"
+                                   "in X is greater than this."
+
+GUI_PosCorr_GroupB44a              "Error if the position deviation\n"
+                                   "in Y is greater than this."
+
+GUI_PosCorr_TabC1                  "XY"
+
+GUI_PosCorr_TabC1a                 "Position correction with search pattern"
+
+GUI_PosCorr_TabC2                  "AOIs:"
+
+GUI_PosCorr_TabC3                  "1 XY"
+
+GUI_PosCorr_TabC3a                 "Uses 1 XY AOI.\n"
+                                   "Correct only X and Y position."
+
+GUI_PosCorr_TabC4                  "3 XY"
+
+GUI_PosCorr_TabC4a                 "Uses 3 XY AOIs.\n"
+                                   "Correct position, rotation and size."
+
+GUI_PosCorr_GroupC9a               "1. AOI"
+
+GUI_PosCorr_GroupC9b               "2. AOI"
+
+GUI_PosCorr_GroupC9c               "3. AOI"
+
+GUI_PosCorr_GroupC10               "AOI pos."
+
+GUI_PosCorr_GroupC11a              "Position left edge 1. AOI"
+
+GUI_PosCorr_GroupC12a              "Position upper edge 1. AOI"
+
+GUI_PosCorr_GroupC13a              "Position left edge 2. AOI"
+
+GUI_PosCorr_GroupC14a              "Position upper edge 2. AOI"
+
+GUI_PosCorr_GroupC15a              "Position left edge 3. AOI"
+
+GUI_PosCorr_GroupC16a              "Position upper edge 3. AOI"
+
+GUI_PosCorr_GroupC17               "AOI size"
+
+GUI_PosCorr_GroupC18a              "Width of the 1. AOI"
+
+GUI_PosCorr_GroupC19a              "Height of the 1. AOI"
+
+GUI_PosCorr_GroupC20a              "Width of the 2. AOI"
+
+GUI_PosCorr_GroupC21a              "Height of the 2. AOI"
+
+GUI_PosCorr_GroupC22a              "Width of the 3. AOI"
+
+GUI_PosCorr_GroupC23a              "Height of the 3. AOI"
+
+GUI_PosCorr_GroupC24               "Search"
+
+GUI_Edges_GroupC25a                "Search range X."
+
+GUI_Edges_GroupC26a                "Search range Y."
+
+GUI_PosCorr_GroupC40               "Max. position deviation"
+
+GUI_PosCorr_GroupBC2a              "Error if the position deviation\n"
+                                   "in X is greater than this."
+
+GUI_PosCorr_GroupC44a              "Error if the position deviation\n"
+                                   "in Y is greater than this."
+
+;
+;
+; End Of File

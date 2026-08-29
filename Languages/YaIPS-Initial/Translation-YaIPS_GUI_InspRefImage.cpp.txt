@@ -1,0 +1,27 @@
+;-------------------------------------------------------
+; YaIPS_GUI_InspRefImage.cpp
+;-------------------------------------------------------
+;
+; 5 entries
+;
+GUI_InspRefImg_Title               "Reference image"
+
+GUI_InspRefImg_GroupA1             "Plane threshold"
+
+GUI_InspRefImg_GroupA1a            "Plane threshold.\n"
+                                   "Used to prepare the reference image.\n"
+                                   "Pixel values below this threshold are\n"
+                                   "lowpass filtered. The contour pixels are\n"
+                                   "not changed. Also sets a contour bit in\n"
+                                   "the alpha part of the reference image."
+                                   "This contour bit is used by the image"
+                                   "compare window."
+
+GUI_InspRefImg_Tools2a             "Apply the reference image from input.\n"
+                                   "Shortcut: Ctrl+A"
+
+GUI_InspRefImg_Tools3a             "Load reference image from file."
+
+;
+;
+; End Of File

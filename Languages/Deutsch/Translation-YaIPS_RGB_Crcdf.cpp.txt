@@ -1,0 +1,13 @@
+;-------------------------------------------------------
+; YaIPS_RGB_Crcdf.cpp
+;-------------------------------------------------------
+;
+; 4 entries
+;
+RGB_Crcdf_Err1                     "Objekt kein Schwarzweißbild!"
+RGB_Crcdf_Err2                     "Bytes in Szene %d < 0 oder >= %d"
+RGB_Crcdf_Err3                     "Objektbild zu groß"
+RGB_Crcdf_Err4                     "Objekt größer als Szene oder AOI"
+;
+;
+; End Of File

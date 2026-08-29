@@ -1,0 +1,14 @@
+;-------------------------------------------------------
+; YaIPS_Utils_ImageCompare.cpp
+;-------------------------------------------------------
+;
+; 5 entries
+;
+Utils_ImgCompare_InspErr1          "Bildrand!"
+Utils_ImgCompare_InspErr2          "Summe kl. Flecken!"
+Utils_ImgCompare_InspErr3          "Große Flecken!"
+Utils_ImgCompare_InspErr4          "Zu viele Fehler!"
+Utils_ImgCompare_Res1              "%d Große%s, %.2f%s Summe kl."
+;
+;
+; End Of File

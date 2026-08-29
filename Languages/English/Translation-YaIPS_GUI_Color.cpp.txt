@@ -1,0 +1,256 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Color.cpp
+;-------------------------------------------------------
+;
+; 107 entries
+;
+GUI_Color_Title                    "Color"
+
+GUI_Color_TabA1                    "Simple"
+
+GUI_Color_TabA1a                   "Simple conversions"
+
+GUI_Color_TabA2                    "-> R"
+
+GUI_Color_TabA3                    "-> G"
+
+GUI_Color_TabA4                    "-> B"
+
+GUI_Color_TabA5                    "-> A"
+
+GUI_Color_TabA5a                   "Extracts the alpha channel from\n"
+                                   "a black and white or RGB image."
+
+GUI_Color_TabA6                    "-> I"
+
+GUI_Color_TabA6a                   "Color -> Intensity of an IHS conversion."
+
+GUI_Color_TabA7                    "-> H"
+
+GUI_Color_TabA7a                   "Color -> Color tone of an IHS conversion."
+
+GUI_Color_TabA8                    "-> S"
+
+GUI_Color_TabA8a                   "Color -> Saturation of an IHS conversion."
+
+GUI_Color_TabA9                    "RGB Min"
+
+GUI_Color_TabA9a                   "Smallest value of the color components."
+
+GUI_Color_TabA10                   "RGB Max"
+
+GUI_Color_TabA10a                  "Highest value of the color components."
+
+GUI_Color_TabA11                   "RGB <-> BGR"
+
+GUI_Color_TabA11a                  "RGB <-> BGR conversion."
+
+GUI_Color_TabB1                    "LUT1"
+
+GUI_Color_TabB1a                   "Look Up Tables"
+
+GUI_Color_TabB4a                   "Inverts color, black and white image or color palette"
+
+GUI_Color_TabB5                    "Gain %"
+
+GUI_Color_TabB5a                   "Gain % + offset.\n"
+                                   "Change brightness gain in %\n"
+                                   "and brightness offset in gray values."
+
+GUI_Color_TabB6a                   "Brightness for the red color channel."
+
+GUI_Color_TabB7a                   "Brightness for the green color channel."
+
+GUI_Color_TabB8a                   "Brightness for the blue color channel."
+
+GUI_Color_TabB9a                   "If set, the red value is used\n"
+                                   "for all three channels."
+
+GUI_Color_TabB10                   "Offset  R"
+
+GUI_Color_TabB10a                  "Offset for the red color channel."
+
+GUI_Color_TabB11a                  "Offset for the green color channel."
+
+GUI_Color_TabB12a                  "Offset for the blue color channel."
+
+GUI_Color_TabB13                   "Gamma"
+
+GUI_Color_TabB13a                  "Gamma correction.\n"
+                                   "Adjusting brightness and contrast."
+
+GUI_Color_TabB14a                  "Gamma factor for the red color channel."
+                                   "No correction is made at 1.0."
+
+GUI_Color_TabB15a                  "Gamma factor for the green color channel."
+                                   "No correction is made at 1.0."
+
+GUI_Color_TabB16a                  "Gamma factor for the blue color channel."
+                                   "No correction is made at 1.0."
+
+GUI_Color_TabB17a                  "If set, the red value is used\n"
+                                   "for all three channels."
+
+GUI_Color_TabM1                    "LUT2"
+
+GUI_Color_TabM1a                   "Look Up Tables"
+
+GUI_Color_TabM2                    "Contrast"
+
+GUI_Color_TabM2a                   "Change contrast by modifying lower and upper\n"
+                                   "control points.\n"
+                                   "In (input image) axis goes from left to right.\n"
+                                   "Out (output image) axis goes from bottom to top.\n"
+                                   "NOTE: Li must be smaller than Ui."
+
+GUI_Color_TabM3                    "Li"
+
+GUI_Color_TabM3a                   "Lower control point, in value."
+
+GUI_Color_TabM4                    "Ui"
+
+GUI_Color_TabM4a                   "Upper control point, in value."
+
+GUI_Color_TabM5                    "Lo"
+
+GUI_Color_TabM5a                   "Lower control point, out value."
+
+GUI_Color_TabM6                    "Uo"
+
+GUI_Color_TabM6a                   "Upper control point, out value."
+
+GUI_Color_TabM10                   "Duotone"
+
+GUI_Color_TabM10a                  "Combine two colors as a filter."
+
+GUI_Color_TabM11                   "Br"
+
+GUI_Color_TabM11a                  "Bright color for highlighting."
+
+GUI_GenImage_TabM12                "Da"
+
+GUI_GenImage_TabM12a               "Dark color for shadows."
+
+GUI_Color_TabM13                   "Contrast"
+
+GUI_Color_TabM13a                  "Contrast\n"
+                                   "Range -100 ... 100.\n"
+                                   "0 = no change."
+
+GUI_Color_TabM14                   "Bri."
+
+GUI_Color_TabM14a                  "Brightness\n"
+                                   "Range -100 ... 100.\n"
+                                   "0 = no change."
+
+GUI_Color_TabM15                   "Fade"
+
+GUI_Color_TabM15a                  "Used for color images only.\n"
+                                   "Fade between RGB and BW (saturation) pixels.\n"
+                                   "Range 0 ... 100.\n"
+                                   "0 = use RGB pixels. 100 = use BW pixels"
+
+GUI_Color_TabC1                    "Matrix"
+
+GUI_Color_TabC1a                   "Color conversion using a matrix"
+
+GUI_Color_TabC2                    "Matrix"
+
+GUI_Color_TabC2a                   "Color conversion using a matrix"
+
+GUI_Color_TabC3                    "Preset"
+
+GUI_Color_TabC3a                   "Some typical color filters"
+
+GUI_Color_TabC4                    "R ="
+
+GUI_Color_TabC4a                   "Offset for the red color channel."
+
+GUI_Color_TabC7                    "G ="
+
+GUI_Color_TabC7a                   "Offset for the green color channel."
+
+GUI_Color_TabC11                   "B ="
+
+GUI_Color_TabC11a                  "Offset for the blue color channel."
+
+GUI_Color_TabD1                    "IHS"
+
+GUI_Color_TabD1a                   "RGB <-> IHS conversions"
+
+GUI_Color_TabD2                    "RGB -> IHS"
+
+GUI_Color_TabD2a                   "Converts an RGB image into an IHS image."
+
+GUI_Color_TabD3                    "IHS -> RGB"
+
+GUI_Color_TabD3a                   "Converts an IHS image to an RGB image."
+
+GUI_Color_TabD4                    "Adjust"
+
+GUI_Color_TabD4a                   "Adjust intensity, hue, and saturation."
+
+GUI_Color_TabD5                    "Intensity %"
+
+GUI_Color_TabD5a                   "Adjusting the intensity."
+
+GUI_Color_TabD6                    "Hue %"
+
+GUI_Color_TabD6a                   "Adjusting the hue."
+
+GUI_Color_TabD7                    "Saturation %"
+
+GUI_Color_TabD7a                   "Adjusting saturation."
+
+GUI_Color_TabE1                    "BC"
+
+GUI_Color_TabE1a                   "Brightness correction"
+
+GUI_Color_TabE2                    "Brightness correction"
+
+GUI_Color_TabE2a                   "The brightness in the image is corrected according\n"
+                                   "to the deviations in a measurement window (AOI)."
+
+GUI_Color_TabE3                    "Target R"
+
+GUI_Color_TabE3a                   "Target value for the red color channel\n"
+                                   "or for a black and white image."
+
+GUI_Color_TabE4a                   "Target value for the green color channel."
+
+GUI_Color_TabE5a                   "Target value for the blue color channel."
+
+GUI_Color_TabE6                    "#"
+
+GUI_Color_TabE6a                   "Take the measured value from the measurement\n"
+                                   "window (AOI) as the target value."
+
+GUI_Color_TabF1                    "Mix"
+
+GUI_Color_TabF1a                   "Mixing color channels to create a new image"
+
+GUI_Color_TabF2                    "Mixing"
+
+GUI_Color_TabF2a                   "Mixing color channels to create a new image.\n"
+                                   "\n"
+                                   "* No image selected\n"
+                                   "  An alpha channel is removed from the input image\n"
+                                   "* G and B selected\n"
+                                   "  Input, G, and B must be black/white images.\n"
+                                   "  A color image is generated (input is R).\n"
+                                   "* Alpha selected\n"
+                                   "  Output image has an alpha channel.\n"
+                                   "  If available, the alpha channel is used.\n"
+                                   "  Otherwise, alpha must be a black/white image.\n"
+
+GUI_Color_TabF3                    "Alpha"
+
+GUI_Color_TabF3a                   "Select image for alpha channel"
+
+GUI_Color_TabF4a                   "Select image for the green channel"
+
+GUI_Color_TabF5a                   "Select image for the blue channel"
+
+;
+;
+; End Of File

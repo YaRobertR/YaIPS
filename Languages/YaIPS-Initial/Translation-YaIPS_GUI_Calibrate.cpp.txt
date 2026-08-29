@@ -1,0 +1,79 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Calibrate.cpp
+;-------------------------------------------------------
+;
+; 31 entries
+;
+GUI_Calibrate_Title                "Calibration"
+
+GUI_Calibrate_LabelX_Pix           "Factor X"
+
+GUI_Calibrate_LabelX_Unit          "Factor X [%s/Pixel]"
+
+GUI_Calibrate_LabelY_Pix           "Factor Y"
+
+GUI_Calibrate_LabelY_Unit          "Factor Y [%s/Pixel]"
+
+GUI_Calibrate_Group1               "Current calibration factors"
+
+GUI_Calibrate_Group2               "Calibrate"
+
+GUI_Calibrate_Group20              "Mode"
+
+GUI_Calibrate_Group21              "Image"
+
+GUI_Calibrate_Group21a             "A file or camera image is used for calibration."
+
+GUI_Calibrate_Group22              "DPI"
+
+GUI_Calibrate_Group22a             "A DPI setting is used for calibration."
+
+GUI_Calibrate_Group23              "Unit"
+
+GUI_Calibrate_Group23a             "Select calibration unit."
+
+GUI_Calibrate_Group24              "DPI"
+
+GUI_Calibrate_Group24a             "Dots per inch.\n"
+                                   "Used to convert mm or inch\n"
+                                   "sizes into pixel sizes."
+
+GUI_Calibrate_Group25a             "Some typical DPI values."
+
+GUI_Calibrate_DPI_96               "  96 Screen"
+
+GUI_Calibrate_DPI_120              "120"
+
+GUI_Calibrate_DPI_150              "150 Draft prints"
+
+GUI_Calibrate_DPI_200              "200"
+
+GUI_Calibrate_DPI_254              "254 10 Pixel = 1 mm"
+
+GUI_Calibrate_DPI_300              "300 High-quality prints"
+
+GUI_Calibrate_Group30              "Distance X"
+
+GUI_Calibrate_Group30a             "Distance between calibration marks in X"
+
+GUI_Calibrate_Group31              "Distance Y"
+
+GUI_Calibrate_Group31a             "Distance between calibration marks in Y"
+
+GUI_Calibrate_Group32              "Pixel ² "
+
+GUI_Calibrate_Group32a             "Set for square pixels. The calibration\n"
+                                   "factors then have the same value."
+
+GUI_Calibrate_Group33              "Calibrate"
+
+GUI_Calibrate_Group33a             "To perform a calibration, a distance\n"
+                                   "measurement must be active in the main window.\n"
+                                   "Place the distance measurement on a\n"
+                                   "structure of known size.\n"
+                                   "If ‘Pixel ²’ is not set, X and Y must be\n"
+                                   "calibrated separately."
+
+;
+;
+; End Of File

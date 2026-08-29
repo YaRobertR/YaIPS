@@ -1,0 +1,257 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Color.cpp
+;-------------------------------------------------------
+;
+; 107 entries
+;
+GUI_Color_Title                    "Farbe"
+
+GUI_Color_TabA1                    "Einfach"
+
+GUI_Color_TabA1a                   "Einfache Konvertierungen"
+
+GUI_Color_TabA2                    "-> R"
+
+GUI_Color_TabA3                    "-> G"
+
+GUI_Color_TabA4                    "-> B"
+
+GUI_Color_TabA5                    "-> A"
+
+GUI_Color_TabA5a                   "Extrahiert den Alphakanal aus einem\n"
+                                   "Schwarzweiß- oder RGB-Bild."
+
+GUI_Color_TabA6                    "-> I"
+
+GUI_Color_TabA6a                   "Farbe -> Intensität einer IHS-Konvertierung."
+
+GUI_Color_TabA7                    "-> H"
+
+GUI_Color_TabA7a                   "Farbe -> Farbton einer IHS-Konvertierung."
+
+GUI_Color_TabA8                    "-> S"
+
+GUI_Color_TabA8a                   "Farbe -> Sättigung  einer IHS-Konvertierung."
+
+GUI_Color_TabA9                    "RGB Min"
+
+GUI_Color_TabA9a                   "Kleinster Wert der Farbkomponenten."
+
+GUI_Color_TabA10                   "RGB Max"
+
+GUI_Color_TabA10a                  "Größter Wert der Farbkomponenten."
+
+GUI_Color_TabA11                   "RGB <-> BGR"
+
+GUI_Color_TabA11a                  "RGB <-> BGR Konvertierung."
+
+GUI_Color_TabB1                    "LUT1"
+
+GUI_Color_TabB1a                   "Look Up Tabellen"
+
+GUI_Color_TabB4a                   "Invertiert Farbe-, Schwarz-Weiß\nBild oder Farbpalette"
+
+GUI_Color_TabB5                    "Verst.%"
+
+GUI_Color_TabB5a                   "Verstärkung % + Offset/Versatz.\n"
+                                   "Änderung der Helligkeit in % und\n"
+                                   "Versatz/Offset der Helligkeit in Pixel."
+
+GUI_Color_TabB6a                   "Helligkeit für den roten Farbkanal."
+
+GUI_Color_TabB7a                   "Helligkeit für den grünen Farbkanal."
+
+GUI_Color_TabB8a                   "Helligkeit für den blauen Farbkanal."
+
+GUI_Color_TabB9a                   "Falls gesetzt, wird der rote Wert\n"
+                                   "für alle drei Kanäle verwendet."
+
+GUI_Color_TabB10                   "Offset  R"
+
+GUI_Color_TabB10a                  "Offset für den roten Farbkanal."
+
+GUI_Color_TabB11a                  "Offset für den grünen Farbkanal."
+
+GUI_Color_TabB12a                  "Offset für den blauen Farbkanal."
+
+GUI_Color_TabB13                   "Gamma"
+
+GUI_Color_TabB13a                  "Gammakorrektur\n"
+                                   "Anpassen von Helligkeit und Kontrast."
+
+GUI_Color_TabB14a                  "Gammafaktor für den roten Farbkanal."
+                                   "Bei 1.0 wird keine Korrektur durchgeführt."
+
+GUI_Color_TabB15a                  "Gammafaktor für den grünen Farbkanal."
+                                   "Bei 1.0 wird keine Korrektur durchgeführt."
+
+GUI_Color_TabB16a                  "Gammafaktor für den blauen Farbkanal."
+                                   "Bei 1.0 wird keine Korrektur durchgeführt."
+
+GUI_Color_TabB17a                  "Falls gesetzt, wird der rote Wert\n"
+                                   "für alle drei Kanäle verwendet."
+
+GUI_Color_TabM1                    "LUT2"
+
+GUI_Color_TabM1a                   "Look Up Tabellen"
+
+GUI_Color_TabM2                    "Kontrast"
+
+GUI_Color_TabM2a                   "Passen Sie den Kontrast an, indem Sie die unteren und\n"
+                                   "oberen Kontrollpunkte ändern.\n"
+                                   "Die Eingabeachse (Eingabebild) verläuft von links nach rechts.\n"
+                                   "Die Ausgabeachse (Ausgabebild) verläuft von unten nach oben\n"
+                                   "NOTE: Ue muss kleiner als Oe sein."
+
+GUI_Color_TabM3                    "Ue"
+
+GUI_Color_TabM3a                   "Unterer Kontrollpunkt, Wert aus Eingabebild."
+
+GUI_Color_TabM4                    "Oe"
+
+GUI_Color_TabM4a                   "Oberer Kontrollpunkt, Wert aus Eingabebild."
+
+GUI_Color_TabM5                    "Ua"
+
+GUI_Color_TabM5a                   "Unterer Kontrollpunkt, Wert aus Ausgabebild."
+
+GUI_Color_TabM6                    "Oa"
+
+GUI_Color_TabM6a                   "Oberer Kontrollpunkt, Wert aus Ausgabebild."
+
+GUI_Color_TabM10                   "Duotone"
+
+GUI_Color_TabM10a                  "Zwei Farben als Filter kombinieren."
+
+GUI_Color_TabM11                   "He"
+
+GUI_Color_TabM11a                  "Helle Farbe zum Hervorheben."
+
+GUI_GenImage_TabM12                "Du"
+
+GUI_GenImage_TabM12a               "Dunkle Farbe für Schatten."
+
+GUI_Color_TabM13                   "Kontrast"
+
+GUI_Color_TabM13a                  "Kontrast\n"
+                                   "Bereich -100 ... 100.\n"
+                                   "0 = keine Änderung."
+
+GUI_Color_TabM14                   "Hell."
+
+GUI_Color_TabM14a                  "Helligkeit\n"
+                                   "Bereich -100 ... 100.\n"
+                                   "0 = keine Änderung."
+
+GUI_Color_TabM15                   "Fade"
+
+GUI_Color_TabM15a                  "Wird nur für Farbbilder verwendet.\n"
+                                   "Überblendung zwischen RGB und SW Pixel (Sättigung).\n"
+                                   "Bereich 0 ... 100.\n"
+                                   "0 = RGB-Pixel verwenden. 100 = SW-Pixel verwenden"
+
+GUI_Color_TabC1                    "Matrix"
+
+GUI_Color_TabC1a                   "Farbkonvertierung mit einer Matrix"
+
+GUI_Color_TabC2                    "Matrix"
+
+GUI_Color_TabC2a                   "Farbkonvertierung mit einer Matrix"
+
+GUI_Color_TabC3                    "Vorlage"
+
+GUI_Color_TabC3a                   "Einige typische Farbfilter"
+
+GUI_Color_TabC4                    "R ="
+
+GUI_Color_TabC4a                   "Offset für den roten Farbkanal."
+
+GUI_Color_TabC7                    "G ="
+
+GUI_Color_TabC7a                   "Offset für den grünen Farbkanal."
+
+GUI_Color_TabC11                   "B ="
+
+GUI_Color_TabC11a                  "Offset für den blauen Farbkanal."
+
+GUI_Color_TabD1                    "IHS"
+
+GUI_Color_TabD1a                   "RGB <-> IHS Konvertierungen"
+
+GUI_Color_TabD2                    "RGB -> IHS"
+
+GUI_Color_TabD2a                   "Konvertiert ein RGB-Bild in ein IHS-Bild."
+
+GUI_Color_TabD3                    "IHS -> RGB"
+
+GUI_Color_TabD3a                   "Konvertiert ein IHS-Bild in ein RGB-Bild."
+
+GUI_Color_TabD4                    "Anpassen"
+
+GUI_Color_TabD4a                   "Anpassen von Intensität (Intensity),\n"
+                                   "Farbton (Hue) und Sättigung (Saturation)."
+
+GUI_Color_TabD5                    "Intensität %"
+
+GUI_Color_TabD5a                   "Anpassen der Intensität."
+
+GUI_Color_TabD6                    "Farbton %"
+
+GUI_Color_TabD6a                   "Anpassen des Farbtons."
+
+GUI_Color_TabD7                    "Sättigung %"
+
+GUI_Color_TabD7a                   "Anpassen der Sättigung."
+
+GUI_Color_TabE1                    "HK"
+
+GUI_Color_TabE1a                   "Helligkeitskorrektur"
+
+GUI_Color_TabE2                    "Helligkeitskorrektur"
+
+GUI_Color_TabE2a                   "Die Helligkeit im Bild wird entsprechend der\n"
+                                   "Abweichungen in einem Messfenster (AOI) korrigiert."
+
+GUI_Color_TabE3                    "Sollwert R"
+
+GUI_Color_TabE3a                   "Sollwert für den roten Farbkanal\n"
+                                   "bzw. für ein Schwarzweiß-Bild."
+
+GUI_Color_TabE4a                   "Sollwert für den grünen Farbkanal."
+
+GUI_Color_TabE5a                   "Sollwert für den blauen Farbkanal."
+
+GUI_Color_TabE6                    "#"
+
+GUI_Color_TabE6a                   "Messwert aus Messfenster (AOI)\n"
+                                   "als Sollwert übernehmen."
+
+GUI_Color_TabF1                    "Mix"
+
+GUI_Color_TabF1a                   "Mischen von Farbkanälen zum Erstellen eines neuen Bildes"
+
+GUI_Color_TabF2                    "Mischen"
+
+GUI_Color_TabF2a                   "Mischen von Farbkanälen zum Erstellen eines neuen Bildes.\n"
+                                   "\n"
+                                   "* Kein Bild ausgewählt\n"
+                                   "  Vom Bild Eingang wird ein Alphakanal entfernt\n"
+                                   "* G und B ausgewählt\n"
+                                   "  Eingang, G und B müssen SW Bilder sein.\n"
+                                   "  Es wird ein Farbbild erzeugt (Eingang ist R).\n"
+                                   "* Alpha ausgewählt\n"
+                                   "  Ausgangsbild hat einen Alphakanal.\n"
+                                   "  Falls vorhanden, wird der Alphakanal verwendet,\n"
+                                   "  Ansonsten muss Alpha ein SW Bild sein.\n"
+
+GUI_Color_TabF3                    "Alpha"
+
+GUI_Color_TabF3a                   "Auswählen Bilde für den Alpha Kanal"
+
+GUI_Color_Tools4a                  "Umschalten zwischen Einlernen- und Auswertemodus."
+
+GUI_Color_Insp1                    "Fehler %d"
+
+;
+;
+; End Of File

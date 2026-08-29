@@ -1,0 +1,13 @@
+;-------------------------------------------------------
+; YaIPS_RGB_RunLengthCode.cpp
+;-------------------------------------------------------
+;
+; 4 entries
+;
+RGB_Rlc_LabelMeas1                 "Internal error: error creating image"
+RGB_Rlc_LabelMeas2                 "Error %d in rl2t_labmea()"
+RGB_Rlc_Decode1                    "Error %d in rl2t_decode()"
+RGB_Rlc_GetBright1                 "Height of src and RLCs different"
+;
+;
+; End Of File

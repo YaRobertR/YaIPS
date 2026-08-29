@@ -1,0 +1,23 @@
+;-------------------------------------------------------
+; YaIPS_Utils_EdgeAOI.cpp
+;-------------------------------------------------------
+;
+; 14 entries
+;
+Utils_EdgeDM_InspErr1              "NOT teached!"
+Utils_EdgeDM_InspErr2              "Any image border!"
+Utils_EdgeDM_InspErr3              ".1 image border!"
+Utils_EdgeDM_InspErr4              ".2 image border!"
+Utils_EdgeDM_InspErr5              ".3 image border!"
+Utils_EdgeDM_InspErr6              "Any Edge!"
+Utils_EdgeDM_InspErr7              ".1 Edge!"
+Utils_EdgeDM_InspErr8              ".2 Edge!"
+Utils_EdgeDM_InspErr9              ".3 Edge!"
+Utils_EdgeDM_InspErr10             "No edge found!"
+Utils_EdgeDM_InspErr11             "AOI position relative to each other!"
+Utils_EdgeDM_InspDM1               "Dist. %.2f %s"
+Utils_EdgeDM_InspDM2               "Dist. %.2f %+.2f %s"
+Utils_EdgePM_InspPM1               "OK"
+;
+;
+; End Of File

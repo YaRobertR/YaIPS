@@ -1,0 +1,11 @@
+//
+// YaIPS.rc
+//
+// 04.03.2025 RR: First editon.
+//                Windows icon for YaIPS
+//
+
+#include <winresrc.h>
+
+101 ICON DISCARDABLE "Icon-YaIPS.ico"
+

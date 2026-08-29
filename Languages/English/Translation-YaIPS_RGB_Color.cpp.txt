@@ -1,0 +1,15 @@
+;-------------------------------------------------------
+; YaIPS_RGB_Color.cpp
+;-------------------------------------------------------
+;
+; 6 entries
+;
+RGB_Color_NoRGB                    "No color image!"
+RGB_Color_NoAlpha                  "No alpha channel!"
+RGB_Color_AlphaNoBW                "Alpha no BW image!"
+RGB_Color_InputNoBW                "No BW image input!"
+RGB_Color_InputGNoBW               "G no BW image!"
+RGB_Color_InputBNoBW               "B no BW image!"
+;
+;
+; End Of File

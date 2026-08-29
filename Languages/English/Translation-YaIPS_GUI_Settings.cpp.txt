@@ -1,0 +1,59 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Settings.cpp
+;-------------------------------------------------------
+;
+; 19 entries
+;
+GUI_Settings_NeedRestart           "Settings that require a restart\nof the application have been changed!"
+
+GUI_Settings_TabA1a                "Basic settings"
+
+GUI_Settings_TabA2                 "Language"
+
+GUI_Settings_TabA2a                "Select language for the user interface\n"
+                                   "ATTENTION: Close the application and restart it!"
+
+GUI_Settings_TabA3                 "Restore windows"
+
+GUI_Settings_TabA3a                "The next time the application is started, the\n"
+                                   "windows from the last session will be reopened."
+
+GUI_Settings_TabA4                 "Thick lines for graphics"
+
+GUI_Settings_TabA4a                "Some graphics use thicker lines\n"
+                                   "for better visibility."
+
+GUI_Settings_TabA5                 "Paste converts color -> BW"
+
+GUI_Settings_TabA5a                "Paste an image with 'Ctrl+V' supports converting\n"
+                                   "color images to black and white images.\n"
+                                   "For this to happen, the R G B components of all\n"
+                                   "pixels must have the same values."
+
+GUI_Settings_TabA10                "JPEG quality"
+
+GUI_Settings_TabA10a               "Used for writing JPEG image files.\n"
+                                   "Quality is between 10 and 100.\n"
+                                   "Higher quality looks better but\n"
+                                   "results in a bigger image files."
+
+GUI_Settings_TabB1                 "Colors"
+
+GUI_Settings_TabB2                 "Background of images"
+
+GUI_Settings_TabB2a                "Background of image display windows.\n"
+                                   "ATTENTION: Close the application and restart it!"
+
+GUI_Settings_TabB3                 "Frame color"
+
+GUI_Settings_TabB3a                "Colors of the frames for some graphics.\n"
+                                   "Column/row sum, ..."
+
+GUI_Settings_TabB4                 "Background of right side"
+
+GUI_Settings_TabB4a                "Background of the right side of the main window.\n"
+                                   "This area is used for placing tool windows."
+
+;
+;
+; End Of File

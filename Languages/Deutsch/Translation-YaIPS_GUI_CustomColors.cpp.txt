@@ -1,0 +1,32 @@
+;-------------------------------------------------------
+; YaIPS_GUI_CustomColors.cpp
+;-------------------------------------------------------
+;
+; 11 entries
+;
+GUI_CustomColors_Title             "Benutzerdefinierte Farben"
+
+GUI_CustomColors_File_Preset       "Dateiname"
+
+GUI_CustomColors_Load1             "Benutzerdefinierte Farben laden"
+
+GUI_CustomColors_Save1             "Benutzerdefinierte Farbe speichern"
+
+GUI_CustomColors_1a                "Benutzerdefinierte Farben aus einer Datei laden"
+
+GUI_CustomColors_2a                "Benutzerdefinierte Farben in eine Datei speichern"
+
+GUI_CustomColors_3                 "Name"
+
+GUI_CustomColors_3a                "Name der zuletzt geladenen benutzerdefinierten Farben\n"
+                                   "HINWEIS: Ist nur lesbar."
+
+GUI_CustomColors_10a               "Drücke, um die Farbe zu ändern"
+
+GUI_CustomColors_11                "Name"
+
+GUI_CustomColors_11a               "Name für diese Farbe"
+
+;
+;
+; End Of File

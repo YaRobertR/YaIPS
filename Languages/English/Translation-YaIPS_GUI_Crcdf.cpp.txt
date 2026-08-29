@@ -1,0 +1,85 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Crcdf.cpp
+;-------------------------------------------------------
+;
+; 31 entries
+;
+GUI_Crcdf_Title                    "Correlation"
+
+GUI_Crcdf_TabA1                    "General"
+
+GUI_Crcdf_TabA1a                   "General settings"
+
+GUI_Crcdf_TabA2                    "Output image:"
+
+GUI_Crcdf_TabA3                    "Scene"
+
+GUI_Crcdf_TabA3a                   "The input image ‘Scene’ is\n"
+                                   "displayed as the output image."
+
+GUI_Crcdf_TabA4                    "Correlation"
+
+GUI_Crcdf_TabA4a                   "The correlation field is displayed as the output image."
+
+GUI_Crcdf_TabA6a                   "For a color image, the red color\n"
+                                   "channel is used for correlation."
+
+GUI_Crcdf_TabA7a                   "For a color image, the green color\n"
+                                   "channel is used for correlation."
+
+GUI_Crcdf_TabA8a                   "For a color image, the blue color\n"
+                                   "channel is used for correlation."
+
+GUI_Crcdf_TabB1                    "Objects in scene"
+
+GUI_Crcdf_TabB1a                   "Separate objects in the scene"
+
+GUI_Crcdf_TabB2                    "Separate objects"
+
+GUI_Crcdf_TabB2a                   "Objects are isolated in the scene.\n"
+                                   "Each object is correlated separately."
+
+GUI_Crcdf_TabB3                    "Objects are:"
+
+GUI_Crcdf_TabB4                    "bright"
+
+GUI_Crcdf_TabB4a                   "Objects are brighter than the threshold."
+
+GUI_Crcdf_TabB5                    "dark"
+
+GUI_Crcdf_TabB5a                   "Objects are darker than the threshold."
+
+GUI_Crcdf_TabB6                    "Thres. bright."
+
+GUI_Crcdf_TabB6a                   "Brightness threshold for binarization.\n"
+                                   "Separates objects from the background."
+
+GUI_Crcdf_TabB9                    "Thres. Quality"
+
+GUI_Crcdf_TabB9a                   "Results with better quality are colored green,\n"
+                                   "results with poor quality are colored yellow to pink."
+
+GUI_Crcdf_TabB7                    "T small"
+
+GUI_Crcdf_TabB7a                   "Smallest side length of a square in pixels.\n"
+                                   "The area of the square is the minimum\n"
+                                   "area of an object to be processed."
+
+GUI_Crcdf_TabB8                    "T large"
+
+GUI_Crcdf_TabB8a                   "Largest side length of a square in pixels.\n"
+                                   "The area of the square is the maximum\n"
+                                   "area of an object to be processed.\n"
+                                   "NOTE: must be greater than 'T small'."
+
+GUI_Crcdf_Tools2a                  "Scene. This image is searched\n"
+                                   "for occurrences of the object."
+
+GUI_Crcdf_Tools3a                  "Object.\n"
+                                   "Must be a black and white image."
+
+GUI_Crcdf_Draw1                    "Q %.1f"
+
+;
+;
+; End Of File

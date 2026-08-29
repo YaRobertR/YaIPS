@@ -1,0 +1,252 @@
+;-------------------------------------------------------
+; YaIPS_LanguageStrings.h
+;-------------------------------------------------------
+;
+; 119 entries
+;
+Button_Close                       "Schließen"
+
+Button_OK                          "OK"
+
+Button_Reset                       "Reset"
+
+Button_Cancel                      "Abbrechen"
+
+Button_No                          "Nein"
+
+Button_Yes                         "Ja"
+
+Button_Apply                       "Anwenden"
+
+Text_Settings                      "Einstellungen"
+
+Text_SettingsPoints                "Einstellungen ..."
+
+Text_Clipboard                     "Zwischenablage"
+
+Text_GrayValueShort                "Gw"
+
+Text_ActiveShort                   "A"
+
+Text_Reverse                       "Umkehren"
+
+Text_All                           "Alle"
+
+Text_X                             "X"
+
+Text_Y                             "Y"
+
+Text_Pixel_UCF                     "Pixel"
+
+Text_Pixel_LC                      "pixel"
+
+Text_Color                         "Farbe"
+
+Text_ColorR                        "R"
+
+Text_ColorG                        "G"
+
+Text_ColorB                        "B"
+
+Text_ColorA                        "A"
+
+Text_ColorBW                       "SW"
+
+Text_PixDepth1txt                  "SW"
+
+Text_PixDepth2txt                  "SW+A"
+
+Text_PixDepth3txt                  "RGB"
+
+Text_PixDepth4txt                  "RGB+A"
+
+Text_ColChannel                    "Farbkanal"
+
+Text_ColChannelDP                  "Farbkanal:"
+
+Text_ColChannelR                   "Rote Farbkomponente"
+
+Text_ColChannelG                   "Grüne Farbkomponente"
+
+Text_ColChannelB                   "Blaue Farbkomponente"
+
+Text_ColChannelA                   "Alpha Komponente"
+
+Text_ColMultR1                     "+ R *"
+
+Text_ColMultG1                     "+ G *"
+
+Text_ColMultB1                     "+ B *"
+
+Text_ColMultR2                     "Multiplikator des roten Farbkanals"
+
+Text_ColMultG2                     "Multiplikator des grünen Farbkanals"
+
+Text_ColMultB2                     "Multiplikator des blauen Farbkanals"
+
+Text_ImgSel_PDS_1                  "1"
+
+Text_ImgSel_PDS_2                  "2"
+
+Text_ImgSel_PDS_3                  "3"
+
+Text_ImgSel_PDS_Input              "E"
+
+Text_ImgSel_PDS_Ref                "R"
+
+Text_ImgSel_PDS_Scene              "S"
+
+Text_ImgSel_PDS_Object             "O"
+
+Text_ImgSel_Err_NoInp              "'Eingabebild' Kein Bild."
+
+Text_ImgSel_Err_NoRef              "'Referenzbild' Kein Bild."
+
+Text_ImgSel_Err_None               "Keine Eingabebilder."
+
+Text_ImgSel_Err_ErrSizes           "Die Bildgrößen sind unterschiedlich."
+
+Text_ImgSel_Err_ErrBPP             "Bilder Farbe/Schwarzweiß unterschiedlich."
+
+Text_AoiLeft                       "AOI Links"
+
+Text_AoiLeftTooltip                "Position linke Kante AOI"
+
+Text_AoiTop                        "Oben"
+
+Text_AoiTopTooltip                 "Position obere Kante AOI"
+
+Text_AoiHeight                     "Höhe"
+
+Text_AoiHeightTooltip              "Höhe der AOI"
+
+Text_AoiWidth                      "Breite"
+
+Text_AoiWidthTooltip               "Breite der AOI"
+
+Text_AoiTeachTooltip               "AOI = Bereich von Interesse.\n"
+                                   "AOI in Szenenbild anzeigen und AOI-Parameter verändern.\n"
+                                   "Der AOI Bereich kann mit der Maus verstellt werden."
+
+Text_LUT                           "LUT"
+
+Text_LUT_Tooltip                   "Falschfarbendarstellung eines\n"
+                                   "Schwarzweiß oder Farbbildes."
+
+Text_File_Load_Image               "Bild laden"
+
+Text_File_Load_Video               "Video laden"
+
+Text_Calib_Unit_Unknown            "???"
+
+Text_Calib_Unit_Pixel              "Pixel"
+
+Text_Calib_Unit_mm                 "mm"
+
+Text_Calib_Unit_cm                 "cm"
+
+Text_Calib_Unit_inch               "Zoll"
+
+Text_Insp_Win_Inp                  "Eingabebild. Dieses Bild wird verarbeitet.\n"
+                                   "BEIDE Bilder müssen dieselbe Größe haben."
+
+Text_Insp_Win_Ref                  "Referenzbild. Enthält Referenz-AOI-Positionen.\n"
+                                   "BEIDE Bilder müssen dieselbe Größe haben."
+
+Text_Input                         "Eingang"
+
+Text_Images                        "Bilder"
+
+Text_Videos                        "Videos"
+
+Text_ImageNotChanged               "Bild unverändert"
+
+Text_ShowOnBigImage                "Bild auf großem Fenster anzeigen."
+
+Text_SelectInputImage              "Auswählen eines Eingabebildes."
+
+Text_SwitchTeachInspect            "Umschalten zwischen Einlernen- und Auswertemodus."
+
+Text_Rotation                      "Drehung"
+
+Text_Inverted                      "Invertiert"
+
+Text_Error_Code                    "Fehler %d!"
+
+ErrIps_ParamIllegal                "Illegal parameter"
+
+ErrIps_ParamBad                    "Bad parameter"
+
+ErrIpsNoSupp                       "Not supported!"
+
+ErrIps_fbnofb                      "No such FB"
+
+ErrIps_fbclose                     "FB not open"
+
+ErrIps_fboff                       "FB is off"
+
+ErrIps_fbnsel                      "no FB selected"
+
+ErrIps_fbsupp                      "FB not supported by standard SIP"
+
+ErrIps_support                     "This data type combination is not supported"
+
+ErrIps_noname                      "No name defined"
+
+ErrIps_DdviceNotForThisOp          "Device not allowed for this operation"
+
+ErrIps_DataTyeNoStd                "No standard data type"
+
+ErrIps_DataTyeIllegal              "Illegal data type"
+
+ErrIps_DataTyeConflict             "Data type conflict"
+
+ErrIps_nomem                       "Out of memory"
+
+ErrIps_MemOverflow                 "Memory overflow"
+
+ErrIps_MemBadSizhe                 "Bad sizes for memory alloc"
+
+ErrIps_ImgCreate                   "Failed to create image"
+
+ErrIps_ImgUnknown                  "Image pointer is zero"
+
+ErrIps_ImgBadType                  "Image is of bad data type"
+
+ErrIps_ImgNotIsideMem              "Image not inside memory"
+
+ErrIps_vcreate                     "Failed to create vector"
+
+ErrIps_valloc                      "Error allocating vector data"
+
+ErrIps_vempty                      "Vector is empty"
+
+ErrIps_vbadno                      "Wrong number of items in vector"
+
+ErrIps_villid                      "Illegal vector ID"
+
+ErrIps_VecUnknown                  "Vector pointer is zero"
+
+ErrIps_VecDeviceWrong              "Vector on wrong device"
+
+ErrIps_VecBadType                  "Vector is of bad data type"
+
+ErrIps_VecTooShort                 "Vector too short"
+
+ErrIps_VecMore32676                "Vector has more than 32676 values"
+
+ErrIps_XSizeDstOverflow            "X-size dst overflow"
+
+ErrIps_XSizeSrcOverflow            "X-size src overflow"
+
+ErrIps_YSizeSrcDstDifferent        "Y-size of src and dst different"
+
+ErrIps_XaXeRlcIllegal              "Illegal xa, xe address in runlength code"
+
+ErrIps_LabelNotFound               "No label found"
+
+ErrIps_ObjBufOverflow              "Object buffer overflow"
+
+;
+;
+; End Of File

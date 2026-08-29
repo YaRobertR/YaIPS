@@ -1,0 +1,269 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Overlay.cpp
+;-------------------------------------------------------
+;
+; 113 entries
+;
+GUI_Overlay_Title                  "Überlagerung"
+
+GUI_Overlay_TB_0                   "Farbe"
+
+GUI_Overlay_TB_1                   "Bilddatei"
+
+GUI_Overlay_TB_2                   "Tool"
+
+GUI_Overlay_FontSel                "Auswahl der Schriftart"
+
+GUI_Overlay_DelAll_1               "Alle Überlagerungen löschen"
+
+GUI_Overlay_DelAll_2               "Alle Überlagerungen löschen?"
+
+GUI_Overlay_1                      "Überlagerungen"
+
+GUI_Overlay_1a                     "Überlagerung auswählen"
+
+GUI_Overlay_20                     "&Einfügen"
+
+GUI_Overlay_20a                    "Erstellt eine neue Überlagerung.\n"
+                                   "Wenn eine Überlagerung ausgewählt ist, wird\n"
+                                   "die neue vor dieser Position eingefügt.\n"
+                                   "Andernfalls wird sie am Anfang der Liste eingefügt.\n"
+                                   "Drücken die Strg-Taste, um die Auswahl zu klonen."
+
+GUI_Overlay_21                     "A&nhängen"
+
+GUI_Overlay_21a                    "Erstellt eine neue Überlagerung.\n"
+                                   "Wenn eine Überlagerung ausgewählt ist, wird\n"
+                                   "die neue nach dieser Position eingefügt.\n"
+                                   "Andernfalls wird sie am Ende der Liste\n"
+                                   "eingefügt.\n"
+                                   "Drücken die Strg-Taste, um die Auswahl zu klonen."
+
+GUI_Overlay_22                     "&Löschen"
+
+GUI_Overlay_22a                    "Ausgewählte Überlagerung löschen"
+
+GUI_Overlay_23                     "&Alle löschen"
+
+GUI_Overlay_23a                    "Alle Überlagerungen löschen"
+
+GUI_Overlay_24a                    "Überlagerung nach oben verschieben.\n"
+                                   "Strg-Taste drücken um zur obersten\n"
+                                   "Position zu verschieben."
+
+GUI_Overlay_25a                    "Überlagerung nach unten verschieben.\n"
+                                   "Strg-Taste drücken um zur untersten\n"
+                                   "Position zu verschieben."
+
+GUI_Overlay_2                      "Name"
+
+GUI_Overlay_2a                     "Name für Überlagerung"
+
+GUI_Overlay_3                      "Einheit"
+
+GUI_Overlay_3a                     "Einheit für Lage und Größe"
+
+GUI_Overlay_4                      "Drehung"
+
+GUI_Overlay_4a                     "Drehwinkel der Überlagerung [Grad].\n"
+                                   "HINWEIS: Wird das Mausrad bei gedrückter\n"
+                                   "Umschalttaste gedreht, wird das ausgewähltes\n"
+                                   "Overlay in 15-Grad-Schritten gedreht.\n"
+                                   "Bei gedrückter der Strg-Taste wird in\n"
+                                   "1-Grad-Schritten gedreht."
+
+GUI_Overlay_5                      "Verhältnis"
+
+GUI_Overlay_5a                     "Zeigt das Verhältnis der Breite\n"
+                                   "zur Höhe des Bildes.\n"
+                                   "HINWEIS: Ist nur lesbar."
+
+GUI_Overlay_6                      "Ausr."
+
+GUI_Overlay_6a                     "Überlagerung an den Seiten\n"
+                                   "des Hintergrunds ausrichten."
+
+GUI_Overlay_6_1                    "Links"
+
+GUI_Overlay_6_2                    "Zentriert"
+
+GUI_Overlay_6_3                    "Rechts"
+
+GUI_Overlay_6_4                    "Oben"
+
+GUI_Overlay_6_5                    "Mittig"
+
+GUI_Overlay_6_6                    "Unten"
+
+GUI_Overlay_7a                     "Seitenverhältnis beibehalten."
+
+GUI_Overlay_8                      "Alpha-Multiplikator"
+
+GUI_Overlay_8a                     " Linke Seite = unsichtbar"
+                                   "Rechte Seite = keine Alpha-Änderung"
+
+GUI_Overlay_TabA1                  "Hintergr."
+
+GUI_Overlay_TabA2_0a               "Hintergrund ist farbig.\n"
+                                   "Für jede Ecke der Überlagerung kann\n"
+                                   "eine eigene Farbe festgelegt werden."
+
+GUI_Overlay_TabA3a                 "Farbe für den Bildhintergrund der linken oberen Ecke"
+
+GUI_Overlay_TabA4a                 "Aktiviere um die Farbe für die benannte Ecke zu verwenden."
+
+GUI_Overlay_TabA5a                 "Farbe für den Bildhintergrund in der rechten oberen Ecke"
+
+GUI_Overlay_TabA6a                 "Farbe für den Bildhintergrund der linken unteren Ecke"
+
+GUI_Overlay_TabA7a                 "Farbe für den Bildhintergrund in der rechten unteren Ecke"
+
+GUI_Overlay_TabA2_1a               "Hintergrund ist eine Bilddatei."
+
+GUI_Overlay_TabA10a                "Name der geladenen Bilddatei.\n"
+                                   "HINWEIS: Ist nur lesbar."
+
+GUI_Overlay_TabA11a                "Laden einer Bilddatei."
+
+GUI_Overlay_TabA12a                "Informationen zum Bild.\n"
+                                   "HINWEIS: Ist nur lesbar."
+
+GUI_Overlay_TabA13a                "Bildgröße auf AOI-Breite\n"
+                                   "und -Höhe kopieren."
+
+GUI_Overlay_TabA2_2                "Tool Fenster"
+
+GUI_Overlay_TabA2_2a               "Hintergrund ist ein Tool Fenster.\n"
+                                   "Hintergrund ist das Ausgabebild\n"
+                                   "eines Tool Fensters."
+
+GUI_Overlay_TabA20a                "Tool Fenster als Hintergrund auswählen."
+
+GUI_Overlay_TabB1                  "Form"
+
+GUI_Overlay_TabB2                  "Form"
+
+GUI_Overlay_TabB2a                 "Formauswahl."
+
+GUI_Overlay_TabB3                  "Formveränderung"
+
+GUI_Overlay_TabB3a                 "Formveränderung"
+
+GUI_Overlay_TabB4                  "Füllen"
+
+GUI_Overlay_TabB4a                 "Aktiviere, um eine gefüllte Form zu zeichnen."
+
+GUI_Overlay_TabB5                  "Kontur"
+
+GUI_Overlay_TabB5a                 "Aktiviere, um die Kontur zu zeichnen."
+
+GUI_Overlay_TabB10                 "Konturfarbe"
+
+GUI_Overlay_TabB10a                "Farbe für die Kontur der Form."
+
+GUI_Overlay_TabB11a                "Wenn gesetzt, wird die Umrissfarbe verwendet,\n"
+                                   "andernfalls scheint der Hintergrund durch."
+
+GUI_Overlay_TabB12                 "Umrissbreite"
+
+GUI_Overlay_TabB12a                "Die Dicke des Umrisses in Pixeln.\n"
+                                   "Null ist der von Windows definierte Standardwert,\n"
+                                   "der etwas anders und angenehmer ist als 1."
+
+GUI_Overlay_TabC1                  "Text"
+
+GUI_Overlay_TabC2                  "Schriftart"
+
+GUI_Overlay_TabC2a                 "Ausgewählte Schriftart"
+
+GUI_Overlay_TabC3a                 "Eine andere Schriftart wählen"
+
+GUI_Overlay_TabC4                  "Größe"
+
+GUI_Overlay_TabC4a                 "Schriftgröße"
+
+GUI_Overlay_TabC4b                 "Schriftgröße auswählen"
+
+GUI_Overlay_TabC7                  "@-3SpacingH AV"
+
+GUI_Overlay_TabC7a                 "Zusätzlicher Abstand zwischen Zeichen [Pixel]"
+
+GUI_Overlay_TabC8                  "@-3SpacingV"
+
+GUI_Overlay_TabC8a                 "Zusätzlicher Zeilenabstand [Pixel]"
+
+GUI_Overlay_TabC10                 "Format"
+
+GUI_Overlay_TabC11                 "F"
+
+GUI_Overlay_TabC11a                "Fettdruck umschalten."
+
+GUI_Overlay_TabC12                 "K"
+
+GUI_Overlay_TabC12a                "Kursivschrift umschalten."
+
+GUI_Overlay_TabC13                 "U"
+
+GUI_Overlay_TabC13a                "Unterstreichung umschalten."
+
+GUI_Overlay_TabC17a                "Textfarbe"
+
+GUI_Overlay_TabC18a                "Wenn gesetzt, wird die Textfarbe verwendet,\n"
+                                   "andernfalls scheint der Hintergrund durch."
+
+GUI_Overlay_TabC20                 "Horizontal"
+
+GUI_Overlay_TabC21                 "Einzug"
+
+GUI_Overlay_TabC21a                "Horizontaler Einzug"
+
+GUI_Overlay_TabC22                 "Vertikal"
+
+GUI_Overlay_TabC23                 "Einzug"
+
+GUI_Overlay_TabC23a                "Vertikaler Einzug"
+
+GUI_Overlay_TabC30                 "Text"
+
+GUI_Overlay_TabC30a                "Angezeigter Text"
+
+GUI_Overlay_TabD1                  "Schatten"
+
+GUI_Overlay_TabD2                  "Aktiv"
+
+GUI_Overlay_TabD2a                 "Schatten aktivieren."
+
+GUI_Overlay_TabD3                  "Winkel"
+
+GUI_Overlay_TabD3a                 "Winkel des Schattenwurfs [Grad]."
+
+GUI_Overlay_TabD4                  "Abstand"
+
+GUI_Overlay_TabD4a                 "Abstand des Schattens"
+
+GUI_Overlay_TabD5a                 "Schattenfarbe"
+
+GUI_Overlay_TabD6a                 "Wenn gesetzt, wird die Schattenfarbe, ansonsten\n"
+                                   "das Überlagerungsbild als Schatten verwenden."
+
+GUI_Overlay_TabD7                  "Unschärfe"
+
+GUI_Overlay_TabD7a                 "Verunschärfung des Schattens"
+
+GUI_Overlay_TabD8                  "Trans."
+
+GUI_Overlay_TabD8a                 "Schattentransparenz [%]"
+
+GUI_Overlay_Popup_Param            "Parameter"
+
+GUI_Overlay_Popup_Del              "Überlagerung löschen"
+
+GUI_Overlay_Popup_Ins              "Neue Überlagerung einfügen"
+
+GUI_Overlay_Popup_App              "Neue Überlagerung anhängen"
+
+GUI_Overlay_Popup_DelAll           "Alle Überlagerungen löschen"
+
+;
+;
+; End Of File

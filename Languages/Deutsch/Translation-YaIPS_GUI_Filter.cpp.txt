@@ -1,0 +1,178 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Filter.cpp
+;-------------------------------------------------------
+;
+; 50 entries
+;
+GUI_Filter_Title                   "Filter"
+
+GUI_Filter_TabA1                   "Tiefpass"
+
+GUI_Filter_TabA2                   "Gauß:"
+
+GUI_Filter_TabA2a                  "X/horizontaler Gauß Filter"
+
+GUI_Filter_TabA3a                  "Y/vertikaler Gauß Filter"
+
+GUI_Filter_TabA4a                  "XY Gauß Filter"
+
+GUI_Filter_TabA5                   "Box:"
+
+GUI_Filter_TabA5a                  "X/horizontaler Box Filter"
+
+GUI_Filter_TabA6a                  "Y/vertikaler Box Filter"
+
+GUI_Filter_TabA7a                  "XY Box Filter"
+
+GUI_Filter_TabA8                   "Filtergröße"
+
+GUI_Filter_TabA8a                  "Filtergröße\nMuss ungerade und >= 3 sein."
+
+GUI_Filter_TabB1                   "Kanten"
+
+GUI_Filter_TabB2                   "Differenz:"
+
+GUI_Filter_TabB2a                  "Differenz Filter horizontal\n"
+                                   " 1  2  1\n"
+                                   " 0  0  0   * V + O\n"
+                                   "-1 -2 -1"
+
+GUI_Filter_TabB3a                  "Differenz Filter vertikal"
+
+GUI_Filter_TabB4a                  "Differenz schräg"
+
+GUI_Filter_TabB5a                  "Differenz schräg"
+
+GUI_Filter_TabB6                   "Laplace"
+
+GUI_Filter_TabB6a                  "Laplace Filter\n"
+                                   " 0 -1  0\n"
+                                   "-1  4 -1   * V + O\n"
+                                   " 0 -1  0"
+
+GUI_Filter_TabB7                   "Sobel"
+
+GUI_Filter_TabB7a                  "Sobel Filter\n"
+                                   " a  b  c\n"
+                                   " d  e  f     (  | (a+2b+c)-(g+2h+i) |\n"
+                                   " g  h  i      + | (a+2d+g)-(c+2f+i) | ) * V"
+
+GUI_Filter_TabB8                   "Vers."
+
+GUI_Filter_TabB8a                  "Verstärkung\nMultiplikator des Filterergebnisses"
+
+GUI_Filter_TabB9                   "Offs."
+
+GUI_Filter_TabB9a                  "Offset\nAddition des Filterergebnisses"
+
+GUI_Filter_TabB10                  "Abs."
+
+GUI_Filter_TabB10a                 "Wenn gesetzt, hat der Kantenfilter\n"
+                                   "ein absolutes Ergebnis"
+
+GUI_Filter_TabB11                  "Canny"
+
+GUI_Filter_TabB11a                 "Canny edge Filter"
+
+GUI_Filter_TabB12                  "Vers."
+
+GUI_Filter_TabB12a                 "Verstärkung\nMultiplikator des Filterergebnisses"
+
+GUI_Filter_TabB13                  "Sig."
+
+GUI_Filter_TabB13a                 "Sigma for gaussian filter\nRange 0.0 ... 8.0, 0 is off"
+
+GUI_Filter_TabB14                  "Mode"
+
+GUI_Filter_TabB14a                 "Result mode\n"
+                                   "0 = Gefälle/Neigung der Kanten\n"
+                                   "1 = Wie 0 und Maxima bereinigen\n"
+                                   "2 = Richtung der Kanten\n"
+
+GUI_Filter_TabC1                   "Morphologie"
+
+GUI_Filter_TabC2                   "Erosion"
+
+GUI_Filter_TabC2a                  "Erosion.\n"
+                                   "Dunkelstes Pixel einer 3x3-Umgebung."
+
+GUI_Filter_TabC3                   "Dilatation"
+
+GUI_Filter_TabC3a                  "Dilatation.\n"
+                                   "Hellstes Pixel einer 3x3-Umgebung."
+
+GUI_Filter_TabC4                   "Median"
+
+GUI_Filter_TabC4a                  "Median.\n"
+                                   "Mittleres Pixel einer 3x3-Nachbarschaft."
+
+GUI_Filter_TabC5                   "Schließung"
+
+GUI_Filter_TabC5a                  "Schließung.\n"
+                                   "Dilatation gefolgt von einer Erosion."
+
+GUI_Filter_TabC6                   "Öffnung"
+
+GUI_Filter_TabC6a                  "Öffnung.\n"
+                                   "Erosion gefolgt von einer Dilatation."
+
+GUI_Filter_TabC7                   "Gradient"
+
+GUI_Filter_TabC7a                  "Gradient.\n"
+                                   "Differenz Hellstes - Dunkelstes\n"
+                                   "Pixel einer 3x3-Umgebung."
+
+GUI_Filter_TabC8                   "Anzahl"
+
+GUI_Filter_TabC8a                  "Anzahl der Filterdurchgänge.\n"
+                                   "Bei 0 wird keine Filterung durchgeführt."
+
+GUI_Filter_TabD1                   "Kontur"
+
+GUI_Filter_TabD2                   "Kontur"
+
+GUI_Filter_TabD2a                  "Kontur, Wert 255 für Kontur, 0 für Ebene.\n"
+                                   "Setze, wenn ein (|Nachbar - zentral| > Ebenen-Schwelle)."
+
+GUI_Filter_TabD3                   "Ebene"
+
+GUI_Filter_TabD3a                  "Kontur, Wert 0 für Kontur, 255 für Ebene.\n"
+                                   "Setze, wenn alle (|Nachbar - zentral| <= Ebenen-Schwelle)."
+
+GUI_Filter_TabD4                   "TP Ebene"
+
+GUI_Filter_TabD4a                  "Tiefpass Ebene. Mittelwert 3x3-Nachbarschaft\n"
+                                   "wenn alle (|Nachbar - zentral| <= Ebenen-Schwelle)."
+
+GUI_Filter_TabD5                   "Ebenen-Schwelle"
+
+GUI_Filter_TabD5a                  "Ebenen-Schwelle.\n"
+                                   "Trennt Konturen von der Ebene."
+
+GUI_Filter_TabE1                   "Scharf"
+
+GUI_Filter_TabE2                   "Bildschärfe"
+
+GUI_Filter_TabE2a                  "Durch die Bildschärfe erhalten Ihre Bilder ein klares,\n"
+                                   "fokussiertes Aussehen, bei dem Objekte deutlich hervortreten.\n"
+                                   "Dies verleiht dem Bild Tiefe und Schärfe. Verschwommene, unklare\n"
+                                   "oder leicht unscharfe Bilder können klarer dargestellt werden."
+
+GUI_Filter_TabE3                   "Radius"
+
+GUI_Filter_TabE3a                  "Die Anzahl der Pixel, die um jede\n"
+                                   "Kante herum berücksichtigt werden."
+
+GUI_Filter_TabE4                   "Stärke [%]"
+
+GUI_Filter_TabE4a                  "Der Betrag, um den der Kontrast\n"
+                                   "der Pixel im Bild erhöht wird [%]."
+
+GUI_Filter_TabE5                   "Differenz"
+
+GUI_Filter_TabE5a                  "Der erforderliche Helligkeitsunterschied zwischen\n"
+                                   "benachbarten Pixeln, damit diese angepasst werden."
+
+;
+;
+; End Of File

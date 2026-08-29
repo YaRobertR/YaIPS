@@ -1,0 +1,265 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Main.cpp
+;-------------------------------------------------------
+;
+; 123 entries
+;
+GUI_Main_Menu_Color_Copy           "Copy color to clipboard"
+
+GUI_Main_Menu_Color_Paste          "Get color from clipboard"
+
+GUI_Main_Menu_Color_Histo          "Get color from histogram"
+
+GUI_Main_Disp_Dist_Pix             "%d Pixel"
+
+GUI_Main_Disp_Dist                 "%.3f %s/%d Pixel"
+
+GUI_Main_Info_ISize1a              "%d x %d %s, %d bytes/pixel"
+
+GUI_Main_Info_ISize1b              "%d x %d %s, %s"
+
+GUI_Main_Info_CuVal1               "Pixel value under the mouse pointer."
+
+GUI_Main_Info_CuVal2               "Position: %d/%d"
+
+GUI_Main_Info_CuVal3               "Position:"
+
+GUI_Main_Info_Histo2               "Histogramm"
+
+GUI_Main_Info_AOI                  "AOI: %d-%d/%d-%d  %d*%d"
+
+GUI_Main_Info_ColSum1              "Column sum"
+
+GUI_Main_Info_RowSum1              "Row sum"
+
+GUI_Main_Info_DiVer1               "Y / vertical distance"
+
+GUI_Main_Info_Dist1                "Ruler: %.02f * %.02f %s"
+
+GUI_Main_Info_Dist2                "Area: %.02f %s²"
+
+GUI_Main_Info_DiHor1               "X / horizontal distance"
+
+GUI_Main_About_1                   "About %s"
+
+GUI_Main_About_2                   "%s\nVersion %s  %s"
+
+GUI_Main_About_3                   "Credits:"
+
+GUI_Main_Save5                     "Image.png"
+
+GUI_Main_Save6                     "Display.png"
+
+GUI_Main_Save7                     "Info.png"
+
+GUI_Main_Save8                     "Screenshot.png"
+
+GUI_Main_Save2                     "Save image"
+
+GUI_Main_Menu1a                    "File/&Open image"
+
+GUI_Main_Menu1b                    "File/&Save image"
+
+GUI_Main_Menu1c                    "File/Save &display"
+
+GUI_Main_Menu1d                    "File/Save &Info area"
+
+GUI_Main_Menu1e                    "File/Save screens&hot"
+
+GUI_Main_Menu1f                    "File/Load presets"
+
+GUI_Main_Menu1g                    "File/Save presets"
+
+GUI_Main_Menu1m                    "File/TEST show all"
+
+GUI_Main_Menu1n                    "File/TEST hide all"
+
+GUI_Main_Menu1o                    "File/TEST iconize all"
+
+GUI_Main_Menu1p                    "File/TEST hide/show all"
+
+GUI_Main_Menu1q                    "File/TEST redraw all"
+
+GUI_Main_Menu1u                    "File/S&ettings ..."
+
+GUI_Main_Menu1v                    "File/&Calibration ..."
+
+GUI_Main_Menu1w                    "File/Custom colors ..."
+
+GUI_Main_Menu1z                    "File/&Quit"
+
+GUI_Main_Menu2a                    "Edit/&Paste image"
+
+GUI_Main_Menu2b                    "Edit/&Copy image"
+
+GUI_Main_Menu2c                    "Edit/Copy &display"
+
+GUI_Main_Menu2d                    "Edit/Copy &Info area"
+
+GUI_Main_Menu2e                    "Edit/Copy screens&hot"
+
+GUI_Main_Menu2h                    "Edit/&Reset display"
+
+GUI_Main_Menu2i                    "Edit/Toggle &full screen"
+
+GUI_Main_Menu3In1                  "Image/Source/&Camera"
+
+GUI_Main_Menu3In2                  "Image/Source/&New image"
+
+GUI_Main_Menu3In3                  "Image/Source/&Image viewer"
+
+GUI_Main_Menu3In4                  "Image/Source/Video viewer"
+
+GUI_Main_Menu3Pr1                  "Image/Processing/Filter"
+
+GUI_Main_Menu3Pr2                  "Image/Processing/Color"
+
+GUI_Main_Menu3Pr3                  "Image/Processing/Geometry"
+
+GUI_Main_Menu3Pr4                  "Image/Processing/Calculation"
+
+GUI_Main_Menu3Pr5                  "Image/Processing/Correlation"
+
+GUI_Main_Menu3Pr6                  "Image/Processing/Objects"
+
+GUI_Main_Menu3Pr7                  "Image/Processing/Other"
+
+GUI_Main_Menu3Ou1                  "Image/Output/Video writer"
+
+GUI_Main_Menu3Ip1                  "Image/Inspection/Reference image"
+
+GUI_Main_Menu3Ip2                  "Image/Inspection/Color testing"
+
+GUI_Main_Menu3Ip3                  "Image/Inspection/Position correction"
+
+GUI_Main_Menu3Ip4                  "Image/Inspection/Edges"
+
+GUI_Main_Menu3Ip5                  "Image/Inspection/Compare"
+
+GUI_Main_Menu3Ot1                  "Image/Other/Overlay"
+
+GUI_Main_Menu4a                    "Help/&About YaIPS ..."
+
+GUI_Main_Size1                     "Magnification"
+
+GUI_Main_Size2                     "Auto"
+
+GUI_Main_Size2h                    "Automatically adjust magnification"
+
+GUI_Main_Size3                     "1"
+
+GUI_Main_Size3h                    "Magnification 1:1"
+
+GUI_Main_Size4                     "2"
+
+GUI_Main_Size4h                    "Image 2 * enlarged"
+
+GUI_Main_Size5                     "4"
+
+GUI_Main_Size5h                    "Image 4 * enlarged"
+
+GUI_Main_Size6                     "8"
+
+GUI_Main_Size6h                    "Image 8 * enlarged"
+
+GUI_Main_Size7                     "16"
+
+GUI_Main_Size7h                    "Image 16 * enlarged"
+
+GUI_Main_Over1                     "Overlay"
+
+GUI_Main_Over2                     "Off"
+
+GUI_Main_Over2h                    "No overlay"
+
+GUI_Main_Over3                     "Crosshair"
+
+GUI_Main_Over3h                    "Overlay a crosshair on the image"
+
+GUI_Main_Over4                     "# 1"
+
+GUI_Main_Over4h                    "Overlay 3 rectangles on the image"
+
+GUI_Main_Over5                     "# 2"
+
+GUI_Main_Over5h                    "Overlay the image with a grid\n"
+                                   "with a spacing of 50 pixels"
+
+GUI_Main_Over6h                    "Changes the color of the overlay"
+
+GUI_Main_ColChan3h                 "Black and white"
+
+GUI_Main_ColPal1                   "Color palette"
+
+GUI_Main_ColPal3h                  "Invert color, black and white, or color palette image"
+
+GUI_Main_ColPal4                   "1/2"
+
+GUI_Main_ColPal4h                  "Reduces the brightness of the image by half.\n"
+                                   "Overlaid graphics are then more visible."
+
+GUI_Main_3D1                       "3D visualization"
+
+GUI_Main_3D2                       "Active"
+
+GUI_Main_3D2h                      "Display brightness as a height map"
+
+GUI_Main_3D3                       "Lines"
+
+GUI_Main_3D3h                      "Draw grid lines"
+
+GUI_Main_3D4                       "Inv."
+
+GUI_Main_3D4h                      "Inverted gray/height values."
+
+GUI_Main_3D5                       "Slope"
+
+GUI_Main_3D5h                      "Slope of the height map"
+
+GUI_Main_3D6h                      "Viewing direction toward the height map"
+
+GUI_Main_InfMeas1                  "Info/Measurement"
+
+GUI_Main_InfMeas2h                 "Support for teach mode.\n"
+                                   "In some tool windows, AOIs can be moved/changed with the\n"
+                                   "mouse in teach mode.\n"
+                                   "These windows have a button with a pencil icon.\n"
+                                   "If such a tool window is selected for display in the big window,\n"
+                                   "these changes can also be made with the mouse in\n"
+                                   "the big window.\n"
+                                   "This function is available when this radio button is selected\n"
+                                   "and the pencil icon is green."
+
+GUI_Main_InfMeas3h                 "Visualization of the color palette\nLUT = Lookup table"
+
+GUI_Main_InfMeas4h                 "Display pixel value under mouse pointer"
+
+GUI_Main_InfMeas5a                 "H All"
+
+GUI_Main_InfMeas5ah                "Histogram of pixel values in the image"
+
+GUI_Main_InfMeas5b                 "H AOI"
+
+GUI_Main_InfMeas5bh                "Histogram of pixel values in a rectangle/AOI"
+
+GUI_Main_InfMeas6                  "Su |"
+
+GUI_Main_InfMeas6h                 "Profile of column sum in a rectangle"
+
+GUI_Main_InfMeas7                  "Su -"
+
+GUI_Main_InfMeas7h                 "Profile of row sum in a rectangle"
+
+GUI_Main_InfMeas8                  "Di |"
+
+GUI_Main_InfMeas8h                 "Measures vertical distance"
+
+GUI_Main_InfMeas9                  "Di -"
+
+GUI_Main_InfMeas9h                 "Measures horizontal distance"
+
+GUI_Main_InfBox1                   "Info"
+
+;
+;
+; End Of File

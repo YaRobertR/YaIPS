@@ -1,0 +1,11 @@
+;-------------------------------------------------------
+; YaIPS_RGB_BoxNxN.cpp
+;-------------------------------------------------------
+;
+; 2 entries
+;
+RGB_Filter_Box1                    "Width %d >= filter %d"
+RGB_Filter_Box2                    "Height %d >= filter %d"
+;
+;
+; End Of File

@@ -1,0 +1,22 @@
+;-------------------------------------------------------
+; YaIPS_Utils_PSearchAOI.cpp
+;-------------------------------------------------------
+;
+; 13 entries
+;
+Utils_PSearch_CheckErr0            "OK"
+Utils_PSearch_CheckErr1            "Touch border!"
+Utils_PSearch_CheckErr2            "Bad pattern!"
+Utils_PSearch_CheckErr3            "Bad contrast!"
+Utils_PSearch_CheckErr4            "Not unique!"
+Utils_PSearch_CheckErr5            "Not usable!"
+Utils_PSearch_CheckErr6            "AOI too big!"
+Utils_PSearch_InspErr1             "Pos. Error!"
+Utils_PSearch_InspErr2             "Search range!"
+Utils_PSearch_InspErr3             "Touch border!"
+Utils_PSearch_InspErr4             "Positions!"
+Utils_PSearch_InspErr5             "No teach!"
+Utils_PSearch_InspErr6             "Error!"
+;
+;
+; End Of File

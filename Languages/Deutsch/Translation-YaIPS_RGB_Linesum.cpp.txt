@@ -1,0 +1,13 @@
+;-------------------------------------------------------
+; YaIPS_RGB_Linesum.cpp
+;-------------------------------------------------------
+;
+; 4 entries
+;
+RGB_Geo_Linesum1                   "Line touching image border"
+RGB_Geo_Linesum2                   "Startpoint and endpoint are equal"
+RGB_Geo_Linesum3                   "# of samples is out of range (0 or 2..MAXINT16)"
+RGB_Geo_Linesum4                   "Pixel outside image (width is too large)"
+;
+;
+; End Of File

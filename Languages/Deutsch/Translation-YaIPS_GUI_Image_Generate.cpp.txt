@@ -1,0 +1,146 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Image_Generate.cpp
+;-------------------------------------------------------
+;
+; 62 entries
+;
+GUI_GenImage_Title                 "Neues Bild"
+
+GUI_GenImage_TabA1                 "Größe"
+
+GUI_GenImage_TabA1a                "Bildgröße"
+
+GUI_GenImage_TabA2                 "Aktuelle Größe und Pixeltiefe"
+
+GUI_GenImage_TabA10                "Größe und Pixeltiefe ändern"
+
+GUI_GenImage_TabA11                "Breite"
+
+GUI_GenImage_TabA11a               "Breite für Größenänderung."
+
+GUI_GenImage_TabA11b               "Seitenverhältnis beibehalten."
+
+GUI_GenImage_TabA12                "Höhe"
+
+GUI_GenImage_TabA12a               "Höhe für Größenänderung."
+
+GUI_GenImage_TabA13a               "Im Kalibrierungsdialog ausgewählte Einheit.\n"
+                                   "Bei voreingestellten Größen, die nicht in Pixeln\n"
+                                   "angegeben sind, sollten im Kalibrierungsdialog\n"
+                                   "keine Pixelwerte eingestellt sein!"
+
+GUI_GenImage_TabA16                "Resultierende Größe [Pixel]"
+
+GUI_GenImage_TabA16a               "Zeigt die resultierende Größe der\n"
+                                   "obigen Einstellungen in Pixel.\n"
+                                   "HINWEIS: Ist nur lesbar."
+
+GUI_GenImage_TabA17                "Pixeltiefe"
+
+GUI_GenImage_TabA17a               "Anzahl der Bytes pro Pixel:\n"
+                                   " 1 Schwarzweiß\n"
+                                   " 2 Schwarzweiß + Alphamaske\n"
+                                   " 3 RGB Farbe\n"
+                                   " 4 RGB Farbe + Alphamaske
+
+GUI_GenImage_TabA18                "Größen ..."
+
+GUI_GenImage_TabA18a               "Einige typische Größen"
+
+GUI_GenImage_TabA18b               "640 x 480"
+
+GUI_GenImage_TabA18c               "800 x 600"
+
+GUI_GenImage_TabA18d               "1024 x 768"
+
+GUI_GenImage_TabA18e               "1280 x 720 (HD)"
+
+GUI_GenImage_TabA18f               "1600 x 1200"
+
+GUI_GenImage_TabA18g               "1920 x 1080 (FHD)"
+
+GUI_GenImage_TabA18h               "3840 x 2160 (4K)"
+
+GUI_GenImage_TabA18DinA0           "DIN/DIN A0"
+
+GUI_GenImage_TabA18DinA1           "DIN/DIN A1"
+
+GUI_GenImage_TabA18DinA2           "DIN/DIN A2"
+
+GUI_GenImage_TabA18DinA3           "DIN/DIN A3"
+
+GUI_GenImage_TabA18DinA4           "DIN/DIN A4"
+
+GUI_GenImage_TabA18DinA5           "DIN/DIN A5"
+
+GUI_GenImage_TabA18DinA6           "DIN/DIN A6"
+
+GUI_GenImage_TabA20                "Größe * 2"
+
+GUI_GenImage_TabA20a               "Verdoppelt die Bildgröße."
+
+GUI_GenImage_TabA21                "Größe / 2"
+
+GUI_GenImage_TabA21a               "Halbiert die Bildgröße."
+
+GUI_GenImage_TabA22                "Größe <->"
+
+GUI_GenImage_TabA22a               "Tauscht Höhe und Breite."
+
+GUI_GenImage_TabA23a               "Einstellung für neue Größe anwenden."
+
+GUI_GenImage_TabB1                 "Hintergr."
+
+GUI_GenImage_TabBa                 "Hintergrund des neuen Bildes"
+
+GUI_GenImage_TabB2a_0              "Hintergrund ist farbig.\n"
+                                   "Für jede Ecke des Hintergrunds kann\n"
+                                   "eine eigene Farbe festgelegt werden."
+
+GUI_GenImage_TabB10                "Links oben"
+
+GUI_GenImage_TabB10a               "Farbe für den Bildhintergrund der linken oberen Ecke"
+
+GUI_GenImage_TabB11a               "Aktiviere um die Farbe für die benannte Ecke zu verwenden."
+
+GUI_GenImage_TabB12                "Rechts oben"
+
+GUI_GenImage_TabB12a               "Farbe für den Bildhintergrund in der rechten oberen Ecke"
+
+GUI_GenImage_TabB13                "Links unten"
+
+GUI_GenImage_TabB13a               "Farbe für den Bildhintergrund der linken unteren Ecke"
+
+GUI_GenImage_TabB14                "Unten rechts"
+
+GUI_GenImage_TabB14a               "Farbe für den Bildhintergrund in der rechten unteren Ecke"
+
+GUI_Overlay_TabA2_1                "Bilddatei"
+
+GUI_GenImage_TabB2a_1              "Hintergrund ist eine Bilddatei."
+
+GUI_Overlay_TabB20a                "Name der geladenen Bilddatei.\n"
+                                   "HINWEIS: Ist nur lesbar."
+
+GUI_Overlay_TabB21a                "Laden einer Bilddatei"
+
+GUI_GenImage_TabC1                 "Alpha"
+
+GUI_GenImage_TabC1a                "Alphakanal"
+
+GUI_GenImage_TabC3                 "Form:"
+
+GUI_GenImage_TabC3a                "Wählen Form für den Alphakanal."
+
+GUI_GenImage_TabC4                 "Formveränderung"
+
+GUI_GenImage_TabC4a                "Veränderung der Form."
+
+GUI_GenImage_TabC10                "Alpha-Multiplikator für Form"
+
+GUI_GenImage_TabC10a               " Linke Seite = unsichtbar"
+                                   "Rechte Seite = keine Alpha-Änderung"
+
+;
+;
+; End Of File

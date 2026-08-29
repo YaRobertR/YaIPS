@@ -1,0 +1,59 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Settings.cpp
+;-------------------------------------------------------
+;
+; 19 entries
+;
+GUI_Settings_NeedRestart           "Es wurden Einstellungen geändert, die einen\nNeustart der Anwendung erfordern!"
+
+GUI_Settings_TabA1a                "Allgemeine Einstellungen\n"
+
+GUI_Settings_TabA2                 "Sprache"
+
+GUI_Settings_TabA2a                "Auswahl Sprache für die Oberfläche.\n"
+                                   "ACHTUNG: Anwendung beenden und neu starten!"
+
+GUI_Settings_TabA3                 "Fenster wiederherstellen"
+
+GUI_Settings_TabA3a                "Nach dem Start der Anwendung werden die Fenster\n"
+                                   "der letzten Sitzung erneut geöffnet."
+
+GUI_Settings_TabA4                 "Breite Linien für Grafiken"
+
+GUI_Settings_TabA4a                "Einige Grafiken verwenden breitere Linien zur\n"
+                                   "besseren Sichtbarkeit."
+
+GUI_Settings_TabA5                 "Einfügen konvertiert Farbe -> SW"
+
+GUI_Settings_TabA5a                "Das Einfügen eines Bildes mit 'Strg+V' unterstüzt die\n"
+                                   "Konvertierung von Farbbildern in Schwarzweißbilder.\n"
+                                   "Dazu müssen die RGB-Komponenten aller Pixel\n"
+                                   "die gleichen Werte aufweisen."
+
+GUI_Settings_TabA10                "JPEG Qualität"
+
+GUI_Settings_TabA10a               "Wird zum Schreiben von JPEG-Bilddateien verwendet.\n"
+                                   "Die Qualität liegt zwischen 10 und 100.\n"
+                                   "Höhere Qualität sieht besser aus,\n"
+                                   "führt aber zu größeren Bilddateien."
+
+GUI_Settings_TabB1                 "Farben"
+
+GUI_Settings_TabB2                 "Hintergrund Bilder"
+
+GUI_Settings_TabB2a                "Hintergrund von Bildanzeigefenstern.\n"
+                                   "ACHTUNG: Anwendung beenden und neu starten!"
+
+GUI_Settings_TabB3                 "Rahmenfarbe"
+
+GUI_Settings_TabB3a                "Farben der Rahmen für einige Grafiken.\n"
+                                   "Spalten-/Zeilensumme, ..."
+
+GUI_Settings_TabB4                 "Hintergrund der rechten Seite"
+
+GUI_Settings_TabB4a                "Hintergrund des rechten Bereichs des Hauptfensters.\n"
+                                   "Dieser Bereich dient zur Platzierung von Werkzeugfenstern."
+
+;
+;
+; End Of File

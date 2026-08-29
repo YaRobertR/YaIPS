@@ -1,0 +1,118 @@
+;-------------------------------------------------------
+; YaIPS_GUI_VideoWrite.cpp
+;-------------------------------------------------------
+;
+; 42 entries
+;
+GUI_VideoW_Title                   "Video erstellen"
+
+GUI_VideoW_Save1                   "Video"
+
+GUI_VideoW_Save2                   "Video speichern"
+
+GUI_VideoW_ResFileSize             " %ld [Mbytes / Stunde]"
+
+GUI_VideoW_Par_Group1              "Einstellungen neues Video"
+
+GUI_VideoW_Par_VideoWidtha         "Breite für neue Videos.\n"
+                                   "Bereich: 240 ... 2160 Pixel."
+
+GUI_VideoW_Par_VideoHeighta        "Höhe für neue Videos.\n"
+                                   "Bereich: 240 ... 2160 Pixel."
+
+GUI_VideoW_Par_VideoSizes          "Größen ..."
+
+GUI_VideoW_Par_VideoSizesa         "Einige typische Größen"
+
+GUI_VideoW_VideoSizes11            "16:9/640 x 360"
+
+GUI_VideoW_VideoSizes12            "16:9/854 x 480"
+
+GUI_VideoW_VideoSizes13            "16:9/1024 x 576"
+
+GUI_VideoW_VideoSizes14            "16:9/1280 x 720 (HD)"
+
+GUI_VideoW_VideoSizes15            "16:9/1920 x 1080 (FHD)"
+
+GUI_VideoW_VideoSizes21            "9:16/720 x 1280"
+
+GUI_VideoW_VideoSizes22            "9:16/1080 x 1920"
+
+GUI_VideoW_VideoSizes31            "1:1/1080 x 1080"
+
+GUI_VideoW_Par_VideoFPS            "Bildrate"
+
+GUI_VideoW_Par_VideoFPSa           "Bilder pro Sekunde für neue Videos.\n"
+                                   "Bereich: 24 ... 60."
+
+GUI_VideoW_Par_VideoQuality        "Qualität"
+
+GUI_VideoW_Par_VideoQualitya       "Verbesserung der Videoqualität.\n"
+                                   "Höhere Werte führen zu einer besseren\n"
+                                   "Detaildarstellung und weniger Artefakten.\n"
+                                   "Höhere Werte --> größere Dateien.\n"
+                                   "Bereich: 0.5 ... 2.0\n"
+                                   "Empfohlener Wert: 1.0"
+
+GUI_VideoW_Par_VideoCodec          "Codierung"
+
+GUI_VideoW_Par_VideoCodeca         "Codierungen für Datenkomprimierung:\n"
+                                   " H.264 / AVC (beste Kompatibilität)\n"
+                                   " H.265 / HEVC (bessere Komprimierung, geringere Kompatibilität)"
+
+GUI_VideoW_VideoCodec1             "H.264"
+
+GUI_VideoW_VideoCodec2             "H.265"
+
+GUI_VideoW_Par_FileSize            "Größe der erzeugten Datei"
+
+GUI_VideoW_Par_FileSizea           "Zeigt die geschätzte Dateigröße\n"
+                                   "in Megabyte pro Stunde.\n"
+                                   "HINWEIS: Ist nur lesbar."
+
+GUI_VideoW_Par_Group2              "Zeiten [Sekunden]"
+
+GUI_VideoW_Par_TimeTransition      "Übergang"
+
+GUI_VideoW_Par_TimeTransitiona     "Wenn sich ein Bild ändert,\n"
+                                   "wird ein Übergang erzeugt.\n"
+                                   "Bereich: 0 ... 15 Sekunden."
+
+GUI_VideoW_Par_TimeAddImage        "Bild hinzufügen"
+
+GUI_VideoW_Par_TimeAddImagea       "Beim Hinzufügen eines Bildes wird ein\n"
+                                   "Videoclip der angegebenen Länge angehängt.\n"
+                                   "Bereich: 0 ... 60 Sekunden."
+
+GUI_VideoW_Par_Group3              "Sonstiges"
+
+GUI_VideoW_Par_BGND_Color          "Hintergrund"
+
+GUI_VideoW_Par_BGND_Colora         "Farbe für den Hintergrund.\n"
+                                   "Der Hintergrund ist sichtbar, wenn Bilder verwendet\n"
+                                   "werden, deren Seitenverhältnis sich von dem des Videos\n"
+                                   "unterscheidet. In diesem Fall erscheinen oben und\n"
+                                   "unten sowie links und rechts Ränder in dieser Farbe."
+
+GUI_VideoW_StartStop               "Zwischen Aufnahme starten und stoppen umschalten.\n"
+                                   "Shortcut: Eingabetaste"
+
+GUI_VideoW_RecordMode              "Aufnahmemodus 'Bild' / 'Video' umschalten.\n"
+                                   "Für 'Bild' wird für 'Bild hinzufügen' ein neues Bild hinzugefügt.\n"
+                                   "Bei 'Video' wird nur das neue Bild hinzugefügt.\n"
+                                   "Shortcut: M, links oder rechts"
+
+GUI_VideoW_RecordPause             "Zwischen 'Aufnahme fortsetzen' und 'Pause' umschalten.\n"
+                                   "Shortcut: Leertaste"
+
+GUI_VideoW_VideoPaused             "  Pause"
+
+GUI_VideoW_ErrNoVideWrite          "ERROR: NO CCAP Video writer"
+
+GUI_VideoW_RecordModeImg           "Bild"
+
+GUI_VideoW_RecordModeVideo         "Video"
+
+;
+;
+; End Of File

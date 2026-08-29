@@ -1,0 +1,33 @@
+;-------------------------------------------------------
+; YaIPS_RGB_ShapeGen.cpp
+;-------------------------------------------------------
+;
+; 24 entries
+;
+ShapeType_NONE                     "---"
+ShapeType_MA_RECTANGLE             "Rechteck"
+ShapeType_MA_ELLIPSE               "Ellipse"
+ShapeType_BS_RECTANGLE             "Grundformen/Rechteck"
+ShapeType_BS_SQUARE                "Grundformen/Quadrat"
+ShapeType_BS_ELLIPSE               "Grundformen/Ellipse"
+ShapeType_BS_CIRCLE                "Grundformen/Kreis"
+ShapeType_BS_TRIANGLE              "Grundformen/Dreieck"
+ShapeType_BS_RECT_ROUNDED          "Grundformen/Abgerundetes Rechteck"
+ShapeType_BS_SQUAE_ROUNDED         "Grundformen/Abgerundetes Quadrat"
+ShapeType_BS_PARALLEOGRAM          "Grundformen/Parallelogramm"
+ShapeType_BS_TRAPEZ                "Grundformen/Trapez"
+ShapeType_BS_DIAMOND               "Grundformen/Diamant"
+ShapeType_BS_HEART                 "Grundformen/Herz"
+ShapeType_ARROW_LEFT               "Pfeil/Pfeil links"
+ShapeType_ARROW_RIGHT              "Pfeil/Pfeil rechts"
+ShapeType_ARROW_UP                 "Pfeil/Pfeil oben"
+ShapeType_ARROW_DOWN               "Pfeil/Pfeil unten"
+ShapeType_STAR_4                   "Stern/Stern mit 4 Zacken"
+ShapeType_STAR_5                   "Stern/Stern mit 5 Zacken"
+ShapeType_STAR_6                   "Stern/Stern mit 6 Zacken"
+ShapeType_STAR_8                   "Stern/Stern mit 8 Zacken"
+ShapeType_STAR_12                  "Stern/Stern mit 12 Zacken"
+ShapeType_STAR_24                  "Stern/Stern mit 24 Zacken"
+;
+;
+; End Of File

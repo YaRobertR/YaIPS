@@ -1,0 +1,18 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Image_File.cpp
+;-------------------------------------------------------
+;
+; 9 entries
+;
+GUI_Image_Title                    "Bildbetrachter"
+GUI_Image_Tools2a                  "Bild von Datei laden."
+GUI_Image_Tools3a                  "Bild aus großem Fenster kopieren."
+GUI_Image_Tools4a                  "Bild speichern."
+GUI_Image_Tools5a                  "Bild löschen."
+GUI_Image_Tools6a                  "Vorheriges Bild laden."
+GUI_Image_Tools7a                  "Nächstes Bild laden."
+GUI_Image_Save5                    "Bild.png"
+GUI_Image_Save6                    "Bild speichern"
+;
+;
+; End Of File

@@ -1,0 +1,77 @@
+;-------------------------------------------------------
+; YaIPS_GUI_CamSettings.cpp
+;-------------------------------------------------------
+;
+; 27 entries
+;
+GUI_CamSettings_TabA0              "Kamera Betriebsarten"
+
+GUI_CamSettings_TabA1              "Fläche"
+
+GUI_CamSettings_TabA2              "Quadratischer Ausschnitt"
+
+GUI_CamSettings_TabA2a             "Das Kamerabild wird quadratisch zugeschnitten."
+
+GUI_CamSettings_TabA3a             "Scwarz-Weiß"
+
+GUI_CamSettings_TabA4              "Erste Kamera ignorieren"
+
+GUI_CamSettings_TabA4a             "Bei der Kameradetection wird die erste Kamera\n"
+                                   "übergangen. Dies kann bei Laptaps mit eingebauter Kamera\n"
+                                   "nützlich sein. Diese Kamera wird dann übergangen."
+
+GUI_CamSettings_TabA5              "Start mit Daueraufnahme an"
+
+GUI_CamSettings_TabA5a             "Nach dem Öffnen des Dialogs wird\n"
+                                   "die Daueraufnahme aktiviert."
+
+GUI_CamSettings_TabB1              "Zeilen"
+
+GUI_CamSettings_TabB3a             "Aufnahmebereich anzeigen und verändern.\n"
+                                   "Der Bereich kann mit der Maus verstellt werden."
+
+GUI_CamSettings_TabB2              "# Zeilen Aufnahme"
+
+GUI_CamSettings_TabB2a             "Anzahl der aufzunehmenden Zeilen\n"
+                                   "bzw. Höhe des aufgenommenen Bildes."
+
+GUI_CamSettings_TabB4              "Zeilen Aufnahmebereich"
+
+GUI_CamSettings_TabB4a             "Diese Anzahl an Zeilen der Flächenkamera\n"
+                                   "werden zu einer Aufnahmezeile zusammengefasst.\n"
+                                   "Die Zeilen liegen mittig im Flächenbild."
+
+GUI_CamSettings_TabB5              "Zeilen Aktualisieren"
+
+GUI_CamSettings_TabB5a             "Nach dieser Anzahl aufgenommener Zeilen\n"
+                                   "wird die Bildanzeige aktualisiert.\n"
+                                   "Mit Wert 0 wird jede neue Zeile angezeigt."
+
+GUI_CamSettings_TabC1              "Höhe"
+
+GUI_CamSettings_TabC3a             "Aufnahmebereich anzeigen und verändern.\n"
+                                   "Der Bereich kann mit der Maus verstellt werden."
+
+GUI_CamSettings_TabC2              "# Zeilen Aufnahme"
+
+GUI_CamSettings_TabC2a             "Anzahl der aufzunehmenden Zeilen\n"
+                                   "bzw. Höhe des aufgenommenen Bildes."
+
+GUI_CamSettings_TabC4              "Aufnahmebereich oben"
+
+GUI_CamSettings_TabC4a             "Diese Zeile im Flächenkamerabild\n"
+                                   "entspricht der höchsten messbaren Höhe."
+
+GUI_CamSettings_TabC5              "Aufnahmebereich unten"
+
+GUI_CamSettings_TabC5a             "Diese Zeile im Flächenkamerabild\n"
+                                   "entspricht der niedrigsten messbaren Höhe."
+
+GUI_CamSettings_TabC6              "Helligkeitsschwelle"
+
+GUI_CamSettings_TabC6a             "Zur Ermittlung der Höhe wird der hellste Punkt einer Spalte herangezogen.\n"
+                                   "Die Helligkeit muss mindestens über diesem Schwellenwert liegen."
+
+;
+;
+; End Of File

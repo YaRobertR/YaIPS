@@ -1,0 +1,24 @@
+// Default custom colors.txt.txt
+//
+// A YaIPS custom color file
+//
+//    R   G   B Color name
+ 1: 255   0   0 Red
+ 2:   0 255   0 Green
+ 3:   0   0 255 Blue
+ 4: 255 255   0 Yellow
+ 5:   0 255 255 Cyan
+ 6: 255   0 255 Magenta
+ 7: 255 255 255 White
+ 8:   0   0   0 Black
+ 9: 128   0   0 Dark red
+10:   0 128   0 Dark green
+11:   0   0 128 Dark blue
+12: 128 128   0 Dark yellow
+13:   0 128 128 Dark cyan
+14: 128   0 128 Dark magenta
+15: 170 170 170 Light gray
+16:  85  85  85 Dark gray
+//
+// End of file
+//

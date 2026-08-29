@@ -1,0 +1,65 @@
+;-------------------------------------------------------
+; YaIPS_GUI_InspCompare.cpp
+;-------------------------------------------------------
+;
+; 24 entries
+;
+GUI_InspCompare_Title              "Vergleichen"
+
+GUI_InspCompare_TabAa              "AOI"
+
+GUI_InspCompare_TabA2a             "Position linken Kante AOI"
+
+GUI_InspCompare_TabA3a             "Position Oberkante AOI"
+
+GUI_InspCompare_TabA4              "B"
+
+GUI_InspCompare_TabA4a             "Breite der AOI"
+
+GUI_InspCompare_TabA6              "H"
+
+GUI_InspCompare_TabA5a             "Höhe der AOI"
+
+GUI_InspCompare_GroupB1            "Dunkel-Toleranz"
+
+GUI_InspCompare_GroupB1a           "Bildpixel mit einer Helligkeitsabweichung, die größer als\n"
+                                   "diese Dunkel-Toleranz ist, werden als Fehlerpixel markiert."
+
+GUI_InspCompare_GroupB2            "Hell-Toleranz"
+
+GUI_InspCompare_GroupB2a           "Bildpixel mit einer Helligkeitsabweichung, die größer als\n"
+                                   "diese Hell-Toleranz ist, werden als Fehlerpixel markiert."
+
+GUI_InspCompare_GroupB3            "Schwelle kl. Flecken"
+
+GUI_InspCompare_GroupB3a           "Flächenschwelle für kleine Flecken.\n"
+                                   "Blobs mit einer Fläche, die größer als dieser Schwellenwert sind.\n"
+                                   "Darunter liegende Flecken (blau gefärbt) werden verworfen.\n"
+                                   "Ein Bereich, der größer als dieser und kleiner als 'Fehlerbereich\n"
+                                   "große Flecken' ist, ist ein mittlerer Fleck (grün gefärbt).\n"
+
+GUI_InspCompare_GroupB4            "Schwelle gr. Flecken"
+
+GUI_InspCompare_GroupB4a           "Flächenschwelle für große Flecken (rot gefärbt).\n"
+                                   "Die Fläche muss größer als dieser Schwelle sein.\n"
+                                   "Ein schlechtes Inspektionsergebnis liegt vor,\n"
+                                   "wenn ein oder mehrere große Flecken vorhanden sind."
+
+GUI_InspCompare_GroupB5            "Summe kleiner Flecken"
+
+GUI_InspCompare_GroupB5a           "Ein schlechtes Inspektionsergebnis liegt vor, wenn die\n"
+                                   "Gesamtsumme aller kleinen Flecken diese Schwelle überschreitet."
+
+GUI_InspCompare_GroupC1            "Abdunkeln"
+
+GUI_InspCompare_GroupC1a           "Wenn gesetzt, wird das Bild abgedunkelt.\n"
+                                   "Dadurch werden Fehlerkennzeichnungen besser sichtbar."
+
+GUI_InspCompare_GroupC2            "Fläche"
+
+GUI_InspCompare_GroupC2a           "Wenn gesetzt, Fläche kleiner\n"
+                                   "und großer Flecken anzeigen."
+
+;
+;
+; End Of File

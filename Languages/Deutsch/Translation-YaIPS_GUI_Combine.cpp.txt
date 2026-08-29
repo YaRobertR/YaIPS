@@ -1,0 +1,191 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Combine.cpp
+;-------------------------------------------------------
+;
+; 83 entries
+;
+GUI_Combine_Title                  "Berechnung"
+
+GUI_Combine_TabM2                  "Alpha-Ausgabe:"
+
+GUI_Combine_TabM3                  "NEIN"
+
+GUI_Combine_TabM3a                 "KEINE Alpha-Ausgabe.\n"
+                                   "Entfernt Alpha aus den Eingabebildern."
+
+GUI_Combine_TabM4                  "Behalte 1"
+
+GUI_Combine_TabM4a                 "1. Bild behalten.\n"
+                                   "Alphawert aus dem ersten Eingabebild beibehalten."
+
+GUI_Combine_TabM5                  "Behalte 2"
+
+GUI_Combine_TabM5a                 "2 Bild behalten.\n"
+                                   "Alpha des zweiten Eingabebildes behalten."
+
+GUI_Combine_TabM6                  "Min"
+
+GUI_Combine_TabM6a                 "Minimaler Alphawert.\n"
+                                   "Minimaler Alphawert aus beiden Bildern."
+
+GUI_Combine_TabM7                  "Max"
+
+GUI_Combine_TabM7a                 "Maximaler Alphawert.\n"
+                                   "Maximaler Alphawert aus beiden Bildern."
+
+GUI_Combine_TabA1                  "Einfach"
+
+GUI_Combine_TabA1a                 "Einfache Berechnungen"
+
+GUI_Combine_TabA2                  "+"
+
+GUI_Combine_TabA2a                 "Addition"
+
+GUI_Combine_TabA3                  "1-2"
+
+GUI_Combine_TabA3a                 "Subtraktion\n1. Eingang - 2. Eingang"
+
+GUI_Combine_TabA4                  "2-1"
+
+GUI_Combine_TabA4a                 "Subtraktion\n2. Eingang - 1. Eingang"
+
+GUI_Combine_TabA5                  "|-|"
+
+GUI_Combine_TabA5a                 "Absolutwert von Subtraktion"
+
+GUI_Combine_TabA6                  "*"
+
+GUI_Combine_TabA6a                 "Multiplikation"
+
+GUI_Combine_TabA7                  "Avg"
+
+GUI_Combine_TabA7a                 "Average/Durchschnitt der Pixelwerte"
+
+GUI_Combine_TabA8                  "Min"
+
+GUI_Combine_TabA8a                 "Kleinerer Wert"
+
+GUI_Combine_TabA9                  "Max"
+
+GUI_Combine_TabA9a                 "Größerer Wert"
+
+GUI_Combine_TabA10                 "=="
+
+GUI_Combine_TabA10a                "Bildvergleich: gleich"
+
+GUI_Combine_TabA11                 ">"
+
+GUI_Combine_TabA11a                "Bildvergleich: größer"
+
+GUI_Combine_TabA12                 "<"
+
+GUI_Combine_TabA12a                "Bildvergleich: kleiner"
+
+GUI_Combine_TabA13                 "UND"
+
+GUI_Combine_TabA13a                "Bitweises UND"
+
+GUI_Combine_TabA14                 "OR"
+
+GUI_Combine_TabA14a                "Bitweises ODER"
+
+GUI_Combine_TabA15                 "XOR"
+
+GUI_Combine_TabA15a                "Bitweises XOR"
+
+GUI_Combine_TabA16                 "!="
+
+GUI_Combine_TabA16a                "Bildvergleich: ungleich"
+
+GUI_Combine_TabA17                 "<="
+
+GUI_Combine_TabA17a                "Bildvergleich: kleiner gleich"
+
+GUI_Combine_TabA18                 ">="
+
+GUI_Combine_TabA18a                "Bildvergleich: größer gleich"
+
+GUI_Combine_TabA19                 "Vers."
+
+GUI_Combine_TabA19a                "Verstärkung\nMultiplikator"
+
+GUI_Combine_TabA20                 "Offs."
+
+GUI_Combine_TabA20a                "Offset\nAddition"
+
+GUI_Combine_TabB1                  "Mischen"
+
+GUI_Combine_TabB1a                 "Gewichtete Addition"
+
+GUI_Combine_TabB2                  "Gewichtete Addition"
+
+GUI_Combine_TabB2a                 "Eingänge mischen"
+
+GUI_Combine_TabB3                  "Vers. 1"
+
+GUI_Combine_TabB3a                 "1. Verstärkung\nMultiplikator\nfür 1. Eingangsbild"
+
+GUI_Combine_TabB4                  "Vers. 2"
+
+GUI_Combine_TabB4a                 "2. Verstärkung\nMultiplikator\nfür 2. Eingangsbild"
+
+GUI_Combine_TabB5                  "Offs."
+
+GUI_Combine_TabB5a                 "Offset\nAddition"
+
+GUI_Combine_TabB6                  "Überblenden"
+
+GUI_Combine_TabB6a                 "Überblendung zwischen zwei Bildern"
+
+GUI_Combine_TabB7                  "Mischen 1"
+
+GUI_Combine_TabB7a                 "Zwei Bilder anhand der Pixelwerte eines dritten Bildes mischen.\n"
+                                   "Hohe Pixelwerte geben das erste Eingabebild aus,\n"
+                                   "niedrige Pixelwerte geben das zweite Eingabebild aus.\n"
+                                   "Falls vorhanden, wird ein Alphakanal für die Überblendung verwendet."
+
+GUI_Combine_TabB8                  "Mischen 2"
+
+GUI_Combine_TabB8a                 "Zwei Bilder anhand der Pixelwerte eines dritten Bildes mischen.\n"
+                                   "Hohe Pixelwerte geben das zweite Eingabebild aus,\n"
+                                   "niedrige Pixelwerte geben das erste Eingabebild aus.\n"
+                                   "Falls vorhanden, wird ein Alphakanal für die Überblendung verwendet."
+
+GUI_Combine_TabB9a                 "Auswahl des Mischerbildes"
+
+GUI_Combine_TabC1                  "Shading"
+
+GUI_Combine_TabC1a                 "Kompensation von Schattierungs-/Helligkeitsunterschieden im Bild"
+
+GUI_Combine_TabC2                  "Shading"
+
+GUI_Combine_TabC2a                 "Kompensation von Schattierungs-/Helligkeitsunterschieden im Bild\n"
+                                   "Eingang 1 wird an Sollhelligkeit angeglichen.\n"
+                                   "Eingang 2 hält das Helligkeitsreferenzbild."
+
+GUI_Combine_TabC3                  "Sollhelligkeit"
+
+GUI_Combine_TabC3a                 "Sollhelligkeit.\n"
+                                   "Ungefähr hellste Stelle im Schattierungsbild."
+
+GUI_Combine_TabC4                  "Shading-Bild"
+
+GUI_Combine_TabC5a                 "Bild 'Eingang 2' wird zurückgesetzt.\n"
+                                   "'aktuell gemittelt' wird auf 0 gesetzt."
+
+GUI_Combine_TabC6                  "Mitteln"
+
+GUI_Combine_TabC6a                 "Bild 'Eingang 1' wird gewichted zum Bild 'Eingang 2' addiert\n"
+                                   "'aktuell gemittelt' wird um 1 erhöht."
+
+GUI_Combine_TabC7                  "aktuell gemittelt"
+
+GUI_Combine_TabC7a                 "Anzahl der gemittelten Bilder."
+
+GUI_Combine_Tools2a                "Auswählen 1. Eingabebildes"
+
+GUI_Combine_Tools3a                "Auswählen 2. Eingabebildes"
+
+;
+;
+; End Of File

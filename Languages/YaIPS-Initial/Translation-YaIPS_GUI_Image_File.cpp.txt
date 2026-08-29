@@ -1,0 +1,18 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Image_File.cpp
+;-------------------------------------------------------
+;
+; 9 entries
+;
+GUI_Image_Title                    "Image viewer"
+GUI_Image_Tools2a                  "Load image from file."
+GUI_Image_Tools3a                  "Copy image from large window."
+GUI_Image_Tools4a                  "Save image."
+GUI_Image_Tools5a                  "Delete image."
+GUI_Image_Tools6a                  "Load previous file."
+GUI_Image_Tools7a                  "Load next file."
+GUI_Image_Save5                    "Image.png"
+GUI_Image_Save6                    "Save image"
+;
+;
+; End Of File

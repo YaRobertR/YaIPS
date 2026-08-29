@@ -1,0 +1,122 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Other.cpp
+;-------------------------------------------------------
+;
+; 46 entries
+;
+GUI_Other_Title                    "Other"
+
+GUI_Other_TabA1                    "FIFO"
+
+GUI_Other_TabA2                    "FIFO"
+
+GUI_Other_TabA2a                   "Image FIFO (First In First Out)\n"
+                                   "This FIFO delays images."
+
+GUI_Other_TabA3                    "Delay"
+
+GUI_Other_TabA3a                   "Size of the FIFO or number of image delays.\n"
+                                   "0 = no delay."
+
+GUI_Other_TabB1                    "Chroma key"
+
+GUI_Other_TabB1a                   "Chroma key processing.\n"
+                                   "Generate an alpha mask by comparing\n"
+                                   "it to a specific color."
+
+GUI_Other_TabB3                    "Color"
+
+GUI_Other_TabB4a                   "Press to change the color"
+
+GUI_Other_TabB5                    "Hue T"
+
+GUI_Other_TabB5a                   "Hue threshold.\n"
+                                   "Default = 30."
+
+GUI_Other_TabB6                    "F"
+
+GUI_Other_TabB6a                   "Hue fade out range.\n"
+                                   "0 = off. Default = 10."
+
+GUI_Other_TabB7                    "Sat T"
+
+GUI_Other_TabB7a                   "Saturation threshold.\n"
+                                   "0 = off. Default = 20."
+
+GUI_Other_TabB8                    "F"
+
+GUI_Other_TabB8a                   "Saturation fade out range.\n"
+                                   "0 = off. Default = 10."
+
+GUI_Other_TabB9                    "IDa T"
+
+GUI_Other_TabB9a                   "Dark intensity threshold.\n"
+                                   "0 = off. Default = 20."
+
+GUI_Other_TabB10                   "F"
+
+GUI_Other_TabB10a                  "Dark intensity fade out range.\n"
+                                   "0 = off. Default = 10."
+
+GUI_Other_TabB11                   "IBr T"
+
+GUI_Other_TabB11a                  "Bright intensity threshold.\n"
+                                   "0 = off. Default = 10."
+
+GUI_Other_TabB12                   "F"
+
+GUI_Other_TabB12a                  "Bright intensity fade out range.\n"
+                                   "0 = off. Default = 10."
+
+GUI_Other_TabB21                   "Inp+A"
+
+GUI_Other_TabB21a                  "Output image is processed input\n"
+                                   "image + Alpha mask."
+
+GUI_Other_TabB22                   "Alpha"
+
+GUI_Other_TabB22a                  "Output image is alpha mask."
+
+GUI_Other_TabB23                   "Overl"
+
+GUI_Other_TabB23a                  "Overlay onto background.\n"
+                                   "Input image 1 is the overlay.\n"
+                                   "Input Image 2 is the background."
+
+GUI_Other_TabB24                   "Inp-A"
+
+GUI_Other_TabB24a                  "Output image is processed input\n"
+                                   "image (without alpha)."
+
+GUI_Other_TabB25                   "Color"
+
+GUI_Other_TabB25a                  "Output image is processed input\n"
+                                   "image alpha blended to color."
+
+GUI_Other_TabB26a                  "Color used for blending.\n"
+                                   "Press to change the color"
+
+GUI_Other_TabB30                   "Smoothstep"
+
+GUI_Other_TabB30a                  "Apply smoothstep processing.\n"
+                                   "Improves edge transitions."
+
+GUI_Other_TabB31                   "Despill Out"
+
+GUI_Other_TabB31a                  "Removes color residue from the outside\n"
+                                   "of the mask and the edges."
+
+GUI_Other_TabB32                   "Despill In"
+
+GUI_Other_TabB32a                  "Removes color residue from the inside\n"
+                                   "of the mask."
+
+GUI_Other_Chroma_OK                "Chroma Key"
+
+GUI_Other_Chroma_ErrCol            "Chroma Key: No color image"
+
+GUI_Other_Chroma_ErrOther          "Chroma Key: Error"
+
+;
+;
+; End Of File

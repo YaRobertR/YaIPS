@@ -1,0 +1,123 @@
+;-------------------------------------------------------
+; YaIPS_GUI_GeoTransform.cpp
+;-------------------------------------------------------
+;
+; 51 entries
+;
+GUI_GeoTrans_Title                 "Geometry Transformation"
+
+GUI_GeoTrans_TabM2                 "Farbe außerhalb"
+
+GUI_GeoTrans_TabM2h                "Farbe für den Bereich außerhalb eines Bildes.\n"
+                                   "Drehen eines Bildes oder andere Transformationen\n"
+                                   "erzeugen Bereiche außerhalb des Bildes. Diese werden\n"
+                                   "entsprechend eingefärbt."
+
+GUI_GeoTrans_TabM3                 "Außenbereich ausblenden"
+
+GUI_GeoTrans_TabM3h                "Außenbereich ausblenden.\n"
+                                   "Wenn aktiviert, wird der Bereich außerhalb des Bildes ausgeblendet.\n"
+                                   "Andernfalls ist der Bereich außerhalb des Bildes sichtbar."
+
+GUI_GeoTrans_TabA1                 "Einfach"
+
+GUI_GeoTrans_TabA2                 "Potenz von 2"
+
+GUI_GeoTrans_TabA2a                "Vergrößerung/Verkleinerung in Zweierpotenzen\n"
+                                   " > 0: 1 = * 2, 2 = * 4, 3 = * 8, ...\n"
+                                   "   0: 1:1 Kopie\n"
+                                   " < 0: 1 = / 2, 2 = / 4, 3 = / 8, ...\n"
+                                   "Pixel werden ohne Interpolation vergrößert."
+
+GUI_GeoTrans_TabA3a                "Potenz von 2"
+
+GUI_GeoTrans_TabA4                 "Spiegeln"
+
+GUI_GeoTrans_TabA4a                "Bild spiegeln."
+
+GUI_GeoTrans_TabA5                 "Umdrehen"
+
+GUI_GeoTrans_TabA5a                "Bild umdrehen."
+
+GUI_GeoTrans_TabA6                 "Drehe +90°"
+
+GUI_GeoTrans_TabA6a                "Bild um +90° drehen."
+
+GUI_GeoTrans_TabA7                 "Drehe 180°"
+
+GUI_GeoTrans_TabA7a                "Bild um 180° drehen."
+
+GUI_GeoTrans_TabA8                 "Drehe -90°"
+
+GUI_GeoTrans_TabA8a                "Bild um -90° drehen."
+
+GUI_GeoTrans_TabA9a                "Dreht das Bild um die Mitte."
+
+GUI_GeoTrans_TabA10a               "Drehwinkel [Grad]"
+
+GUI_GeoTrans_TabA11                "Größe [%]"
+
+GUI_GeoTrans_TabA11a               "Vergrößert das Bild"
+
+GUI_GeoTrans_TabA12a               "Größe [%]"
+
+GUI_GeoTrans_TabB1                 "Objektiv"
+
+GUI_GeoTrans_TabB2                 "Objektivkorrektur"
+
+GUI_GeoTrans_TabB2a                "Korrektur der Linsenverzerrung und geringfügige\n"
+                                   "Rotations-, Größen- oder Versatzkorrekturen.."
+
+GUI_GeoTrans_TabB3                 "Linsenfaktor"
+
+GUI_GeoTrans_TabB3a                "Korrektur der Linsenverzerrung [Einheiten von 1.0E-10]"
+
+GUI_GeoTrans_TabB4                 "Drehlage"
+
+GUI_GeoTrans_TabB4a                "Korrektur der Drehlagen [Grad]"
+
+GUI_GeoTrans_TabB5                 "Größe"
+
+GUI_GeoTrans_TabB5a                "Korrektur der Größe [%]]"
+
+GUI_GeoTrans_TabB6                 "Versatz X"
+
+GUI_GeoTrans_TabB6a                "Korrektur Versatz [Pixel]"
+
+GUI_GeoTrans_TabB7                 "Versatz Y"
+
+GUI_GeoTrans_TabB7a                "Korrektur Versatz [Pixel]"
+
+GUI_GeoTrans_TabC1                 "Par. Pro."
+
+GUI_GeoTrans_TabC2                 "Parallelprojektion"
+
+GUI_GeoTrans_TabC2a                "Korrektur der Linsenverzerrung und geringfügige\n"
+                                   "Rotations-, Größen- oder Versatzkorrekturen.."
+
+GUI_GeoTrans_TabC3a                "Drehung [Grad]"
+
+GUI_GeoTrans_TabC4                 "Größe X"
+
+GUI_GeoTrans_TabC4a                "Vergrößerung X"
+
+GUI_GeoTrans_TabC5a                "Vergrößerung Y"
+
+GUI_GeoTrans_TabC6                 "Versatz X"
+
+GUI_GeoTrans_TabC6a                "Versatz X"
+
+GUI_GeoTrans_TabC7a                "Versatz Y"
+
+GUI_GeoTrans_TabD1                 "Cut"
+
+GUI_GeoTrans_TabD1a                "Schneide einen Bildteil aus"
+
+GUI_GeoTrans_TabD2                 "Bildteil ausschneiden"
+
+GUI_GeoTrans_TabD2a                "Schneide einen Bildteil aus.\n"
+                                   "Die AOI wird ausgeschnitten."
+
+;
+;
+; End Of File

@@ -1,0 +1,77 @@
+;-------------------------------------------------------
+; YaIPS_GUI_CamSettings.cpp
+;-------------------------------------------------------
+;
+; 27 entries
+;
+GUI_CamSettings_TabA0              "Camera operating modes"
+
+GUI_CamSettings_TabA1              "Area"
+
+GUI_CamSettings_TabA2              "Square cutout"
+
+GUI_CamSettings_TabA2a             "The camera image is cropped to a square shape."
+
+GUI_CamSettings_TabA3a             "Black and white"
+
+GUI_CamSettings_TabA4              "Ignore first camera"
+
+GUI_CamSettings_TabA4a             "With camera detection, the first camera is ignored.\n"
+                                   "This can be useful for laptops with built-in cameras.\n"
+                                   "This camera is then ignored."
+
+GUI_CamSettings_TabA5              "Start with acquire on"
+
+GUI_CamSettings_TabA5a             "After opening the dialog, set\n"
+                                   "'Continuous acquire on' to on."
+
+GUI_CamSettings_TabB1              "Lines"
+
+GUI_CamSettings_TabB3a             "Display and change the acquire area.\n"
+                                   "The area can be adjusted with the mouse."
+
+GUI_CamSettings_TabB2              "# Lines to acquire"
+
+GUI_CamSettings_TabB2a             "Number of lines to be acquired\n"
+                                   "or height of the recorded image."
+
+GUI_CamSettings_TabB4              "# lines averaged"
+
+GUI_CamSettings_TabB4a             "This number of lines from the area camera\n"
+                                   "are combined into one recording line.\n"
+                                   "The lines are centered in the area image."
+
+GUI_CamSettings_TabB5              "Refresh rows"
+
+GUI_CamSettings_TabB5a             "The image display is updated after\n"
+                                   "this number of lines have been recorded.\n"
+                                   "With a value of 0, each new line is displayed."
+
+GUI_CamSettings_TabC1              "Height"
+
+GUI_CamSettings_TabC3a             "Display and change the acquire area.\n"
+                                   "The area can be adjusted with the mouse."
+
+GUI_CamSettings_TabC2              "# Lines to acquire"
+
+GUI_CamSettings_TabC2a             "Number of lines to be acquired\n"
+                                   "or height of the recorded image."
+
+GUI_CamSettings_TabC4              "Acquire area top"
+
+GUI_CamSettings_TabC4a             "This line in the area camera image corresponds\n"
+                                   "to the highest measurable height."
+
+GUI_CamSettings_TabC5              "Acquire area bottom"
+
+GUI_CamSettings_TabC5a             "This line in the area camera image corresponds\n"
+                                   "to the lowest measurable height."
+
+GUI_CamSettings_TabC6              "Brightness threshold"
+
+GUI_CamSettings_TabC6a             "The brightest spot in a column is used to determine the\n"
+                                   "height. The brightness must be at least above this threshold."
+
+;
+;
+; End Of File

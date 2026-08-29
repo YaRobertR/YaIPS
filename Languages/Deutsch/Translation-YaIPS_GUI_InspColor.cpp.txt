@@ -1,0 +1,102 @@
+;-------------------------------------------------------
+; YaIPS_GUI_InspColor.cpp
+;-------------------------------------------------------
+;
+; 45 entries
+;
+GUI_InspColor_Title                "Farbprüfung"
+
+GUI_InspColor_TabA1                "Helligkeitstest"
+
+GUI_InspColor_TabA1a               "Helligkeitstest"
+
+GUI_InspColor_TabA2                "AOI"
+
+GUI_InspColor_TabA3a               "Position linken Kante AOI"
+
+GUI_InspColor_TabA4a               "Position Oberkante AOI"
+
+GUI_InspColor_TabA5                "B"
+
+GUI_InspColor_TabA5a               "Breite der AOI"
+
+GUI_InspColor_TabA6                "H"
+
+GUI_InspColor_TabA6a               "Höhe der AOI"
+
+GUI_InspColor_TabA7                "Modus:"
+
+GUI_InspColor_TabA8                "Mittelwert"
+
+GUI_InspColor_TabA8a               "Berechnet die durchschnittlichen Grauwerte im AOI."
+
+GUI_InspColor_TabA9                "Min"
+
+GUI_InspColor_TabA9a               "Berechnet den Mittelwert der % kleinsten Grauwerte im AOI."
+
+GUI_InspColor_TabA10               "Max"
+
+GUI_InspColor_TabA10a              "Berechnet den Mittelwert der % größten Grauwerte im AOI."
+
+GUI_InspColor_TabA11               "n%Wert"
+
+GUI_InspColor_TabA11a              "% Wert für Min/Max modus."
+
+GUI_InspColor_TabA12               "Schwellen:"
+
+GUI_InspColor_TabA13               "Relativ"
+
+GUI_InspColor_TabA13a              "Wenn Sie diese Option auswählen, wird die Abweichung"
+                                   "vom zugehörigen Wert aus dem Referenzbild berechnet"
+                                   "und mit den angegebenen Schwellenwerten verglichen."
+
+GUI_InspColor_TabA14               "Absolut"
+
+GUI_InspColor_TabA14a              "Diese Option führt zu einem schlechten Prüfergebnis,"
+                                   "wenn der berechnete Wert höher als der 'Hellschwellenwert'"
+                                   "oder niedriger als der 'Dunkelschwellenwert' ist."
+
+GUI_InspColor_TabA15a              "Wenn gesetzt, wird der Rotwert\n"
+                                   "für alle drei Farbkanäle verwendet."
+
+GUI_InspColor_TabA16               "Dunkelschw."
+
+GUI_InspColor_TabA17               "Dunkelschwelle für SW- oder rote Farbkomponente."
+
+GUI_InspColor_TabA18a              "Dunkelschwelle für grüne Farbkomponente."
+
+GUI_InspColor_TabA19a              "Dunkelschwelle für blaue Farbkomponente."
+
+GUI_InspColor_TabA19               "Aktiv"
+
+GUI_InspColor_TabA20a              "Wenn gesetzt, gegen dunkle Schwellenwerte testen."
+
+GUI_InspColor_TabA21               "Hellschwelle"
+
+GUI_InspColor_TabA22a              "Hellschwelle für SW- oder rote Farbkomponente."
+
+GUI_InspColor_TabA23a              "Hellschwelle für grüne Farbkomponente."
+
+GUI_InspColor_TabA24a              "Hellschwelle für grüne Farbkomponente."
+
+GUI_InspColor_TabA25               "Aktiv"
+
+GUI_InspColor_TabA25a              Wenn gesetzt, gegen helle Schwellenwerte testen.
+
+GUI_InspColor_TabB1                "Helligkeitskorr."
+
+GUI_InspColor_TabB1a               "Helligkeitskorrektur"
+
+GUI_InspColor_TabB12               "Helligkeitstoleranz"
+
+GUI_InspColor_TabB12a              "Helligkeitstoleranz [Grauwerte].\n"
+                                   "Das Überschreiten der angegebenen Toleranz\n"
+                                   "führt zu einem schlechten Prüfergebnis."
+
+GUI_InspColor_Insp1                "HT: "
+
+GUI_InspColor_Insp2                "HK: "
+
+;
+;
+; End Of File

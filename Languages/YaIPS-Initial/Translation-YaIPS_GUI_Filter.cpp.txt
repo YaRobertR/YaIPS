@@ -1,0 +1,178 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Filter.cpp
+;-------------------------------------------------------
+;
+; 69 entries
+;
+GUI_Filter_Title                   "Filter"
+
+GUI_Filter_TabA1                   "Low-pass"
+
+GUI_Filter_TabA2                   "Gaussian:"
+
+GUI_Filter_TabA2a                  "X/horizontal Gaussian filter"
+
+GUI_Filter_TabA3a                  "Y/vertical Gaussian filter"
+
+GUI_Filter_TabA4a                  "XY Gaussian filter"
+
+GUI_Filter_TabA5                   "Box:"
+
+GUI_Filter_TabA5a                  "X/horizontal Box filter"
+
+GUI_Filter_TabA6a                  "Y/vertical Box filter"
+
+GUI_Filter_TabA7a                  "XY Box filter"
+
+GUI_Filter_TabA8                   "Filter size"
+
+GUI_Filter_TabA8a                  "Filter size must be odd and >= 3."
+
+GUI_Filter_TabB1                   "Edges"
+
+GUI_Filter_TabB2                   "Difference:"
+
+GUI_Filter_TabB2a                  "Difference filter horizontal\n"
+                                   " 1  2  1\n"
+                                   " 0  0  0   * G + O\n"
+                                   "-1 -2 -1"
+
+GUI_Filter_TabB3a                  "Difference filter vertical"
+
+GUI_Filter_TabB4a                  "Difference filter oblique"
+
+GUI_Filter_TabB5a                  "Difference filter oblique"
+
+GUI_Filter_TabB6                   "Laplace"
+
+GUI_Filter_TabB6a                  "Laplace filter\n"
+                                   " 0 -1  0\n"
+                                   "-1  4 -1   * G + O\n"
+                                   " 0 -1  0"
+
+GUI_Filter_TabB7                   "Sobel"
+
+GUI_Filter_TabB7a                  "Sobel filter\n"
+                                   " a  b  c\n"
+                                   " d  e  f     (  | (a+2b+c)-(g+2h+i) |\n"
+                                   " g  h  i      + | (a+2d+g)-(c+2f+i) | ) * G"
+
+GUI_Filter_TabB8                   "Gain"
+
+GUI_Filter_TabB8a                  "Gain\nMultiplier of the filter result"
+
+GUI_Filter_TabB9                   "Offs."
+
+GUI_Filter_TabB9a                  "Offset\nAdd to the filter result"
+
+GUI_Filter_TabB10                  "Abs."
+
+GUI_Filter_TabB10a                 "When set, the edge filter\n"
+                                   "has an absolute result."
+
+GUI_Filter_TabB11                  "Canny"
+
+GUI_Filter_TabB11a                 "Canny edge filter"
+
+GUI_Filter_TabB12                  "Gain"
+
+GUI_Filter_TabB12a                 "Gain\nMultiplier of the filter result"
+
+GUI_Filter_TabB13                  "Sig."
+
+GUI_Filter_TabB13a                 "Sigma for gaussian filter\nRange 0.0 ... 8.0, 0 is off"
+
+GUI_Filter_TabB14                  "Mode"
+
+GUI_Filter_TabB14a                 "Result mode\n"
+                                   "0 = Slope/inclination of the edges\n"
+                                   "1 = 0 and clean up maxima\n"
+                                   "2 = Direction of the edges\n"
+
+GUI_Filter_TabC1                   "Morphology"
+
+GUI_Filter_TabC2                   "Erosion"
+
+GUI_Filter_TabC2a                  "Erosion.\n"
+                                   "Darkest pixel in a 3x3 neighborhood."
+
+GUI_Filter_TabC3                   "Dilation"
+
+GUI_Filter_TabC3a                  "Dilation.\n"
+                                   "Brightest pixel in a 3x3 neighborhood."
+
+GUI_Filter_TabC4                   "Median"
+
+GUI_Filter_TabC4a                  "Median.\n"
+                                   "Middle pixel of a 3x3 neighborhood."
+
+GUI_Filter_TabC5                   "Closing"
+
+GUI_Filter_TabC5a                  "Closing.\n"
+                                   "Dilation followed by erosion."
+
+GUI_Filter_TabC6                   "Opening"
+
+GUI_Filter_TabC6a                  "Opening.\n"
+                                   "Erosion followed by dilation."
+
+GUI_Filter_TabC7                   "Gradient"
+
+GUI_Filter_TabC7a                  "Gradient.\n"
+                                   "Difference between the brightest and\n"
+                                   "darkest pixels in a 3x3 neighborhood."
+
+GUI_Filter_TabC8                   "Number"
+
+GUI_Filter_TabC8a                  "Number of filter passes.\n"
+                                   "If 0, no filtering is performed."
+
+GUI_Filter_TabD1                   "Contour"
+
+GUI_Filter_TabD2                   "Contour"
+
+GUI_Filter_TabD2a                  "Contour, set 255 for contour, 0 for plane.\n"
+                                   "Set if one (|neighbour - central| > plane threshold)."
+
+GUI_Filter_TabD3                   "Plane"
+
+GUI_Filter_TabD3a                  "Plane, set 0 for contour, 255 for plane.\n"
+                                   "Set if all (|neighbour - central| <= plane threshold)."
+
+GUI_Filter_TabD4                   "LP Plane"
+
+GUI_Filter_TabD4a                  "Low-pass plane. Average 3x3 neighborhood\n"
+                                   "if all (|neighbour - central| <= plane threshold)."
+
+GUI_Filter_TabD5                   "Plane threshold"
+
+GUI_Filter_TabD5a                  "Plane threshold.\n"
+                                   "Separates contours from plane."
+
+GUI_Filter_TabE1                   "Sharp"
+
+GUI_Filter_TabE2                   "Image sharpness"
+
+GUI_Filter_TabE2a                  "Image sharpen gives your images a clear, focused look,\n"
+                                   "with objects standing out clearly. This adds a sense\n"
+                                   "of depth and sharpness to the image. Blurry, unclear,\n"
+                                   "or slightly out-of-focus images can look clearer."
+
+GUI_Filter_TabE3                   "Radius"
+
+GUI_Filter_TabE3a                  "The number of pixels that are taken\n"
+                                   "into account around each edge."
+
+GUI_Filter_TabE4                   "Strength [%]"
+
+GUI_Filter_TabE4a                  "The amount by which the contrast of the\n"
+                                   "pixels in the image is increased [%]."
+
+GUI_Filter_TabE5                   "Difference"
+
+GUI_Filter_TabE5a                  "The brightness difference between neighboring\n"
+                                   "pixels so that they are adjusted."
+
+;
+;
+; End Of File

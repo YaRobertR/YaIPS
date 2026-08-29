@@ -1,0 +1,43 @@
+Crcdf-Options
+// Label/text for each correlation image
+// Order in the lines is from left to right.
+// Lines from top to bottom.
+Label: 0
+Label: 1
+Label: 2
+Label: 3
+Label: 4
+Label: 5
+Label: 6
+Label: 7
+Label: 8
+Label: 9
+
+Label: a
+Label: b
+Label: c
+Label: d
+Label: e
+Label: f
+Label: g
+Label: h
+Label: i
+//Label: j
+Label: k
+Label: l
+Label: m
+Label: n
+Label: o
+Label: p
+//Label: q
+Label: r
+Label: s
+Label: t
+Label: u
+Label: v
+Label: w
+Label: x
+Label: y
+//Label: z
+
+--- End Of File ---

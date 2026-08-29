@@ -1,0 +1,22 @@
+;-------------------------------------------------------
+; YaIPS.h
+;-------------------------------------------------------
+;
+; 4 entries
+;
+VersionInfo_PName                  "YaIPS"
+
+VersionInfo_Date                   "21. August 2026"
+
+VersionInfo_Title                  "Yet another Image Processing Software"
+
+VersionInfo_Credits                "FLTK, Fast Light Toolkit\n"
+                                   "  https://www.fltk.org/\n"
+                                   "ccap, Camera Capture Library\n"
+                                   "  https://ccap.work\n"
+                                   "stb, public domain libraries for C/C++\n"
+                                   "  https://github.com/nothings\n"
+
+;
+;
+; End Of File

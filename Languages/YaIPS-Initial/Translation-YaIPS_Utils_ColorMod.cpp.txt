@@ -1,0 +1,22 @@
+;-------------------------------------------------------
+; YaIPS_Utils_ColorMod.cpp
+;-------------------------------------------------------
+;
+; 13 entries
+;
+Utils_ColMod_LUT_None              "---"
+Utils_ColMod_LUT_01                "Color steps"
+Utils_ColMod_LUT_02                "Color gradient"
+Utils_ColMod_LUT_03                "RGB"
+Utils_ColMod_LUT_04                "Warmth"
+Utils_ColMod_LUT_05                "Fire"
+Utils_ColMod_LUT_06                "Ice"
+Utils_ColMod_LUT_07                "Spectrum"
+Utils_ColMod_LUT_08                "Cool"
+Utils_ColMod_LUT_09                "Jet"
+Utils_ColMod_LUT_10                "Iron"
+Utils_ColMod_LUT_11                "Cold Hot"
+Utils_ColMod_LUT_12                "Hue"
+;
+;
+; End Of File

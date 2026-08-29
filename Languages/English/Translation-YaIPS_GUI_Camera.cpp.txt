@@ -1,0 +1,45 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Camera.cpp
+;-------------------------------------------------------
+;
+; 17 entries
+;
+GUI_Camera_Title                   "Camera"
+
+GUI_Camera_Search1                 "Search cameras %d ..."
+
+GUI_Camera_Num1                    "- cameras"
+
+GUI_Camera_Num2                    "1 camera"
+
+GUI_Camera_Num3                    "%d cameras"
+
+GUI_Camera_Mode1                   " - Line mode   "
+
+GUI_Camera_Mode2                   "  - Height mode   "
+
+GUI_Camera_FPS1                    "FPS\n%.1f"
+
+GUI_Camera_FPS2                    "FPS\n---"
+
+GUI_Camera_Search2                 "Search cameras ..."
+
+GUI_Camera_Tools2a                 "Acquire a picture.\n"
+                                   "Shortcut: Ctrl+A"
+
+GUI_Camera_Tools3a                 "Continuous acquire on/off.\n"
+                                   "Shortcut: Ctrl+' '"
+
+GUI_Camera_Tools5                  "Resolution"
+
+GUI_Camera_Tools5a                 "Change camera resolution"
+
+GUI_Camera_Tools4a                 "Change camera selection"
+
+GUI_Camera_Tools6a                 "Search for cameras"
+
+GUI_Camera_Tools7b                 "Camera properties"
+
+;
+;
+; End Of File

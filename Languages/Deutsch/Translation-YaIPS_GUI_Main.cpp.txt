@@ -1,0 +1,265 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Main.cpp
+;-------------------------------------------------------
+;
+; 123 entries
+;
+GUI_Main_Menu_Color_Copy           "Farbe in Zwischenablage kopieren"
+
+GUI_Main_Menu_Color_Paste          "Farbe aus Zwischenablage holen"
+
+GUI_Main_Menu_Color_Histo          "Farbe von Histogramm holen"
+
+GUI_Main_Disp_Dist_Pix             "%d Pixel"
+
+GUI_Main_Disp_Dist                 "%.3f %s/%d Pixel"
+
+GUI_Main_Info_ISize1a              "%d x %d %s, %d Bytes/Pixel"
+
+GUI_Main_Info_ISize1b              "%d x %d %s, %s"
+
+GUI_Main_Info_CuVal1               "Pixelwert unter dem Mauszeiger"
+
+GUI_Main_Info_CuVal2               "Position: %d/%d"
+
+GUI_Main_Info_CuVal3               "Position:"
+
+GUI_Main_Info_Histo2               "Histogramm"
+
+GUI_Main_Info_AOI                  "AOI: %d-%d/%d-%d  %d*%d"
+
+GUI_Main_Info_ColSum1              "Spaltensumme"
+
+GUI_Main_Info_RowSum1              "Zeilensumme"
+
+GUI_Main_Info_DiHor1               "X / horizontaler Abstand"
+
+GUI_Main_Info_Dist1                "Lineal: %.02f * %.02f %s"
+
+GUI_Main_Info_Dist2                "Fläche: %.02f %s²"
+
+GUI_Main_Info_DiVer1               "Y / vertikaler Abstand"
+
+GUI_Main_About_1                   "Über %s"
+
+GUI_Main_About_2                   "%s\nVersion %s  %s"
+
+GUI_Main_About_3                   "Credits:"
+
+GUI_Main_Save5                     "Bild.png"
+
+GUI_Main_Save6                     "Ausschnitt.png"
+
+GUI_Main_Save7                     "Info.png"
+
+GUI_Main_Save8                     "Screenshot.png"
+
+GUI_Main_Save2                     "Bild speichern"
+
+GUI_Main_Menu1a                    "Datei/&Öffnen Bild"
+
+GUI_Main_Menu1b                    "Datei/Speichern &Bild"
+
+GUI_Main_Menu1c                    "Datei/Speichern &Anzeige"
+
+GUI_Main_Menu1d                    "Datei/Speichern &Info Bereich"
+
+GUI_Main_Menu1e                    "Datei/Speichern Screens&hot"
+
+GUI_Main_Menu1f                    "Datei/Laden Presets"
+
+GUI_Main_Menu1g                    "Datei/Speichern Presets"
+
+GUI_Main_Menu1m                    "Datei/TEST show all"
+
+GUI_Main_Menu1n                    "Datei/TEST hide all"
+
+GUI_Main_Menu1o                    "Datei/TEST iconize all"
+
+GUI_Main_Menu1p                    "Datei/TEST hide/show all"
+
+GUI_Main_Menu1q                    "Datei/TEST redraw all"
+
+GUI_Main_Menu1u                    "Datei/&Einstellungen ..."
+
+GUI_Main_Menu1v                    "Datei/&Kalibrierung ..."
+
+GUI_Main_Menu1w                    "Datei/Benutzerdefinierte Farben ..."
+
+GUI_Main_Menu1z                    "Datei/&Beenden"
+
+GUI_Main_Menu2a                    "Edit/&Einfügen Bild"
+
+GUI_Main_Menu2b                    "Edit/Kopieren &Bild"
+
+GUI_Main_Menu2c                    "Edit/Kopieren &Anzeige"
+
+GUI_Main_Menu2d                    "Edit/Kopieren &Info Bereich"
+
+GUI_Main_Menu2e                    "Edit/Kopieren Screens&hot"
+
+GUI_Main_Menu2h                    "Edit/&Anzeige zurücksetzen"
+
+GUI_Main_Menu2i                    "Edit/Vollbild umschalten"
+
+GUI_Main_Menu3In1                  "Bild/Quelle/&Kamera"
+
+GUI_Main_Menu3In2                  "Bild/Quelle/&Neues Bild"
+
+GUI_Main_Menu3In3                  "Bild/Quelle/&Bildbetrachter"
+
+GUI_Main_Menu3In4                  "Bild/Quelle/Video-Player"
+
+GUI_Main_Menu3Pr1                  "Bild/Verarbeitung/Filter"
+
+GUI_Main_Menu3Pr2                  "Bild/Verarbeitung/Farbe"
+
+GUI_Main_Menu3Pr3                  "Bild/Verarbeitung/Geometrie"
+
+GUI_Main_Menu3Pr4                  "Bild/Verarbeitung/Berechnung"
+
+GUI_Main_Menu3Pr5                  "Bild/Verarbeitung/Korrelation"
+
+GUI_Main_Menu3Pr6                  "Bild/Verarbeitung/Objekte"
+
+GUI_Main_Menu3Pr7                  "Bild/Verarbeitung/Sonstige"
+
+GUI_Main_Menu3Ou1                  "Bild/Ausgabe/Video erstellen"
+
+GUI_Main_Menu3Ip1                  "Bild/Inspektion/Referenzbild"
+
+GUI_Main_Menu3Ip2                  "Bild/Inspektion/Farbprüfung"
+
+GUI_Main_Menu3Ip3                  "Bild/Inspektion/Lagekorrektur"
+
+GUI_Main_Menu3Ip4                  "Bild/Inspektion/Kanten"
+
+GUI_Main_Menu3Ip5                  "Bild/Inspektion/Vergleich"
+
+GUI_Main_Menu3Ot1                  "Bild/Sonstiges/Überlagerung"
+
+GUI_Main_Menu4a                    "Hilfe/&Über YaIPS ..."
+
+GUI_Main_Size1                     "Vergrößerung"
+
+GUI_Main_Size2                     "Auto"
+
+GUI_Main_Size2h                    "Vergrößerung automatisch anpassen"
+
+GUI_Main_Size3                     "1"
+
+GUI_Main_Size3h                    "Vergrößerung 1:1"
+
+GUI_Main_Size4                     "2"
+
+GUI_Main_Size4h                    "Bild 2 * vergrößert"
+
+GUI_Main_Size5                     "4"
+
+GUI_Main_Size5h                    "Bild 4 * vergrößert"
+
+GUI_Main_Size6                     "8"
+
+GUI_Main_Size6h                    "Bild 8 * vergrößert"
+
+GUI_Main_Size7                     "16"
+
+GUI_Main_Size7h                    "Bild 16 * vergrößert"
+
+GUI_Main_Over1                     "Überlagerung"
+
+GUI_Main_Over2                     "Aus"
+
+GUI_Main_Over2h                    "Keine Überlagerung"
+
+GUI_Main_Over3                     "Fadenkreuz"
+
+GUI_Main_Over3h                    "Überlagert dem Bild ein Fadenkreuz"
+
+GUI_Main_Over4                     "# 1"
+
+GUI_Main_Over4h                    "Überlagert dem Bild 3 Rechtecke"
+
+GUI_Main_Over5                     "# 2"
+
+GUI_Main_Over5h                    "Überlagert dem Bild ein Raster\n"
+                                   "mit 50 Pixel Abstand"
+
+GUI_Main_Over6h                    "Ändert die Farbe der Überlagerung"
+
+GUI_Main_ColChan3h                 "Farbkanal"
+
+GUI_Main_ColPal1                   "Farbpalette"
+
+GUI_Main_ColPal3h                  "Invertiert Farbe-, Schwarz-Weiß\nBild oder Farbpalette"
+
+GUI_Main_ColPal4                   "1/2"
+
+GUI_Main_ColPal4h                  "Reduziert die Helligkeit im Bild auf die Hälfte.\n"
+                                   "Überlagerte Grafiken sind dann besser sichtbar."
+
+GUI_Main_3D1                       "3D-Visualisierung"
+
+GUI_Main_3D2                       "Aktiv"
+
+GUI_Main_3D2h                      "Helligkeit als Höhenbild darstellen"
+
+GUI_Main_3D3                       "Linien"
+
+GUI_Main_3D3h                      "Gitternetzlinien zeichnen"
+
+GUI_Main_3D4                       "Inv."
+
+GUI_Main_3D4h                      "Invertierte Grau-/Höhenwerte.\nOben dunkel und unten hell."
+
+GUI_Main_3D5                       "Neigung"
+
+GUI_Main_3D5h                      "Neigung des Höhenbildes"
+
+GUI_Main_3D6h                      "Blickrichtung auf das Höhenbild"
+
+GUI_Main_InfMeas1                  "Info/Messung"
+
+GUI_Main_InfMeas2h                 "Unterstützung für den Einlernmodus.\n"
+                                   "In einigen Werkzeugfenstern können AOIs im Einlernmoduss\n"
+                                   "mit der Maus verschoben/geändert werden.\n"
+                                   "Diese Fenster haben einen Knopf mit einem Stift-Symbol.\n"
+                                   "Wenn ein solches Werkzeugfenster für die Anzeige im großen\n"
+                                   "Fenster ausgewählt ist, können diese Änderungen auch mit\n"
+                                   "der Maus im großen Fenster vorgenommen werden.\n"
+                                   "Diese Funktion ist nutzbar, wenn dieses Optionsfeld\n"
+                                   "ausgewählt ist und das Stift-Symbol grün ist."
+
+GUI_Main_InfMeas3h                 "Visualisierung der Farbpalette\nLUT = Lookup-Tabelle"
+
+GUI_Main_InfMeas4h                 "Pixelwert unter dem Mauszeiger anzeigen"
+
+GUI_Main_InfMeas5a                 "H All"
+
+GUI_Main_InfMeas5ah                "Histogramm der Pixelwerte im Bild"
+
+GUI_Main_InfMeas5b                 "H AOI"
+
+GUI_Main_InfMeas5bh                "Histogramm der Pixelwerte in einem Rechteck"
+
+GUI_Main_InfMeas6                  "Su |"
+
+GUI_Main_InfMeas6h                 "Profil der Spaltensummen in einem Rechteck"
+
+GUI_Main_InfMeas7                  "Su -"
+
+GUI_Main_InfMeas7h                 "Profil der Zeilensummen in einem Rechteck"
+
+GUI_Main_InfMeas8                  "Ab |"
+
+GUI_Main_InfMeas8h                 "Misst vertikalen Abstand"
+
+GUI_Main_InfMeas9                  "Ab -"
+
+GUI_Main_InfMeas9h                 "Misst horizontalen Abstand"
+
+GUI_Main_InfBox1                   "Info"
+
+;
+;
+; End Of File

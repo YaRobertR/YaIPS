@@ -1,0 +1,27 @@
+;-------------------------------------------------------
+; YaIPS_GUI_InspRefImage.cpp
+;-------------------------------------------------------
+;
+; 5 entries
+;
+GUI_InspRefImg_Title               "Referenzbild"
+
+GUI_InspRefImg_GroupA1             "Ebenen-Schwelle"
+
+GUI_InspRefImg_GroupA1a            "Ebenen-Schwelle.\n"
+                                   "Wird zur Vorbereitung des Referenzbildes verwendet.\n"
+                                   "Pixelwerte unterhalb dieses Schwellenwerts werden\n"
+                                   "tiefpassgefiltert. Die Konturpixel werden nicht\n"
+                                   "verändert. Setzt außerdem ein\n"
+                                   "Konturbit im Alpha-Teil des Referenzbildes.\n"
+                                   "Dieses Konturbit wird vom Bildvergleichswerkzeug\n"
+                                   "verwendet."
+
+GUI_InspRefImg_Tools2a             "Referenzbild von Eingang übernehmen.\n"
+                                   "Shortcut: Strg+A"
+
+GUI_InspRefImg_Tools3a             "Referenzbild aus Datei laden."
+
+;
+;
+; End Of File

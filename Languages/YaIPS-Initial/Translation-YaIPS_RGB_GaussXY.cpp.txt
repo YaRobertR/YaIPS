@@ -1,0 +1,12 @@
+;-------------------------------------------------------
+; YaIPS_RGB_GaussXY.cpp
+;-------------------------------------------------------
+;
+; 3 entries
+;
+RGB_Filter_Gauss1                  "Width %d >= filter %d"
+RGB_Filter_Gauss2                  "Height %d >= filter %d"
+RGB_Filter_Gauss3                  "Image >= filter %d"
+;
+;
+; End Of File

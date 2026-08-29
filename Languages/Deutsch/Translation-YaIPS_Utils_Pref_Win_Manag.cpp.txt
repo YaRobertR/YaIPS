@@ -1,0 +1,13 @@
+;-------------------------------------------------------
+; YaIPS_Utils_Pref_Win_Manag.cpp
+;-------------------------------------------------------
+;
+; 4 entries
+;
+Utils_Preset_FileType              "Presets"
+Utils_Preset_Save1                 "Preset.prefs"
+Utils_Preset_Save2                 "Preset speichern"
+Utils_Preset_Load1                 "Preset laden"
+;
+;
+; End Of File

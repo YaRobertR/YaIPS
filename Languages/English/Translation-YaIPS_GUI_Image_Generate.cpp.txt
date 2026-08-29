@@ -1,0 +1,146 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Image_Generate.cpp
+;-------------------------------------------------------
+;
+; 62 entries
+;
+GUI_GenImage_Title                 "New image"
+
+GUI_GenImage_TabA1                 "Size"
+
+GUI_GenImage_TabA1a                "Image size"
+
+GUI_GenImage_TabA2                 "Current size and pixel depth"
+
+GUI_GenImage_TabA10                "Change size and pixel depth"
+
+GUI_GenImage_TabA11                "Width"
+
+GUI_GenImage_TabA11a               "Width for size change."
+
+GUI_GenImage_TabA11b               "Lock size ratio."
+
+GUI_GenImage_TabA12                "Height"
+
+GUI_GenImage_TabA12a               "Height for size change."
+
+GUI_GenImage_TabA13a               "Unit selected in calibration dialog.\n"
+                                   "For preset sizes that are not in\n"
+                                   "pixels, no pixels should be set\n"
+                                   "in the calibration dialog!"
+
+GUI_GenImage_TabA16                "Resulting size [Pixel]"
+
+GUI_GenImage_TabA16a               "Shows the resulting size of\n"
+                                   "the above settings in pixels.\n"
+                                   "NOTE: is read only."
+
+GUI_GenImage_TabA17                "Pixel depth"
+
+GUI_GenImage_TabA17a               "Number of bytes per pixel:\n"
+                                   " 1 black & white\n"
+                                   " 2 black & white + alpha mask\n"
+                                   " 3 RGB color\n"
+                                   " 4 RGB color + alpha mask"
+
+GUI_GenImage_TabA18                "Sizes ..."
+
+GUI_GenImage_TabA18a               "Some typical Sizes"
+
+GUI_GenImage_TabA18b               "640 x 480"
+
+GUI_GenImage_TabA18c               "800 x 600"
+
+GUI_GenImage_TabA18d               "1024 x 768"
+
+GUI_GenImage_TabA18e               "1280 x 720 (HD)"
+
+GUI_GenImage_TabA18f               "1600 x 1200"
+
+GUI_GenImage_TabA18g               "1920 x 1080 (FHD)"
+
+GUI_GenImage_TabA18h               "3840 x 2160 (4K)"
+
+GUI_GenImage_TabA18DinA0           "DIN/DIN A0"
+
+GUI_GenImage_TabA18DinA1           "DIN/DIN A1"
+
+GUI_GenImage_TabA18DinA2           "DIN/DIN A2"
+
+GUI_GenImage_TabA18DinA3           "DIN/DIN A3"
+
+GUI_GenImage_TabA18DinA4           "DIN/DIN A4"
+
+GUI_GenImage_TabA18DinA5           "DIN/DIN A5"
+
+GUI_GenImage_TabA18DinA6           "DIN/DIN A6"
+
+GUI_GenImage_TabA20                "Size * 2"
+
+GUI_GenImage_TabA20a               "Double the image sizes."
+
+GUI_GenImage_TabA21                "Size / 2"
+
+GUI_GenImage_TabA21a               "Halves the image sizes."
+
+GUI_GenImage_TabA22                "Size <->"
+
+GUI_GenImage_TabA22a               "Swaps height and width."
+
+GUI_GenImage_TabA23a               "Apply the setting for a new size."
+
+GUI_GenImage_TabB1                 "Backgr."
+
+GUI_GenImage_TabBa                 "Background of new image"
+
+GUI_GenImage_TabB2a_0              "Background is color.\n"
+                                   "A separate color can be specified\n"
+                                   "for each corner of the background."
+
+GUI_GenImage_TabB10                "Left upper"
+
+GUI_GenImage_TabB10a               "Color for image background of left upper corner"
+
+GUI_GenImage_TabB11a               "Check this to use the color for the named corner."
+
+GUI_GenImage_TabB12                "Right upper"
+
+GUI_GenImage_TabB12a               "Color for image background of right upper corner"
+
+GUI_GenImage_TabB13                "Left bottom"
+
+GUI_GenImage_TabB13a               "Color for image background of left bottom corner"
+
+GUI_GenImage_TabB14                "Right bottom"
+
+GUI_GenImage_TabB14a               "Color for image background of right bottom corner"
+
+GUI_Overlay_TabA2_1                "Image file"
+
+GUI_GenImage_TabB2a_1              "Background is an image file."
+
+GUI_Overlay_TabB20a                "Name of loaded image file.\n"
+                                   "NOTE: is read only."
+
+GUI_Overlay_TabB21a                "Load an image file."
+
+GUI_GenImage_TabC1                 "Alpha"
+
+GUI_GenImage_TabC1a                "Alpha channel"
+
+GUI_GenImage_TabC3                 "Shape:"
+
+GUI_GenImage_TabC3a                "Select Shape for alpha channel."
+
+GUI_GenImage_TabC4                 "Shape deformation"
+
+GUI_GenImage_TabC4a                "Deformation of shape."
+
+GUI_GenImage_TabC10                "Alpha multiplier shape"
+
+GUI_GenImage_TabC10a               " Left side = invisible"
+                                   "Right side = no alpha modification"
+
+;
+;
+; End Of File

@@ -1,0 +1,191 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Combine.cpp
+;-------------------------------------------------------
+;
+; 83 entries
+;
+GUI_Combine_Title                  "Calculation"
+
+GUI_Combine_TabM2                  "Alpha output:"
+
+GUI_Combine_TabM3                  "NO"
+
+GUI_Combine_TabM3a                 "NO alpha output.\n"
+                                   "Strips alpha from the input images."
+
+GUI_Combine_TabM4                  "Keep 1"
+
+GUI_Combine_TabM4a                 "Keep 1 image.\n"
+                                   "Keep alpha from first input image."
+
+GUI_Combine_TabM5                  "Keep 2"
+
+GUI_Combine_TabM5a                 "Keep 2 image.\n"
+                                   "Keep alpha from second input image."
+
+GUI_Combine_TabM6                  "Min"
+
+GUI_Combine_TabM6a                 "Minimum alpha.\n"
+                                   "Minimum alpha value from both images."
+
+GUI_Combine_TabM7                  "Max"
+
+GUI_Combine_TabM7a                 "Maximum alpha.\n"
+                                   "Maximum alpha value from both images."
+
+GUI_Combine_TabA1                  "Simple"
+
+GUI_Combine_TabA1a                 "Simple calculations"
+
+GUI_Combine_TabA2                  "+"
+
+GUI_Combine_TabA2a                 "Addition"
+
+GUI_Combine_TabA3                  "1-2"
+
+GUI_Combine_TabA3a                 "Subtraktion\n1. input - 2. input"
+
+GUI_Combine_TabA4                  "2-1"
+
+GUI_Combine_TabA4a                 "Subtraktion\n2. input - 1. input"
+
+GUI_Combine_TabA5                  "|-|"
+
+GUI_Combine_TabA5a                 "Absolute value of subtraction"
+
+GUI_Combine_TabA6                  "*"
+
+GUI_Combine_TabA6a                 "Multiplication"
+
+GUI_Combine_TabA7                  "Avg"
+
+GUI_Combine_TabA7a                 "Average of the pixel values"
+
+GUI_Combine_TabA8                  "Min"
+
+GUI_Combine_TabA8a                 "Lower value"
+
+GUI_Combine_TabA9                  "Max"
+
+GUI_Combine_TabA9a                 "Greater value"
+
+GUI_Combine_TabA10                 "=="
+
+GUI_Combine_TabA10a                "Image compare: equal"
+
+GUI_Combine_TabA11                 ">"
+
+GUI_Combine_TabA11a                "Image compare: larger"
+
+GUI_Combine_TabA12                 "<"
+
+GUI_Combine_TabA12a                "Image compare: smaller"
+
+GUI_Combine_TabA13                 "AND"
+
+GUI_Combine_TabA13a                "Bitwise AND"
+
+GUI_Combine_TabA14                 "OR"
+
+GUI_Combine_TabA14a                "Bitwise OR"
+
+GUI_Combine_TabA15                 "XOR"
+
+GUI_Combine_TabA15a                "Bitwise XOR"
+
+GUI_Combine_TabA16                 "!="
+
+GUI_Combine_TabA16a                "Image compare: unequal"
+
+GUI_Combine_TabA17                 "<="
+
+GUI_Combine_TabA17a                "Image compare: less than or equal"
+
+GUI_Combine_TabA18                 ">="
+
+GUI_Combine_TabA18a                "Image compare: greater than or equal"
+
+GUI_Combine_TabA19                 "Gain"
+
+GUI_Combine_TabA19a                "Gain\nMultiplier"
+
+GUI_Combine_TabA20                 "Offs."
+
+GUI_Combine_TabA20a                "Offset\nAddition"
+
+GUI_Combine_TabB1                  "Merge"
+
+GUI_Combine_TabB1a                 "Weighted addition"
+
+GUI_Combine_TabB2                  "Weighted addition"
+
+GUI_Combine_TabB2a                 "Merge input images"
+
+GUI_Combine_TabB3                  "Gain 1"
+
+GUI_Combine_TabB3a                 "1. Gain Multiplier\nfor 1. input image"
+
+GUI_Combine_TabB4                  "Gain 2"
+
+GUI_Combine_TabB4a                 "2. Gain Multiplier\nfor 2. input image"
+
+GUI_Combine_TabB5                  "Offs."
+
+GUI_Combine_TabB5a                 "Offset\nAddition"
+
+GUI_Combine_TabB6                  "Crossfade"
+
+GUI_Combine_TabB6a                 "Crossfade between two images"
+
+GUI_Combine_TabB7                  "Merge 1"
+
+GUI_Combine_TabB7a                 "Merge two images by pixel values of third image.\n"
+                                   "High pixel values output first input image,\n"
+                                   "low pixel values output second input image.\n"
+                                   "If present, an alpha channel is used for blending."
+
+GUI_Combine_TabB8                  "Merge 2"
+
+GUI_Combine_TabB8a                 "Merge two images by pixel values of third image.\n"
+                                   "High pixel values output second input image,\n"
+                                   "low pixel values output first input image.\n"
+                                   "If present, an alpha channel is used for blending."
+
+GUI_Combine_TabB9a                 "Select merge input image"
+
+GUI_Combine_TabC1                  "Shading"
+
+GUI_Combine_TabC1a                 "Compensation of shading/brightness differences in the image"
+
+GUI_Combine_TabC2                  "Shading"
+
+GUI_Combine_TabC2a                 "Compensation for shading/brightness differences in the image\n"
+                                   "Input 1 is adjusted to the target brightness.\n"
+                                   "Input 2 holds the brightness reference image."
+
+GUI_Combine_TabC3                  "Target brightness"
+
+GUI_Combine_TabC3a                 "Target brightness.\n"
+                                   "Roughly brightest spot in the shading image."
+
+GUI_Combine_TabC4                  "Shading image"
+
+GUI_Combine_TabC5a                 "Image 'Input 2' is reset.\n"
+                                   "The average count is set to 0."
+
+GUI_Combine_TabC6                  "Average"
+
+GUI_Combine_TabC6a                 "Image 'Input 1' is added to the image 'Input 2'\n"
+                                   "weighting. The average count is increased by 1."
+
+GUI_Combine_TabC7                  "Average count"
+
+GUI_Combine_TabC7a                 "Number of averaged images."
+
+GUI_Combine_Tools2a                "Select 1. input image"
+
+GUI_Combine_Tools3a                "Select 2. input image"
+
+;
+;
+; End Of File

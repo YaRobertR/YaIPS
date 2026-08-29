@@ -1,0 +1,269 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Overlay.cpp
+;-------------------------------------------------------
+;
+; 113 entries
+;
+GUI_Overlay_Title                  "Overlay"
+
+GUI_Overlay_TB_0                   "Color"
+
+GUI_Overlay_TB_1                   "Image"
+
+GUI_Overlay_TB_2                   "Tool"
+
+GUI_Overlay_FontSel                "Font selection"
+
+GUI_Overlay_DelAll_1               "Delete all overlays"
+
+GUI_Overlay_DelAll_2               "Delete all overlays?"
+
+GUI_Overlay_1                      "Overlays"
+
+GUI_Overlay_1a                     "Select overlay"
+
+GUI_Overlay_20                     "&Insert"
+
+GUI_Overlay_20a                    "Create a new overlay.\n"
+                                   "If an overlay is selected, the new one is\n"
+                                   "inserted before this position.\n"
+                                   "Otherwise it is inserted at top of the list.\n"
+                                   "Press key Ctrl to clone the selected."
+
+GUI_Overlay_21                     "&Append"
+
+GUI_Overlay_21a                    "Create a new overlay.\n"
+                                   "If an overlay is selected, the new one is\n"
+                                   "inserted after this position.\n"
+                                   "Otherwise it is inserted after the end\n"
+                                   "of the list.\n"
+                                   "Press key Ctrl to clone the selected."
+
+GUI_Overlay_22                     "&Delete"
+
+GUI_Overlay_22a                    "Delete selected overlay"
+
+GUI_Overlay_23                     "Del. &all"
+
+GUI_Overlay_23a                    "Delete all overlays"
+
+GUI_Overlay_24a                    "Shift up selected overlay.\n"
+                                   "Press key Ctrl key to move\n"
+                                   "to the lowest position."
+
+GUI_Overlay_25a                    "Shift down selected overlay.\n"
+                                   "Press key Ctrl key to move\n"
+                                   "to the top position."
+
+GUI_Overlay_2                      "Name"
+
+GUI_Overlay_2a                     "Name for this overlay"
+
+GUI_Overlay_3                      "Unit"
+
+GUI_Overlay_3a                     "Unit of position and size"
+
+GUI_Overlay_4                      "Rotation"
+
+GUI_Overlay_4a                     "Rotation angle of the overlay [Degree].\n"
+                                   "NOTE: When the mouse wheel is pressed while\n"
+                                   "holding down the shift key, a selected\n"
+                                   "overlay is rotated in 15-degree increments.\n"
+                                   "Holding down the control button rotates in\n"
+                                   "1-degree increments."
+
+GUI_Overlay_5                      "Ratio"
+
+GUI_Overlay_5a                     "Shows the ratio of the width\n"
+                                   "to the height of the image.\n"
+                                   "NOTE: is read only."
+
+GUI_Overlay_6                      "Align"
+
+GUI_Overlay_6a                     "Align overlay to the\n"
+                                   "edges of the background."
+
+GUI_Overlay_6_1                    "Left"
+
+GUI_Overlay_6_2                    "Centered"
+
+GUI_Overlay_6_3                    "Right"
+
+GUI_Overlay_6_4                    "Top"
+
+GUI_Overlay_6_5                    "Middle"
+
+GUI_Overlay_6_6                    "Bottom"
+
+GUI_Overlay_7a                     "Lock size ratio."
+
+GUI_Overlay_8                      "Alpha multiplier"
+
+GUI_Overlay_8a                     " Left side = invisible"
+                                   "Right side = no alpha modification"
+
+GUI_Overlay_TabA1                  "Backgr."
+
+GUI_Overlay_TabA2_0a               "Overlay background is color.\n"
+                                   "A separate color can be specified\n"
+                                   "for each corner of the overlay."
+
+GUI_Overlay_TabA3a                 "Color for image background of left upper corner"
+
+GUI_Overlay_TabA4a                 "Check this to use the color for this corner corner."
+
+GUI_Overlay_TabA5a                 "Color for image background of right upper corner"
+
+GUI_Overlay_TabA6a                 "Color for image background of left bottom corner"
+
+GUI_Overlay_TabA7a                 "Color for image background of right bottom corner"
+
+GUI_Overlay_TabA2_1a               "Overlay background is an image file."
+
+GUI_Overlay_TabA10a                "Name of loaded image file.\n"
+                                   "NOTE: is read only."
+
+GUI_Overlay_TabA11a                "Load an image file."
+
+GUI_Overlay_TabA2_2                "Tool window"
+
+GUI_Overlay_TabA2_2a               "Overlay background from tool window.\n"
+                                   "The overlay background is the\n"
+                                   "output image of a tool window."
+
+GUI_Overlay_TabA20a                "Select window as background image."
+
+GUI_Overlay_TabA12a                "Information about the image.\n"
+                                   "NOTE: is read only."
+
+GUI_Overlay_TabA13a                "Copy image size to\n"
+                                   "AOI width and height."
+
+GUI_Overlay_TabB1                  "Shape"
+
+GUI_Overlay_TabB2                  "Shape"
+
+GUI_Overlay_TabB2a                 "Shape selection."
+
+GUI_Overlay_TabB3                  "Shape deformation"
+
+GUI_Overlay_TabB3a                 "Deformation of shape."
+
+GUI_Overlay_TabB4                  "Fill"
+
+GUI_Overlay_TabB4a                 "Check this to use to draw a filled shape."
+
+GUI_Overlay_TabB5                  "Outline"
+
+GUI_Overlay_TabB5a                 "Check this to use to trace the outline."
+
+GUI_Overlay_TabB10                 "Outline Color"
+
+GUI_Overlay_TabB10a                "Color for the shape outline."
+
+GUI_Overlay_TabB11a                "If set use outline color else use\n"
+                                   "the background for the outline."
+
+GUI_Overlay_TabB12                 "Outline width"
+
+GUI_Overlay_TabB12a                "The thickness of the lines in pixels.\n"
+                                   "Zero is the Windows defined default, which\n"
+                                   "is somewhat different and nicer than 1."
+
+GUI_Overlay_TabC1                  "Text"
+
+GUI_Overlay_TabC2                  "Font"
+
+GUI_Overlay_TabC2a                 "Selected font"
+
+GUI_Overlay_TabC3a                 "Select an other font"
+
+GUI_Overlay_TabC4                  "Size"
+
+GUI_Overlay_TabC4a                 "Font size"
+
+GUI_Overlay_TabC4b                 "Select font size"
+
+GUI_Overlay_TabC7                  "@-3SpacingH AV"
+
+GUI_Overlay_TabC7a                 "Additional space between characters [pixel]"
+
+GUI_Overlay_TabC8                  "@-3SpacingV"
+
+GUI_Overlay_TabC8a                 "Additional space between lines [pixel]"
+
+GUI_Overlay_TabC10                 "Format"
+
+GUI_Overlay_TabC11                 "B"
+
+GUI_Overlay_TabC11a                "Toggle bold font style."
+
+GUI_Overlay_TabC12                 "I"
+
+GUI_Overlay_TabC12a                "Toggle italic font style."
+
+GUI_Overlay_TabC13                 "U"
+
+GUI_Overlay_TabC13a                "Toggle underline font style."
+
+GUI_Overlay_TabC17a                "Text color"
+
+GUI_Overlay_TabC18a                "If set use text color else use\n"
+                                   "the background to color the text."
+
+GUI_Overlay_TabC20                 "Hor. align"
+
+GUI_Overlay_TabC21                 "Indent"
+
+GUI_Overlay_TabC21a                "Horizontal indent"
+
+GUI_Overlay_TabC22                 "Ver. align"
+
+GUI_Overlay_TabC23                 "Indent"
+
+GUI_Overlay_TabC23a                "Vertical indent"
+
+GUI_Overlay_TabC30                 "Text"
+
+GUI_Overlay_TabC30a                "Text to display"
+
+GUI_Overlay_TabD1                  "Shadow"
+
+GUI_Overlay_TabD2                  "Active"
+
+GUI_Overlay_TabD2a                 "Enable shadow."
+
+GUI_Overlay_TabD3                  "Angle"
+
+GUI_Overlay_TabD3a                 "Angle of shadow casting [Degree]."
+
+GUI_Overlay_TabD4                  "Dist."
+
+GUI_Overlay_TabD4a                 "Distance of shadow"
+
+GUI_Overlay_TabD5a                 "Shadow color"
+
+GUI_Overlay_TabD6a                 "If set use shadow color else use\n"
+                                   "the oveleray image as shadow."
+
+GUI_Overlay_TabD7                  "Blur"
+
+GUI_Overlay_TabD7a                 "Shadow blur"
+
+GUI_Overlay_TabD8                  "Trans."
+
+GUI_Overlay_TabD8a                 "Shadow transparency [%]"
+
+GUI_Overlay_Popup_Param            "Parameter"
+
+GUI_Overlay_Popup_Del              "Delete overlay"
+
+GUI_Overlay_Popup_Ins              "Insert new overlay"
+
+GUI_Overlay_Popup_App              "Append new overlay"
+
+GUI_Overlay_Popup_DelAll           "Delete all overlays"
+
+;
+;
+; End Of File

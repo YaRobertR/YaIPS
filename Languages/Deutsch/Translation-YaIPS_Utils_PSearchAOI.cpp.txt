@@ -1,0 +1,22 @@
+;-------------------------------------------------------
+; YaIPS_Utils_PSearchAOI.cpp
+;-------------------------------------------------------
+;
+; 13 entries
+;
+Utils_PSearch_CheckErr0            "OK"
+Utils_PSearch_CheckErr1            "Bildrand!"
+Utils_PSearch_CheckErr2            "Schlechtes Muster!"
+Utils_PSearch_CheckErr3            "Kontrast!"
+Utils_PSearch_CheckErr4            "Nicht eindeutig!"
+Utils_PSearch_CheckErr5            "Unbrauchbar"
+Utils_PSearch_CheckErr6            "AOI zu groß"
+Utils_PSearch_InspErr1             "Pos. Fehler!"
+Utils_PSearch_InspErr2             "uchbereich!"
+Utils_PSearch_InspErr3             "Bildrand!"
+Utils_PSearch_InspErr4             "Position!"
+Utils_PSearch_InspErr5             "Nicht eingelernt!
+Utils_PSearch_InspErr6             "Fehler!"
+;
+;
+; End Of File

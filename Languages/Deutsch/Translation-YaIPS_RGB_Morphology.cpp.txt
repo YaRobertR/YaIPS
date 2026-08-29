@@ -1,0 +1,10 @@
+;-------------------------------------------------------
+; YaIPS_RGB_Morphology.cpp
+;-------------------------------------------------------
+;
+; 1 entries
+;
+RGB_Morph1                         "Filter wird nicht unterstützt"
+;
+;
+; End Of File

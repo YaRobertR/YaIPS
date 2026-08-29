@@ -1,0 +1,32 @@
+;-------------------------------------------------------
+; YaIPS_GUI_CustomColors.cpp
+;-------------------------------------------------------
+;
+; 11 entries
+;
+GUI_CustomColors_Title             "Custom colors"
+
+GUI_CustomColors_File_Preset       "File name"
+
+GUI_CustomColors_Load1             "Load custom color file"
+
+GUI_CustomColors_Save1             "Save custom color file"
+
+GUI_CustomColors_1a                "Load custom colors from file"
+
+GUI_CustomColors_2a                "Save custom colors to file"
+
+GUI_CustomColors_3                 "Name"
+
+GUI_CustomColors_3a                "Name of last loaded custom color file\n"
+                                   "NOTE: is read only"
+
+GUI_CustomColors_10a               "Press to change the color"
+
+GUI_CustomColors_11                "Name"
+
+GUI_CustomColors_11a               "Name for this color"
+
+;
+;
+; End Of File

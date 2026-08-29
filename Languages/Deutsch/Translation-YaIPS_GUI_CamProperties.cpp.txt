@@ -1,0 +1,33 @@
+;-------------------------------------------------------
+; YaIPS_GUI_CamProperties.cpp
+;-------------------------------------------------------
+;
+; 24 entries
+;
+GUI_CamProperties_Title            "Kameraeinstellungen"
+GUI_CamPropAmp1                    "Helligkeit"
+GUI_CamPropAmp2                    "Kontrast"
+GUI_CamPropAmp3                    "Farbton"
+GUI_CamPropAmp4                    "Sättigung"
+GUI_CamPropAmp5                    "Schärfe"
+GUI_CamPropAmp6                    "Gamma"
+GUI_CamPropAmp7                    "Weißbgleich"
+GUI_CamPropAmp8                    "Hintergrund"
+GUI_CamPropAmp9                    "Verstärkung"
+GUI_CamPropAmp10                   "Farbaktivierung"
+GUI_CamPropAmp11                   "Netz Frq. [Hz]"
+GUI_CamPropCtr1                    "Zoom"
+GUI_CamPropCtr2                    "Fokus"
+GUI_CamPropCtr3                    "Belichtung"
+GUI_CamPropCtr4                    "Öffnung/Iris"
+GUI_CamPropCtr5                    "Schwenkung"
+GUI_CamPropCtr6                    "Neigung"
+GUI_CamPropCtr7                    "Rollen"
+GUI_CamProperties_TabA1            "Video Proc Verstärker"
+GUI_CamProperties_Auto             "Autom."
+GUI_CamProperties_Default          "Standard"
+GUI_CamProperties_Defaulta         "Standardwerte setzen."
+GUI_CamProperties_TabB1            "Kamerasteuerung"
+;
+;
+; End Of File

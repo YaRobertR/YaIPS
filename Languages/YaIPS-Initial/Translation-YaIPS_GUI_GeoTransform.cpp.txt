@@ -1,0 +1,123 @@
+;-------------------------------------------------------
+; YaIPS_GUI_GeoTransform.cpp
+;-------------------------------------------------------
+;
+; 51 entries
+;
+GUI_GeoTrans_Title                 "Geometry transformation"
+
+GUI_GeoTrans_TabM2                 "Color outside"
+
+GUI_GeoTrans_TabM2h                "Color for the area outside an image.\n"
+                                   "Rotating an image or performing other transformations\n"
+                                   "creates areas outside the image. These are colored\n"
+                                   "accordingly."
+
+GUI_GeoTrans_TabM3                 "Hide outside area"
+
+GUI_GeoTrans_TabM3h                "Hide outside area.\n"
+                                   "If enabled, the area outside the image is hidden.\n"
+                                   "Otherwise, the area outside is visible."
+
+GUI_GeoTrans_TabA1                 "Simple"
+
+GUI_GeoTrans_TabA2                 "Power of 2"
+
+GUI_GeoTrans_TabA2a                "Enlargement/reduction by powers of two\n"
+                                   " > 0: 1 = * 2, 2 = * 4, 3 = * 8, ...\n"
+                                   "   0: 1:1 copy\n"
+                                   " < 0: 1 = / 2, 2 = / 4, 3 = / 8, ...\n"
+                                   "Pixels are enlarged without interpolation."
+
+GUI_GeoTrans_TabA3a                "Power of 2"
+
+GUI_GeoTrans_TabA4                 "Mirroring"
+
+GUI_GeoTrans_TabA4a                "Mirror image."
+
+GUI_GeoTrans_TabA5                 "Flip"
+
+GUI_GeoTrans_TabA5a                "Flip image."
+
+GUI_GeoTrans_TabA6                 "Rot. +90°"
+
+GUI_GeoTrans_TabA6a                "Rotate image by +90."
+
+GUI_GeoTrans_TabA7                 "Rot. 180°"
+
+GUI_GeoTrans_TabA7a                "Rotate image by 180°."
+
+GUI_GeoTrans_TabA8                 "Rot. -90°"
+
+GUI_GeoTrans_TabA8a                "Rotate image by -90°."
+
+GUI_GeoTrans_TabA9a                "Rotates the image around its center."
+
+GUI_GeoTrans_TabA10a               "Rotation angle [°]"
+
+GUI_GeoTrans_TabA11                "Size [%]"
+
+GUI_GeoTrans_TabA11a               "Enlarges the image"
+
+GUI_GeoTrans_TabA12a               "Size [%]"
+
+GUI_GeoTrans_TabB1                 "Lens"
+
+GUI_GeoTrans_TabB2                 "Lens correction"
+
+GUI_GeoTrans_TabB2a                "Correction of lens distortion and minor\n"
+                                   "rotation, size, or offset corrections."
+
+GUI_GeoTrans_TabB3                 "Lens factor"
+
+GUI_GeoTrans_TabB3a                "Correction of lens distortion [units of 1.0E-10]"
+
+GUI_GeoTrans_TabB4                 "Rotation"
+
+GUI_GeoTrans_TabB4a                "Correction of rotational position [°]"
+
+GUI_GeoTrans_TabB5                 "Size"
+
+GUI_GeoTrans_TabB5a                "Size correction [%]]"
+
+GUI_GeoTrans_TabB6                 "Offset X"
+
+GUI_GeoTrans_TabB6a                "Offset correction [pixels]"
+
+GUI_GeoTrans_TabB7                 "Offset Y"
+
+GUI_GeoTrans_TabB7a                "KOffset correction [pixels]"
+
+GUI_GeoTrans_TabC1                 "Par. Pro."
+
+GUI_GeoTrans_TabC2                 "Parallel projection"
+
+GUI_GeoTrans_TabC2a                "Correction of lens distortion and minor\n"
+                                   "rotation, size, or offset corrections."
+
+GUI_GeoTrans_TabC3a                "Rotation [°]"
+
+GUI_GeoTrans_TabC4                 "Size X"
+
+GUI_GeoTrans_TabC4a                "Enlargement X"
+
+GUI_GeoTrans_TabC5a                "Enlargement Y"
+
+GUI_GeoTrans_TabC6                 "Offset X"
+
+GUI_GeoTrans_TabC6a                "Offset X"
+
+GUI_GeoTrans_TabC7a                "Offset Y"
+
+GUI_GeoTrans_TabD1                 "Cut"
+
+GUI_GeoTrans_TabD1a                "Cut out an image part"
+
+GUI_GeoTrans_TabD2                 "Cut out image part"
+
+GUI_GeoTrans_TabD2a                "Cut out an image part.\n"
+                                   "The selected AOI is cut out."
+
+;
+;
+; End Of File

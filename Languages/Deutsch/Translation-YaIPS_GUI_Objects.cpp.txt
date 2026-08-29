@@ -1,0 +1,183 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Objects.cpp
+;-------------------------------------------------------
+;
+; 73 entries
+;
+GUI_Objects_Title                  "Objekte"
+
+GUI_Objects_TabA1                  "Binarisierung"
+
+GUI_Objects_TabA1a                 "Durch die Binarisierung wird ein Bild in\n"
+                                   "RLCs (Run Length Codes) umgewandelt.\n"
+                                   "Diese können effizienter verarbeitet\n"
+                                   "werden als Farb- oder Schwarzweißbilder."
+
+GUI_Objects_TabA3a                 "Bei einem Farbbild wird die\n"
+                                   "Intensität verwendet"
+
+GUI_Objects_TabA4a                 "Bei einem Farbbild wird die\n"
+                                   "Rote Farbkomponente verwendet"
+
+GUI_Objects_TabA5a                 "Bei einem Farbbild wird die\n"
+                                   "Grüne Farbkomponente verwendet"
+
+GUI_Objects_TabA6a                 "Bei einem Farbbild wird die\n"
+                                   "Blaue Farbkomponente verwendet"
+
+GUI_Objects_TabA7                  "Binarisierung:"
+
+GUI_Objects_TabA8                  ">= S1"
+
+GUI_Objects_TabA8a                 "Objekte sind heller als die 1. Schwelle."
+
+GUI_Objects_TabA9                  ">= S1 und < S2"
+
+GUI_Objects_TabA9a                 "Objekte sind heller als die 1. Schwelle\n"
+                                   "oder dunkler als die 2. Schwelle."
+
+GUI_Objects_TabA20a                "Invertiert die Binarisierung."
+
+GUI_Objects_TabA10                 "Chroma"
+
+GUI_Objects_TabA10a                "Chroma Keying oder Greenscreen.\n"
+                                   "Bei einem Farbbild wird der\n"
+                                   "Farbwert zum Binarisieren verwendet."
+
+GUI_Objects_TabA11                 "Auto"
+
+GUI_Objects_TabA11a                "Berechnung eines Binarisierungsschwellenwerts mittels\n"
+                                   "Histogrammanalyse. Das Helligkeitshistogramm des Bildes\n"
+                                   "muss zwei deutlich voneinander getrennte Maxima aufweisen.\n"
+                                   "Der Schwellenwert ist ein % Wert zwischen diesen Maxima."
+
+GUI_Objects_TabA21                 "Schwelle 1"
+
+GUI_Objects_TabA21a                "1. Helligkeitsschwelle für die Binarisierung.\n"
+                                   "Trennt Objekte vom Hintergrund."
+
+GUI_Objects_TabA22                 "Schwelle 2"
+
+GUI_Objects_TabA22a                "2. Helligkeitsschwelle für die Binarisierung.\n"
+                                   "Trennt Objekte vom Hintergrund."
+
+GUI_Objects_TabA23                 "Chroma Key"
+
+GUI_Objects_TabA24a                "Drücke, um die Farbe zu ändern"
+
+GUI_Objects_TabA25                 "Schwelle"
+
+GUI_Objects_TabA25a                "Chroma Key Schwelle Farbabstand"
+
+GUI_Objects_TabA26                 "Schwelle %"
+
+GUI_Objects_TabA26a                "Prozent Schwellenwert für die Binarisierung.\n"
+                                   "Wert zwischen den Maxima eines bimodalen Histogramms."
+
+GUI_Objects_TabB1                  "Aktionen"
+
+GUI_Objects_TabB1a                 "Nach der Binarisierung können zusätzliche\n"
+                                   "Aktionen auf die RLCs angewendet werden."
+
+GUI_Objects_TabB2                  "Aktion"
+
+GUI_Objects_TabB3                  "Argument"
+
+GUI_Objects_TabB3a                 "Auswahl einer Aktion"
+
+GUI_Objects_PostOp1                "---"
+
+GUI_Objects_PostOp2                "Erosion"
+
+GUI_Objects_PostOp2b               "Erosion-2"
+
+GUI_Objects_PostOp3                "Dilatation"
+
+GUI_Objects_PostOp3b               "Dilatation-2"
+
+GUI_Objects_PostOp4                "Schließung"
+
+GUI_Objects_PostOp4b               "Schließung-2"
+
+GUI_Objects_PostOp5                "Öffnung"
+
+GUI_Objects_PostOp5b               "Öffnung-2"
+
+GUI_Objects_PostOp6                "Invertierung"
+
+GUI_Objects_PostOp7                "Entferne größtes Objekt"
+
+GUI_Objects_PostOp8                "Behalte größtes Objekt"
+
+GUI_Objects_PostOp9                "Entferne Schwelle Größe"
+
+GUI_Objects_TabB4a                 "Argument für ausgewählte Aktion"
+
+GUI_Objects_TabC1                  "Objekte"
+
+GUI_Objects_TabC1a                 "RLCs werden zu Objekten zusammengefasst und\n"
+                                   "Informationen zu jdem Objekt berechnet.\n"
+                                   "Z. B. Position und Größe eines umschließenden\n"
+                                   "Rechtecks, die Anzahl der binarisierten\n"
+                                   "Pixel/Fläche, den Schwerpunkt, ..."
+
+GUI_Objects_TabC2                  "Objekte labeln und anzeigen"
+
+GUI_Objects_TabC2a                 "Ermittlung (labeling) zusammenhängender Bildteile."
+
+GUI_Objects_TabC3                  "Schwelle Gr.:"
+
+GUI_Objects_TabC4                  "S klein"
+
+GUI_Objects_TabC4a                 "Kleinste Seitenlänge eines Quadrats in pixel.\n"
+                                   "Die Fläche des Quatrates ist die minimale\n"
+                                   "Fläche eines zu verarbeitenden Objekts."
+
+GUI_Objects_TabC5                  "S groß"
+
+GUI_Objects_TabC5a                 "Größte Seitenlänge eines Quadrats in pixel.\n"
+                                   "Die Fläche des Quatrates ist die maximale\n"
+                                   "Fläche eines zu verarbeitenden Objekts.\n"
+                                   "NOTE: muss größer als 'S klein' sein."
+
+GUI_Objects_TabC6                  "Beschriftung:"
+
+GUI_Objects_TabC7                  "Nr"
+
+GUI_Objects_Tab7a                  "Beschriftung mit fortlaufender Nummer."
+
+GUI_Objects_TabC8                  "Gr. Pix"
+
+GUI_Objects_TabC8a                 "Beschriftung mit Größe in Pixel."
+
+GUI_Objects_TabC9                  "Gr. mm"
+
+GUI_Objects_TabC9a                 "Beschriftung mit Größe in mm."
+
+GUI_Objects_TabC10                 "Fl. Pix²"
+
+GUI_Objects_TabC10a                "Beschriftung mit Fläche in Pixel²."
+
+GUI_Objects_TabC11                 "Fl. mm²"
+
+GUI_Objects_TabC11a                "Beschriftung mit Fläche in mm²."
+
+GUI_Objects_TabC12                 "Schwerp."
+
+GUI_Objects_TabC12a                "Markiert den Schwerpunkt der}n"
+                                   "binärisierten Fläche."
+
+GUI_Objects_TabC13                 "Hell."
+
+GUI_Objects_TabC13a                "Beschriftung mit mittlerer\n"
+                                   "Helligkeit/Farbe."
+
+GUI_Objects_Insp4a                 "--- Objekte"
+
+GUI_Objects_Insp4b                 "1 Objekt"
+
+GUI_Objects_Insp4c                 "%d Objekte"
+
+;
+;
+; End Of File

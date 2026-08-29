@@ -1,0 +1,12 @@
+;-------------------------------------------------------
+; YaIPS_RGB_GeoTransform.cpp
+;-------------------------------------------------------
+;
+; 3 entries
+;
+RGB_Geo_Resize1                    "New image too big"
+RGB_Geo_Resize2                    "New image too small"
+RGB_Geo_TransPM2                   "Transformation matrix not valid for this routine"
+;
+;
+; End Of File

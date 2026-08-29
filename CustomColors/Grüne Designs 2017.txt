@@ -1,0 +1,25 @@
+// Grüne Designs 2017.txt
+//
+// A YaIPS custom color file
+//
+//    R   G   B Color name
+//
+ 1:  70 150  43 Grün
+ 2: 255 238   0 Gelb
+ 3:  76 180 231 Blau
+ 4: 212 237 252 Hellblau
+ 5: 230   0 126 Magenta
+ 6: 255 213   0 Dunkelgelb
+ 7:  10  50  30 Dunkelgrün
+ 8: 255 255 255 Weiß
+ 9:   0   0   0 Schwarz
+10:   0   0   0 
+11:   0   0   0 
+12:   0   0   0 
+13:   0   0   0 
+14:   0   0   0 
+15:   0   0   0 
+16:   0   0   0 
+//
+// End of file
+//

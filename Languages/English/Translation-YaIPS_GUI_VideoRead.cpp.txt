@@ -1,0 +1,58 @@
+;-------------------------------------------------------
+; YaIPS_GUI_VideoRead.cpp
+;-------------------------------------------------------
+;
+; 15 entries
+;
+GUI_VideoR_Title                   "Video viewer"
+
+GUI_VideoR_Par_Autoplay            "Video autoplay"
+
+GUI_VideoR_Par_Autoplaya           "A video automatically begins\n"
+                                   "playing after loading."
+
+GUI_VideoR_Par_VideoBufOn          "Video buffer"
+
+GUI_VideoR_Par_VideoBufOna         "If set, a backtracking buffer is used.\n"
+                                   "When playing forward, video frames are buffered.\n"
+                                   "When paused, these past frames can be viewed."
+
+GUI_VideoR_Par_VideoBufSize        "Size"
+
+GUI_VideoR_Par_VideoBufSizea       "Backtracking buffer size.\n"
+                                   "Range: 50 to 500 megabytes.\n"
+                                   "Recommended value: 100"
+
+GUI_VideoR_PlayPause               "Toggle between play and pause.\n"
+                                   "Shortcut: Spacebar"
+
+GUI_VideoR_PosBegin                "Back to the beginning of the video.\n"
+                                   "Shortcut: B or Home"
+
+GUI_VideoR_ButSkipBack             "Skip back.\n"
+                                   "Shortcut: N or Left\n"
+                                   "     back 10 Seconds\n"
+                                   "  + Ctrl:  1 Minute\n"
+                                   " + Shift: 10 Minutes"
+
+GUI_VideoR_ButSkipForward          "Skip forward.\n"
+                                   "Shortcut: M or right\n"
+                                   "  forward 10 Seconds\n"
+                                   "  + Ctrl:  1 Minute\n"
+                                   " + Shift: 10 Minutes"
+
+GUI_VideoR_ButSpeedDec             "Decrease playback speed.\n"
+                                   "Shortcut: J or Down"
+
+GUI_VideoR_ButSpeedInc             "Increase playback speed.\n"
+                                   "Shortcut: K or Up"
+
+GUI_VideoR_ButOpen                 "Load video from file.\n"
+                                   "Shortcut: Ctrl+L"
+
+GUI_VideoR_ButRepeat               "Toggle repeat video.\n"
+                                   "Shortcut: R"
+
+;
+;
+; End Of File

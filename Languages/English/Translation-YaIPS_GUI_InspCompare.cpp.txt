@@ -1,0 +1,65 @@
+;-------------------------------------------------------
+; YaIPS_GUI_InspCompare.cpp
+;-------------------------------------------------------
+;
+; 24 entries
+;
+GUI_InspCompare_Title              "Compare"
+
+GUI_InspCompare_TabAa              "AOI"
+
+GUI_InspCompare_TabA2a             "Position left edge AOI"
+
+GUI_InspCompare_TabA3a             "Position upper edge AOI"
+
+GUI_InspCompare_TabA4              "W"
+
+GUI_InspCompare_TabA4a             "Width of the AOI"
+
+GUI_InspCompare_TabA6              "H"
+
+GUI_InspCompare_TabA5a             "Height of the AOI"
+
+GUI_InspCompare_GroupB1            "Dark error tolerance"
+
+GUI_InspCompare_GroupB1a           "Image pixels with a brightness deviation larger\n"
+                                   "than this dark tolerance are marked as error pixels."
+
+GUI_InspCompare_GroupB2            "Bright error tolerance"
+
+GUI_InspCompare_GroupB2a           "Image pixels with a brightness deviation larger\n"
+                                   "than this bright tolerance are marked as error pixels."
+
+GUI_InspCompare_GroupB3            "Error area small blobs"
+
+GUI_InspCompare_GroupB3a           "Area threshold for small blobs.\n"
+                                   "Blobs with an area bigger than this threshold. Blobs\n"
+                                   "below this (colored blue) are discarded.\n"
+                                   "An area higher than this and smaller than\n"
+                                   "'Error area big blobs' is a small blob (colored green).\n"
+
+GUI_InspCompare_GroupB4            "Error area big blobs"
+
+GUI_InspCompare_GroupB4a           "Area threshold for large blobs (colored red).\n"
+                                   "Area must be larger than this.\n"
+                                   "A bad inspection result occurs when\n"
+                                   "there are one or more large blobs."
+
+GUI_InspCompare_GroupB5            "Sum area small blobs"
+
+GUI_InspCompare_GroupB5a           "A bad inspection result occurs when the area\n"
+                                   "sum area of all small blobs this threshold."
+
+GUI_InspCompare_GroupC1            "Darken"
+
+GUI_InspCompare_GroupC1a           "If set, darken the image.\n"
+                                   "This makes error markings more visible."
+
+GUI_InspCompare_GroupC2            "Area"
+
+GUI_InspCompare_GroupC2a           "If set, show area\n"
+                                   "of small and large blobs."
+
+;
+;
+; End Of File

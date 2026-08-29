@@ -1,0 +1,122 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Other.cpp
+;-------------------------------------------------------
+;
+; 43 entries
+;
+GUI_Other_Title                    "Sonstige"
+
+GUI_Other_TabA1                    "FIFO"
+
+GUI_Other_TabA2                    "FIFO"
+
+GUI_Other_TabA2a                   "Bild-FIFO (First In First Out)\n"
+                                   "Dieses FIFO verzögert Bilder."
+
+GUI_Other_TabA3                    "Verzögerung"
+
+GUI_Other_TabA3a                   "Größe des FIFO bzw. Anzahl der Bildverzögerungen.\n"
+                                   "0 = keine Verzögerung."
+
+GUI_Other_TabB1                    "Chroma-Key"
+
+GUI_Other_TabB1a                   "Chroma-Key Verarbeitung\n"
+                                   "Erstelle eine Alphamaske durch Vergleich\n"
+                                   "mit einer bestimmten Farbe."
+
+GUI_Other_TabB3                    "Farbe"
+
+GUI_Other_TabB4a                   "Drücke, um die Farbe zu ändern"
+
+GUI_Other_TabB5                    "Farbe S"
+
+GUI_Other_TabB5a                   "Schwelle Farbton\n"
+                                   "Standard = 30."
+
+GUI_Other_TabB6                    "A"
+
+GUI_Other_TabB6a                   "Ausblendbereich Farbton\n"
+                                   "0 = aus. Standard = 10."
+
+GUI_Other_TabB7                    "Sät S"
+
+GUI_Other_TabB7a                   "Schwelle Sättigung.\n"
+                                   "0 = aus. Standard = 20."
+
+GUI_Other_TabB8                    "A"
+
+GUI_Other_TabB8a                   "Ausblendbereich Sättigung.\n"
+                                   "0 = aus. Standard = 10."
+
+GUI_Other_TabB9                    "HUn S"
+
+GUI_Other_TabB9a                   "Untere Schwelle Helligkeit.\n"
+                                   "0 = aus. Standard = 20."
+
+GUI_Other_TabB10                   "A"
+
+GUI_Other_TabB10a                  "Ausblendbereich untere Schwelle Helligkeit.\n"
+                                   "0 = aus. Standard = 10."
+
+GUI_Other_TabB11                   "HOb S"
+
+GUI_Other_TabB11a                  "Oberere Schwelle Intensität.\n"
+                                   "0 = aus. Standard = 10."
+
+GUI_Other_TabB12                   "A"
+
+GUI_Other_TabB12a                  "Ausblendbereich obere Schwelle Helligkeit.\n"
+                                   "0 = aus. Standard = 10."
+
+GUI_Other_TabB21                   "Ein+A"
+
+GUI_Other_TabB21a                  "Das Ausgabebild ist das verarbeitete\n"
+                                   "Eingabebild plus Alphamaske."
+
+GUI_Other_TabB22                   "Alpha"
+
+GUI_Other_TabB22a                  "Das Ausgabebild ist die Alphamaske."
+
+GUI_Other_TabB23                   "Über"
+
+GUI_Other_TabB23a                  "Hintergrund überlagern\n"
+                                   "Eingabebild 1 ist die Überlagerung.\n"
+                                   "Eingabebild 2 ist der Hintergrund."
+
+GUI_Other_TabB24                   "Ein-A"
+
+GUI_Other_TabB24a                  "Das Ausgabebild ist das verarbeitete\n"
+                                   "Eingabebild (ohne Alpha-Kanal)."
+
+GUI_Other_TabB25                   "Farbe"
+
+GUI_Other_TabB25a                  "Das Ausgabebild ist das verarbeitete\n"
+                                   "Eingabebild gemischt mit einer Farabe."
+
+GUI_Other_TabB26a                  "Zum mischen verwendete Farbe.\n"
+                                   "Drücke, um die Farbe zu ändern"
+
+GUI_Other_TabB30                   "Smoothstep"
+
+GUI_Other_TabB30a                  "Smoothstep-Verarbeitung anwenden.\n"
+                                   "Verbessert die Kantenübergänge."
+
+GUI_Other_TabB31                   "Despill Out"
+
+GUI_Other_TabB31a                  "Entfernt Farbreste von der außerhalb\n"
+                                   "der Maske und den Rändern."
+
+GUI_Other_TabB32                   "Despill In"
+
+GUI_Other_TabB32a                  "Entfernt Farbreste von der innerhalb\n"
+                                   "der Maske und den Rändern."
+
+GUI_Other_Chroma_OK                "Chroma-Key"
+
+GUI_Other_Chroma_ErrCol            "Chroma-Key: Kein Farbbild"
+
+GUI_Other_Chroma_ErrOther          "Chroma-Key: Fehler"
+
+;
+;
+; End Of File

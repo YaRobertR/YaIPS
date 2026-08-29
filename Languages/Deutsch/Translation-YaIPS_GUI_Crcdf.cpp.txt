@@ -1,0 +1,85 @@
+;-------------------------------------------------------
+; YaIPS_GUI_Crcdf.cpp
+;-------------------------------------------------------
+;
+; 31 entries
+;
+GUI_Crcdf_Title                    "Korrelation"
+
+GUI_Crcdf_TabA1                    "Allgemein"
+
+GUI_Crcdf_TabA1a                   "Allgemeine Einstellungen"
+
+GUI_Crcdf_TabA2                    "Ausgangsbild:"
+
+GUI_Crcdf_TabA3                    "Szene"
+
+GUI_Crcdf_TabA3a                   "Das Eingabebild 'Szene' wird\n"
+                                   "als Ausgabebild angezeigt."
+
+GUI_Crcdf_TabA4                    "Korrelation"
+
+GUI_Crcdf_TabA4a                   "Als Ausgangsbild wird das Korrelationsfeld angezeigt."
+
+GUI_Crcdf_TabA6a                   "Bei einem Farbbild wird der rote\n"
+                                   "Farbkanal zur Korrelation verwendet"
+
+GUI_Crcdf_TabA7a                   "Bei einem Farbbild wird der grüne\n"
+                                   "Farbkanal zur Korrelation verwendet"
+
+GUI_Crcdf_TabA8a                   "Bei einem Farbbild wird der blaue\n"
+                                   "Farbkanal zur Korrelation verwendet"
+
+GUI_Crcdf_TabB1                    "Objekte in Szene"
+
+GUI_Crcdf_TabB1a                   "Objekte im Szenenbild vereinzeln"
+
+GUI_Crcdf_TabB2                    "Objekte im Szenenbild vereinzeln"
+
+GUI_Crcdf_TabB2a                   "Objekte werde im Szenenbild vereinzelt.\n"
+                                   "Jedes Objekt wird getrennt korreliert."
+
+GUI_Crcdf_TabB3                    "Objekte sind:"
+
+GUI_Crcdf_TabB4                    "hell"
+
+GUI_Crcdf_TabB4a                   "Objekte sind heller als die Schwelle."
+
+GUI_Crcdf_TabB5                    "dunkel"
+
+GUI_Crcdf_TabB5a                   "Objekte sind dunkler als die Schwelle."
+
+GUI_Crcdf_TabB6                    "Bin. Schw."
+
+GUI_Crcdf_TabB6a                   "Helligkeitsschwelle für die Binarisierung.\n"
+                                   "Trennt Objekte vom Hintergrund."
+
+GUI_Crcdf_TabB7                    "S klein"
+
+GUI_Crcdf_TabB7a                   "Kleinste Seitenlänge eines Quadrats in pixel.\n"
+                                   "Die Fläche des Quatrates ist die minimale\n"
+                                   "Fläche eines zu verarbeitenden Objekts."
+
+GUI_Crcdf_TabB8                    "S groß"
+
+GUI_Crcdf_TabB8a                   "Größte Seitenlänge eines Quadrats in pixel.\n"
+                                   "Die Fläche des Quatrates ist die maximale\n"
+                                   "Fläche eines zu verarbeitenden Objekts.\n"
+                                   "NOTE: muss größer als 'S klein' sein."
+
+GUI_Crcdf_TabB9                    "Schw. Qualität"
+
+GUI_Crcdf_TabB9a                   "Ergebnisse mit besserer Qualität werden grün eingefärbt,\n"
+                                   "Ergebnisse mit schlechter Qualität werden gelb bis pink eingefärbt."
+
+GUI_Crcdf_Tools2a                  "Szene. Dieses Bild wird nach Vorkommen\n"
+                                   "des Objekts durchsucht."
+
+GUI_Crcdf_Tools3a                  "Objekt.\n"
+                                   "Muss ein Schwarzweißbild sein."
+
+GUI_Crcdf_Draw1                    "Q %.1f"
+
+;
+;
+; End Of File

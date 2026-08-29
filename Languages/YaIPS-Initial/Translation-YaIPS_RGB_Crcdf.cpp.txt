@@ -1,0 +1,13 @@
+;-------------------------------------------------------
+; YaIPS_RGB_Crcdf.cpp
+;-------------------------------------------------------
+;
+; 4 entries
+;
+RGB_Crcdf_Err1                     "Object not a BW image!"
+RGB_Crcdf_Err2                     "Bytes in scene %d < 0 or >= %d"
+RGB_Crcdf_Err3                     "Object image too large"
+RGB_Crcdf_Err4                     "Object larger than scene or AOI"
+;
+;
+; End Of File

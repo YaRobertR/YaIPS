@@ -1,0 +1,97 @@
+;-------------------------------------------------------
+; YaIPS_GUI_InspEdges.cpp
+;-------------------------------------------------------
+;
+; 42 entries
+;
+GUI_Edges_Title                    "Kanten"
+
+GUI_Edges_GroupA1                  "Messung:"
+
+GUI_Edges_GroupA2                  "Abstand"
+
+GUI_Edges_GroupA2a                 "Absolutmessung.\n"
+                                   "Abstand zwischen den ermittelten Kanten."
+
+GUI_Edges_GroupA3                  "Differenz(1 - 2)"
+
+GUI_Edges_GroupA3a                 "Differenzmessung.\n"
+                                   "Position 1. AOI - Position 2. AOI."
+
+GUI_Edges_GroupA4                  "Ausrichtung:"
+
+GUI_Edges_GroupA5                  "Hor."
+
+GUI_Edges_GroupA5a                 "Kanten werden in horizontaler\n"
+                                   "(waagrechter) Richtung gesucht."
+
+GUI_Edges_GroupA6                  "Vert."
+
+GUI_Edges_GroupA6a                 "Kanten werden in vertikaler\n"
+                                   "(senkrechter) Richtung gesucht."
+
+GUI_Edges_GroupA7                  "Frei"
+
+GUI_Edges_GroupA7a                 "Kanten werden in einer frei\n"
+                                   "wählbaren Richtung gesucht."
+
+GUI_Edges_GroupA8                  "°"
+
+GUI_Edges_GroupA8a                 "Frei wählbare Winkelrichtung"
+
+GUI_Edges_GroupB1                  "1. AOI"
+
+GUI_Edges_GroupB2                  "2. AOI"
+
+GUI_Edges_GroupB3                  "AOI Pos."
+
+GUI_Edges_GroupB4a                 "Position linke Kante 1. AOI"
+
+GUI_Edges_GroupB5a                 "Position obere Kante 1. AOI"
+
+GUI_Edges_GroupB6a                 "Position linke Kante 2. AOI"
+
+GUI_Edges_GroupB7a                 "Position obere Kante 2. AOI"
+
+GUI_Edges_GroupB8                  "AOI Größe"
+
+GUI_Edges_GroupB9a                 "Breite der 1. AOI"
+
+GUI_Edges_GroupB10a                "Höhe der 1. AOI"
+
+GUI_Edges_GroupB11a                "Breite der 2. AOI"
+
+GUI_Edges_GroupB12a                "Höhe der 2. AOI"
+
+GUI_Edges_GroupB13                 "Richtung"
+
+GUI_Edges_GroupB14a                "Richtung der Kantensuche 1. AOI umkehren."
+
+GUI_Edges_GroupB15a                "Richtung der Kantensuche 2. AOI umkehren."
+
+GUI_Edges_GroupB16                 "Min. Kon. %"
+
+GUI_Edges_GroupB17a                "Minimaler Kontrast der 1. AOI in %"
+
+GUI_Edges_GroupB18a                "Minimaler Kontrast der 2. AOI in %"
+
+GUI_Edges_GroupC2                  "- Toleranz"
+
+GUI_Edges_GroupC2a                 "Fehler wenn der ermittelte Abstand\n"
+                                   "mehr als '- Toleranz' kleiner ist."
+
+GUI_Edges_GroupC3                  "Sollabstand"
+
+GUI_Edges_GroupC3a                 "Sollabstand der Kanten."
+
+GUI_Edges_GroupC4a                 "Beim Einlernen wird ein gemessener\n"
+                                   "Abstand als Sollwert übernommen."
+
+GUI_Edges_GroupC5                  "+ Toleranz"
+
+GUI_Edges_GroupC5a                 "Fehler wenn der ermittelte Abstand\n"
+                                   "mehr als '+ Toleranz' größer ist."
+
+;
+;
+; End Of File

@@ -1,0 +1,23 @@
+;-------------------------------------------------------
+; YaIPS_Utils_EdgeAOI.cpp
+;-------------------------------------------------------
+;
+; 16 entries
+;
+Utils_EdgeDM_InspErr1              "Nicht eingelernt!"
+Utils_EdgeDM_InspErr2              "Bildrand!"
+Utils_EdgeDM_InspErr3              ".1 Bildrand!"
+Utils_EdgeDM_InspErr4              ".2 Bildrand!"
+Utils_EdgeDM_InspErr7              ".1 Kante!"
+Utils_EdgeDM_InspErr6              "Kante!"
+Utils_EdgeDM_InspErr7              ".1 Kante!"
+Utils_EdgeDM_InspErr8              ".2 Kante!"
+Utils_EdgeDM_InspErr9              ".3 Kante!"
+Utils_EdgeDM_Inspect10             "Keine Kante gefunden!"
+Utils_EdgeDM_InspErr11             "Position der AOI Fenster!"
+Utils_EdgeDM_InspDM1               "Abst. %.2f %s"
+Utils_EdgeDM_InspDM2               "Abst. %.2f %+.2f %s"
+Utils_EdgePM_InspPM1               "OK"
+;
+;
+; End Of File
