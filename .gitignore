@@ -1,7 +1,20 @@
 # Temporary subdirectories for compilation
 /Debug/
 /Release/
+
+# Lokal collection of downloads
 /Downloads/
+
+# CustomColors: Ignore images for manuals
+images_Manual/
+
+# Keep only 'Default colors.txt' file
+/CustomColors/*
+!/CustomColors/Default?colors.txt
+
+# Presets: Keep only 'ResetToDefaults.prefs' file
+/Presets/*
+!/Presets/ResetToDefaults.prefs
 
 # Compiled Object files
 *.o
