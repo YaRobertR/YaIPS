@@ -1,6 +1,6 @@
 # YaIPS
 
-<img src="Images/YaIPS/Icon-YaIPS-128.png" data-align="center">
+<img src="./YaIPS/Images/YaIPS/Icon-YaIPS-128.png" title="" alt="Icon-YaIPS-128.png" data-align="center">
 
 #### Yet another Image Processing Software
 
