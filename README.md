@@ -27,7 +27,40 @@ Particular emphasis was placed on
 
 YaIPS is therefore ideally suited for **trying out** and **understanding image processing**.
 
-#### Installation
+---
+
+##### User Interface Overview
+
+![Screenshot-01.png](E:\Robert\RRGameTools\Eclipse_IDE\eclipse-workspace\YaIPS\Images\YaIPS\Screenshot-01.png)
+
+The main window is the central element of the user interface. It is divided into three areas:
+
+* Left area: This contains the menu bar as well as numerous functions to display, change or analyze the image in the middle area.
+* Middle area: The current image is displayed in this area.
+* Right area: This area is used to place the **tool windows**.
+
+**Tool windows** are the core of YaIPS. They process images and pass them on to other tool windows for further processing. In this way, the tool windows can be linked together to perform more complex image processing tasks.
+
+---
+
+##### Features
+
+* Image analysis
+  Color channel display, false color representation, 3D representation, measurement of color values, color histograms, horizontal or vertical brightness profiles, measuring distances.
+* Import/generate images
+  from camera, file, video player, or generate images in defined sizes.
+* Image processing
+  filtering images, modifying color, geometric corrections, image processing, correlation, object extraction, …
+* Output images.
+  Save images as .jpg, .png or .tga. Create videos.
+* Inspect images 
+  Take a reference image, measure or correct color, correct position, measure distances, compare image parts.
+* Other
+  Overlay images, shapes or text (can also be used to create posters or shareable images).
+
+---
+
+##### Installation
 
 Windows is the only supported operating system.
 

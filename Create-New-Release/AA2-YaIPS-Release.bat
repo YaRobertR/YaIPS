@@ -103,6 +103,7 @@ xcopy /q /s  ..\Images\Demo\*.*           %tempDir%\Images\Demo
 xcopy /q  ..\Images\Various-Images\*.*    %tempDir%\Images\Various-Images
 
 xcopy /q  ..\Images\YaIPS\Icon-YaIPS.png  %tempDir%\Images\YaIPS
+xcopy /q  ..\Images\YaIPS\Screenshot-*.*  %tempDir%\Images\YaIPS
 
 rem XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 rem Languages
