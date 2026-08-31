@@ -31,7 +31,7 @@ YaIPS is therefore ideally suited for **trying out** and **understanding image p
 
 ##### User Interface Overview
 
-![Screenshot-01.png](E:\Robert\RRGameTools\Eclipse_IDE\eclipse-workspace\YaIPS\Images\YaIPS\Screenshot-01.png)
+![Screenshot-01.png](./Images/YaIPS/Screenshot-01.png)
 
 The main window is the central element of the user interface. It is divided into three areas:
 
