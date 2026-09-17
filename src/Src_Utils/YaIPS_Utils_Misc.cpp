@@ -3,6 +3,16 @@
   YaIPS_Utils_Misc.cpp
 
   03.01.2025 RR: First edition of this file.
+  03.09.2026 RR: * New function IqeB_FileNormPathCharsAndCWD().
+                   Normalize path characters and current working directory.
+                   Replace the begin of the path string with '.'
+                   if the begin is equal to the 'YaIPS_WorkingDirectory'.
+                 * New function IqeB_DirExsits().
+                   Test for a directory to exists.
+  08.09.2026 RR: * New function IqeB_FileCopyFilesInDir().
+                   Copy files in a directory to an other directory.
+                 * New function IqeB_FileDelFilesInDir().
+                   Delete files in a directory.
 
 *****************************************************************************
 */
@@ -57,18 +67,76 @@ int GreatestcommonDivisor( int a, int b)
 
 void IqeB_FileNormalizePathChars( char *pPath)
 {
-  char *p;
+  char *p, WrongPathChar, NormPathChar;
 
   // Normalize path slasches
+
+#ifdef _WIN32
+    WrongPathChar = '/';
+    NormPathChar = '\\';
+#else
+    iWrongPathChar = '\\';
+    NormPathChar = '/';
+#endif
+
   p = pPath;
   while( *p != '\0') {
 
-#ifdef _WIN32
-    if( *p == '/') *p = '\\';
-#else
-    if( *p == '\\') *p = '/';
-#endif
+    if( *p == WrongPathChar) *p = NormPathChar;
     p++;
+  }
+}
+
+/************************************************************************************
+ * IqeB_FileNormPathCharsAndCWD()
+ *
+ * Normalize path characters and current working directory.
+ *
+ * Normalize the path delimiter characters to
+ *   \  for WIN32
+ *   /  for other operating systems.
+ * and replace the begin of the path string with '.'
+ * if the begin is equal to the 'YaIPS_WorkingDirectory'.
+ *
+ * Note: We rely on YaIPS_WorkingDirectory having normalized path characters.
+ */
+
+void IqeB_FileNormPathCharsAndCWD( char *pPath)
+{
+  char *p, WrongPathChar, NormPathChar;
+  int CWDlen;
+
+  // Normalize path slashes
+
+#ifdef _WIN32
+    WrongPathChar = '/';
+    NormPathChar = '\\';
+#else
+    iWrongPathChar = '\\';
+    NormPathChar = '/';
+#endif
+
+  p = pPath;
+  while( *p != '\0') {
+
+    if( *p == WrongPathChar) *p = NormPathChar;
+    p++;
+  }
+
+  // Normalize current working directory
+
+  CWDlen = strlen( YaIPS_WorkingDirectory);    // Length of current working directory string
+
+  if( CWDlen > 0 &&                            // Have a current working directory string
+      (int)strlen( pPath) > CWDlen + 1 &&      // and path is longer than current working director string
+      pPath[ CWDlen] == NormPathChar) {        // and has an other sub path after it.
+
+    if( strnicmp( pPath, YaIPS_WorkingDirectory, CWDlen) == 0) {  // Begin of path is equal to ...
+
+      pPath[ 0] = '.';                         // Set '.' as current working directory
+
+      strcpy( pPath + 1, pPath + CWDlen);      // Copy down part after current working directory
+    }
   }
 }
 
@@ -321,6 +389,30 @@ int IqeB_FileExsits( char *pFilename)
 }
 
 /************************************************************************************
+ * IqeB_DirExsits()
+ *
+ * Test for a directory to exists.
+ *
+ * Return:   directory exists
+ *           directory is not existing
+ */
+
+int IqeB_DirExsits( char *pPath)
+{
+  struct stat info;
+
+//#include <sys/stat.h>
+//#include <stdio.h>
+
+  if( stat( pPath, &info) != 0) {
+
+    return( false);
+  }
+
+  return( info.st_mode & S_IFDIR) != 0;
+}
+
+/************************************************************************************
  * IqeB_FileDelete()
  *
  * Delete file
@@ -332,6 +424,171 @@ void IqeB_FileDelete( char *pFilename)
 {
 
   DeleteFile( pFilename);
+}
+
+/************************************************************************************
+ * IqeB_FileMakePath()
+ *
+ * recursively create a path in the file system.
+ *
+ * NOTE: Argument must be a writable string.
+ *       Path characters are overwritten!
+ *
+ * Return:
+ */
+
+void IqeB_FileMakePath( char *pPath)
+{
+  char *p, SavePathChar;
+
+  if( IqeB_DirExsits( pPath)) {     // If this directory exists, return
+
+    return;
+  }
+
+  p = strrchr( pPath, '/');        // Test for unix style path character
+  if( p == NULL) {
+
+    p = strrchr( pPath, '\\');     // Test for windows style path character
+  }
+
+  if( p == NULL) {                 // None found
+
+    return;
+  }
+
+  SavePathChar = *p;               // Save path character
+
+  *p = '\0';                       // Set end of path string
+
+  IqeB_FileMakePath( pPath);       // Recursive test
+
+  *p = SavePathChar;               // Restore path character
+
+  fl_mkdir( pPath, 0700);
+}
+
+/************************************************************************************
+ * IqeB_FileCopyFilesInDir()
+ *
+ * Copy files in a directory to an other directory.
+ *
+ * Return:
+ */
+
+void IqeB_FileCopyFilesInDir( char *pDirDst, char *pDirSrc)
+{
+  char FileSrc[ MAX_FILENAME_LEN];
+  char FileDst[ MAX_FILENAME_LEN];
+  int  numFiles, i, LenName;
+  dirent **list;
+  char *pName;
+
+  // test for language files
+
+  numFiles = fl_filename_list( pDirSrc, &list, fl_alphasort);
+
+  for( i = 0; i < numFiles; i++) {
+
+    pName = list[i]->d_name;
+
+    LenName = strlen( pName);
+
+    if( pName[ 0] == '\0' ||   // End of string
+        pName[ 0] == '.' ) {   // current dir or dir up
+
+      continue;
+    }
+
+    // Skip directories. Directories have a '/' as last character
+    if( LenName > 0 && pName[ LenName - 1] == '/') { // Is a directory
+
+      continue;
+    }
+
+    // Construct path source path
+
+    strcpy( FileSrc, pDirSrc);
+    strcat( FileSrc, "/");
+    strcat( FileSrc, pName);
+
+    IqeB_FileNormalizePathChars( FileSrc);
+
+    // Construct destinationn path for file
+
+    strcpy( FileDst, pDirDst);
+    strcat( FileDst, "/");
+    strcat( FileDst, pName);
+
+    IqeB_FileNormalizePathChars( FileDst);
+
+    // Copy file
+
+    CopyFile( FileSrc, FileDst, false);
+  }
+
+  // Free the file list
+
+  fl_filename_free_list( &list, numFiles);
+
+}
+
+/************************************************************************************
+ * IqeB_FileDelFilesInDir()
+ *
+ * Delete files in a directory.
+ *
+ * NOTE: Sub directories are not deleted.
+ *
+ * Return:
+ */
+
+void IqeB_FileDelFilesInDir( char *pDir)
+{
+  char FileSrc[ MAX_FILENAME_LEN];
+  int  numFiles, i, LenName;
+  dirent **list;
+  char *pName;
+
+  // test for language files
+
+  numFiles = fl_filename_list( pDir, &list, fl_alphasort);
+
+  for( i = 0; i < numFiles; i++) {
+
+    pName = list[i]->d_name;
+
+    LenName = strlen( pName);
+
+    if( pName[ 0] == '\0' ||   // End of string
+        pName[ 0] == '.' ) {   // current dir or dir up
+
+      continue;
+    }
+
+    // Skip directories. Directories have a '/' as last character
+    if( LenName > 0 && pName[ LenName - 1] == '/') { // Is a directory
+
+      continue;
+    }
+
+    // Construct path source path
+
+    strcpy( FileSrc, pDir);
+    strcat( FileSrc, "/");
+    strcat( FileSrc, pName);
+
+    IqeB_FileNormalizePathChars( FileSrc);
+
+    // Delete file
+
+    fl_unlink( FileSrc);
+  }
+
+  // Free the file list
+
+  fl_filename_free_list( &list, numFiles);
+
 }
 
 // ---------------------------------------------------------------------------------

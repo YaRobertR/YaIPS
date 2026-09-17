@@ -3,9 +3,26 @@
   YaIPS_GUI_Main.cpp
 
   03.01.2025 RR: First edition of this file.
+  03.09.2026 RR: * Function main()
+                   * Ensure that 'YaIPS_WorkingDirectory' has normalized
+                     path characters.
+                   * Ensure clip board directory is created
+                 * IqeB_Main_SaveCopy_Callback()
+                   Ensure normalized path characters and working directory
+                   for files to save.
+  08.09.2026 RR: * Added menu entry 'File/Reset presets'.
+                   Call the call back IqeB_Main_PresetLoad() with the
+                   argument 'pValueArg' set to 1.
+                 * IqeB_Main_PresetLoad()
+                   Handle 'pValueArg' over to call of function IqeB_PresetLoad_cb().
+                 * Function main()
+                   Added call to IqeB_PresetCleanClipboard().
+                   Clean not used clipboard subdirectories.
 
 *****************************************************************************
 */
+
+//x/#define USE_LOGFILE   1          // Define this to use a log file for startup testing
 
 #include <windows.h>
 #include <winbase.h>
@@ -49,6 +66,54 @@ int IeqB_GUI_ResourceBits = 0;                        // Hold locked resources
 
 static char GUI_StartupFile[ MAX_FILENAME_LEN];       // file to load after startup
 static unsigned int GUI_BackgroundColor;              // Remember for GUI call
+
+/************************************************************************************
+ * Log-file support.
+ */
+
+#ifdef USE_LOGFILE          // Use a log file
+
+static FILE *pLogFile = NULL;   /* test-log on logfile */
+
+#define FOPEN()                        Logfile_Open()
+#define FCLOSE()                       if( logf != NULL) { fclose( pLogFile); pLogFile = NULL;}
+
+#define FPRINTF0( p0)                  if( pLogFile != NULL) { fprintf( pLogFile,p0); fflush( pLogFile); }
+#define FPRINTF1( p0,p1)               if( pLogFile != NULL) { fprintf( pLogFile,p0,p1); fflush( pLogFile); }
+#define FPRINTF2( p0,p1,p2)            if( pLogFile != NULL) { fprintf( pLogFile,p0,p1,p2); fflush( pLogFile); }
+#define FPRINTF3( p0,p1,p2,p3)         if( pLogFile != NULL) { fprintf( pLogFile,p0,p1,p2,p3); fflush( pLogFile); }
+#define FPRINTF4( p0,p1,p2,p3,p4)      if( pLogFile != NULL) { fprintf( pLogFile,p0,p1,p2,p3,p4); fflush( pLogFile); }
+#define FPRINTF5( p0,p1,p2,p3,p4,p5)   if( pLogFile != NULL) { fprintf( pLogFile,p0,p1,p2,p3,p4,p5); fflush( pLogFile); }
+
+static void Logfile_Open()
+{
+
+  if( pLogFile == NULL) {
+
+    pLogFile = fopen( "Logilfe-YaIPS.txt", "wt");
+  }
+
+#ifdef use_again
+  if( pLogFile == NULL) {
+
+    fprintf(stderr, "Logfile_Open: can't open logfile\n"); exit(1);
+  }
+#endif
+}
+
+#else
+
+#define FOPEN()
+#define FCLOSE()
+
+#define FPRINTF0( p0)
+#define FPRINTF1( p0,p1)
+#define FPRINTF2( p0,p1,p2)
+#define FPRINTF3( p0,p1,p2,p3)
+#define FPRINTF4( p0,p1,p2,p3,p4)
+#define FPRINTF5( p0,p1,p2,p3,p4,p5)
+
+#endif
 
 /************************************************************************************
  * IqeB_GUI_CloseToolWindow
@@ -1981,6 +2046,8 @@ static void IqeB_Main_Load_Callback( Fl_Widget *w, void *pValueArg)
 
   // Remember last used directory
   IqeB_FileGetPath( pFileName, YaIPS_BrowserDirectory, sizeof( YaIPS_BrowserDirectory));
+
+  IqeB_FileNormPathCharsAndCWD( YaIPS_BrowserDirectory);  // Ensure normalized path characters and working directory
 }
 
 /************************************************************************************
@@ -1993,7 +2060,7 @@ static void IqeB_Main_SaveCopy_Callback( Fl_Widget *pWidget, void *pValueArg, in
   char FileFilter[ 1024];
   char *pFileName;
   int ierr, ArgInt, x, y, w, h, iFileType;
-  char TempFileName[ 256 + 16];
+  char TempFileName[ MAX_FILENAME_LEN];
   uchar *p;
   static char *FileTypes[ YAIPS_IMAGE_FILES_WRITE_TAB_N] = { YAIPS_IMAGE_FILES_WRITE_TAB_DATA };
 
@@ -2094,6 +2161,8 @@ static void IqeB_Main_SaveCopy_Callback( Fl_Widget *pWidget, void *pValueArg, in
       IqeB_FileEnsureExtension( pFileName, (char *)"png", TempFileName, sizeof( TempFileName));
       YaIPS_Main_WriteFileType_Last = 0;
     }
+
+    IqeB_FileNormPathCharsAndCWD( TempFileName);  // Ensure normalized path characters and working directory
 
     pFileName = TempFileName;
 
@@ -2384,6 +2453,9 @@ static void IqeB_Main_Toogle_Fullscreen( Fl_Widget *pWidget, void *pValueArg)
  *
  * Load presets from file
  *
+ * *pValueArg:  0  Load presets from file
+ *              1  Reset presets
+ *
  * NOTE: Language settings is not changed.
  */
 
@@ -2397,7 +2469,7 @@ static void IqeB_Main_PresetLoad( Fl_Widget *pWidget, void *pValueArg)
   RightSide_LastSkip = 5;                                  // Reset check for right side position change
 
   // This resets all presets without question
-  IqeB_PresetLoad_cb( NULL, NULL);
+  IqeB_PresetLoad_cb( NULL, pValueArg);
 
   strcpy( YaIPS_Setting_Language, Language_Save);          // Restore last selected GUI language
 
@@ -2730,7 +2802,8 @@ static void Main_Menu_AddItems( Fl_Menu_Bar *pM)
   pM->add( LangStringLookup( "&GUI_Main_Menu1d=File/Save &Info area"),        FL_COMMAND+'a', IqeB_Main_Save_Callback, (void *)2);
   pM->add( LangStringLookup( "&GUI_Main_Menu1e=File/Save screens&hot"),       FL_COMMAND+'h', IqeB_Main_Save_Callback, (void *)3, FL_MENU_DIVIDER);
   pM->add( LangStringLookup( "&GUI_Main_Menu1f=File/Load presets"),                        0, IqeB_Main_PresetLoad, 0);
-  pM->add( LangStringLookup( "&GUI_Main_Menu1g=File/Save presets"),                        0, IqeB_PresetSave_cb, 0, FL_MENU_DIVIDER);
+  pM->add( LangStringLookup( "&GUI_Main_Menu1g=File/Save presets"),                        0, IqeB_PresetSave_cb, 0);
+  pM->add( LangStringLookup( "&GUI_Main_Menu1h=File/Reset presets"),                       0, IqeB_Main_PresetLoad, (void *)1, FL_MENU_DIVIDER);
 #ifdef use_again
 #ifdef _DEBUG
   pM->add( LangStringLookup( "&GUI_Main_Menu1m=File/TEST show all"),           FL_COMMAND+'0', YaIPS_ToolWinTestAction_cb, (void *)YAIPS_TWIN_ACTION_SHOW_ALL);
@@ -3487,6 +3560,11 @@ int main(int argc, char **argv)
   int TextLen, RetVal;
   char *pStartupFile;
   int ierr, FullScreenWasActive;
+  char TempFileName[ MAX_FILENAME_LEN]; // Path of current directory for video file browsers
+
+  FOPEN();    // Log-file open
+
+  FPRINTF0( "YaIPS main: TP 1\n");    // Log-file support
 
 #ifdef WIN32
 
@@ -3500,12 +3578,17 @@ int main(int argc, char **argv)
   {
     HANDLE hMapFile;
     char *pBuf;
+
     hMapFile = OpenFileMapping(
     FILE_MAP_ALL_ACCESS,       // read/write access
         FALSE,                 // do not inherit the name
         WIN_ENGLISH_TITLE);    // name of mapping object
 
-    if (hMapFile != NULL) {   // There is an other application running
+    FPRINTF1( "YaIPS main: TP 1a Mapfile %s\n", hMapFile != NULL ? "OK" : "Error");    // Log-file support
+
+    if( hMapFile != NULL) {   // There is an other application running
+
+      FPRINTF1( "YaIPS main: TP 1b argc %d\n", argc);    // Log-file support
 
       if (argc > 1) {         // Is there a file argument
 
@@ -3559,6 +3642,8 @@ int main(int argc, char **argv)
   }
 #endif
 
+  FPRINTF0( "YaIPS main: TP 2\n");    // Log-file support
+
   // Use multimedia timer with 1 ms resolution.
   // Is needed for use of timeGetTime().
 
@@ -3569,6 +3654,8 @@ int main(int argc, char **argv)
   Fl::visual(FL_RGB8);
 
   Fl_Image::RGB_scaling(FL_RGB_SCALING_BILINEAR);           // set bilinear image scaling method
+
+  FPRINTF0( "YaIPS main: TP 3\n");    // Log-file support
 
   fl_register_images();       // required preview of known image formats
 
@@ -3585,7 +3672,11 @@ int main(int argc, char **argv)
 
   // load preference data from file
 
+  FPRINTF0( "YaIPS main: TP 4\n");    // Log-file support
+
   IqeB_PreferencesGetFromFile();
+
+  FPRINTF0( "YaIPS main: TP 5\n");    // Log-file support
 
   FullScreenWasActive = FullScreenActive;          // Latch FullScreenActive for later use. Is reset to 0 during startup of tool windows.
 
@@ -3597,6 +3688,8 @@ int main(int argc, char **argv)
 
   YaIPS_Utils_FontsEnum();
 
+  FPRINTF0( "YaIPS main: TP 6\n");    // Log-file support
+
   // Working directory not set
 
   if ( YaIPS_WorkingDirectory[0] == '\0') {   // Current directory not set
@@ -3604,6 +3697,9 @@ int main(int argc, char **argv)
     int StrLen;
 
     fl_getcwd(  YaIPS_WorkingDirectory, sizeof( YaIPS_WorkingDirectory) - 256);
+
+    // Ensure path characters are normalized
+    IqeB_FileNormalizePathChars( YaIPS_WorkingDirectory);
 
     // Ensure proper working directory if started by double clicking the .exe
 
@@ -3622,6 +3718,31 @@ int main(int argc, char **argv)
       fl_chdir( YaIPS_WorkingDirectory);
     }
   }
+
+  // Clean not used clipboard subdirectories
+
+  FPRINTF1( "YaIPS main: TP 7, WDir %s\n", YaIPS_WorkingDirectory);    // Log-file support
+
+  IqeB_PresetCleanClipboard();
+
+  FPRINTF0( "YaIPS main: TP 8\n");    // Log-file support
+
+  // Ensure clip board directory is created
+
+  // Ensure path characters are normalized
+  strcpy( TempFileName, YaIPS_CLIPBOARD_PATH);
+  IqeB_FileNormalizePathChars( TempFileName);
+
+  if( ! IqeB_DirExsits( TempFileName)) {   // If clip board directory does not exist
+
+    FPRINTF1( "YaIPS main: TP 8a, Dir %s\n", TempFileName);    // Log-file support
+
+    IqeB_FileMakePath( TempFileName);      // Create it
+
+    FPRINTF0( "YaIPS main: TP 8b\n");    // Log-file support
+  }
+
+  FPRINTF0( "YaIPS main: TP 9\n");    // Log-file support
 
   // get current directory for the file browser
 
@@ -3810,6 +3931,10 @@ int main(int argc, char **argv)
   pGUI_Main->show();                  // Ensure focus back to main window
 
   YaIPS_GUI_Main_Do_Startup = false;  // Startup phase of tool windows finished
+
+  FPRINTF0( "YaIPS main: TP 99, before GUI loop\n");    // Log-file support
+
+  FCLOSE(); // Log-file close
 
   // Run main window loop
 

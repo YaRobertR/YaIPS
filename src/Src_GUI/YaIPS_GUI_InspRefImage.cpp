@@ -5,6 +5,10 @@
   Inspection reference image windows.
 
   25.09.2025 RR: First edition of this file.
+  03.09.2026 RR: * Replace use of the working directory string
+                   'YaIPS_WorkingDirectory' by '.'.
+                 * Reworked clipboard handling
+                   Replaced patch './Images/YaIPS' with YaIPS_CLIPBOARD_PATH.
 
 *****************************************************************************
 */
@@ -403,7 +407,7 @@ static void IqeB_GUI_Int_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
       // Construct a file name for the last reference image
 
-      sprintf( TempFileName, "%s/Images/YaIPS/Reference-%d.png", YaIPS_WorkingDirectory, (int)iToolData + 1);
+      sprintf( TempFileName, "%s/Reference-%d.png", YaIPS_CLIPBOARD_PATH, (int)iToolData + 1);
 
       IqeB_FileNormalizePathChars( TempFileName);
 
@@ -867,7 +871,7 @@ static void SnapFromInput_cb( Fl_Widget *w, long int iToolData)
 
   // Construct a file name for the raw reference image
 
-  sprintf( TempFileName, "%s/Images/YaIPS/Reference-%d.png", YaIPS_WorkingDirectory, (int)iToolData + 1);
+  sprintf( TempFileName, "%s/Reference-%d.png", YaIPS_CLIPBOARD_PATH, (int)iToolData + 1);
 
   IqeB_FileNormalizePathChars( TempFileName);
 
@@ -935,7 +939,7 @@ static void Load_cb( Fl_Widget *w, long int iToolData)
 
   // Construct a file name for the raw reference image
 
-  sprintf( TempFileName, "%s/Images/YaIPS/Reference-%d.png", YaIPS_WorkingDirectory, (int)iToolData + 1);
+  sprintf( TempFileName, "%s/Reference-%d.png", YaIPS_CLIPBOARD_PATH, (int)iToolData + 1);
 
   IqeB_FileNormalizePathChars( TempFileName);
 
@@ -1264,7 +1268,7 @@ static void IqeB_GUI_InspRefImgWinIntern( int xLeft, int xRight, int yTop, int y
 
     // Place of saved reference image
 
-    sprintf( TempFileName, "%s/Images/YaIPS/Reference-%d.png", YaIPS_WorkingDirectory, (int)iToolData + 1);
+    sprintf( TempFileName, "%s/Reference-%d.png", YaIPS_CLIPBOARD_PATH, (int)iToolData + 1);
 
     IqeB_FileNormalizePathChars( TempFileName);
 

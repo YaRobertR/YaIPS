@@ -3,6 +3,9 @@
   YaIPS_GUI_Settings.cpp
 
   27.03.2025 RR: First edition of this file.
+  03.09.2026 RR: Replace use of the working directory string
+                 'YaIPS_WorkingDirectory' by '.'.
+  16.09.2026 RR: * Replace use of the working directory string
 
 *****************************************************************************
 */
@@ -417,9 +420,7 @@ void YaIPS_GUI_SettingsWin( int xLeft, int xRight, int yTop, int yBotton, int Su
   char *pName;
 
   // Construct path to language directory
-  strcpy( Files_path, YaIPS_WorkingDirectory);
-
-  strcat( Files_path, "/Languages");
+  strcpy( Files_path, "./Languages");
 
   IqeB_FileNormalizePathChars( Files_path);
 

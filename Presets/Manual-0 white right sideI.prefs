@@ -67,8 +67,8 @@ Wide_Graphic_Lines:1
 
 [./GUI_Main]
 
-WinPosX:-1478
-WinPosY:229
+WinPosX:99
+WinPosY:120
 WinSizeX:1255
 WinSizeY:715
 RightSideWidth:442
@@ -260,4 +260,10 @@ RightSideWidth:442
 
 
 [./WinCalibration]
+
+
+[./Win_Color-5]
+
+
+[./Win_Color-6]
 

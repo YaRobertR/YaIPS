@@ -9,6 +9,8 @@
 *****************************************************************************
 */
 
+//#define USE_POSTER_POPUL 1                      // Define this to use 'Popularity algorithm' posterization
+
 #include <windows.h>
 #include <winbase.h>
 #include <stdio.h>
@@ -112,6 +114,21 @@ typedef struct {
   int Chroma_Output;                    // Chroma type of output image
   int Chroma_BlendColor;                // Chroma the color used for 'YAIPS_RGB_CHROMA_OUT_COL_B'
 
+  // section: posterize
+
+  int Poster_nColors;                   // Posterize: Number of levels
+#ifdef USE_POSTER_POPUL // Use 'Popularity algorithm' posterization
+  int Poster_ParPopul;                  // Posterize: Parameter for 'Popularity' algorithm
+#endif
+  int Poster_ParDraw;                   // Posterize: Parameter for 'Drawing' algorithm
+  int Poster_ParKMeans;                 // Posterize: Parameter for 'kMeans' algorithm
+  int Poster_BlendEdges;                // Posterize: If true blend edges
+  float Poster_CannyResMult;            // Posterize: Canny filter result multiplier
+  float Poster_CannySigma;              // Posterize: Canny filter sigma for gauss filter
+  int Poster_EdgeHighlight;             // Highlights stronger edges. 0 = no, 100 = max highlight.
+  int Poster_EdgeStrength;              // Edge strength. 0 = no, 100 max strength.
+  unsigned int Poster_EdgeCol;          // Posterize: Edge color
+
 } YaIPS_ToolData_info_t;
 
 static int nYaIPS_ToolData_info;       // Number of image files windows open
@@ -171,6 +188,19 @@ static T_GUI_PreferenceEntry MyPreferences[] =
   { PREF_T_INT,     "Chroma_Output",   "0", &YaIPS_ToolData_info[0].Chroma_Output},
   { PREF_T_INT, "Chroma_BlendColor", "248", &YaIPS_ToolData_info[0].Chroma_BlendColor},
 
+  // section: posterize
+  { PREF_T_INT,    "Poster_nColors",   "4", &YaIPS_ToolData_info[0].Poster_nColors},
+#ifdef USE_POSTER_POPUL // Use 'Popularity algorithm' posterization
+  { PREF_T_INT,   "Poster_ParPopul",  "40", &YaIPS_ToolData_info[0].Poster_ParPopul},
+#endif
+  { PREF_T_INT,        "Poster_ParDraw",  "50", &YaIPS_ToolData_info[0].Poster_ParDraw},
+  { PREF_T_INT,      "Poster_ParKMeans",   "5", &YaIPS_ToolData_info[0].Poster_ParKMeans},
+  { PREF_T_INT,     "Poster_BlendEdges",   "0", &YaIPS_ToolData_info[0].Poster_BlendEdges},
+  { PREF_T_FLOAT, "Poster_CannyResMult", "3.0", &YaIPS_ToolData_info[0].Poster_CannyResMult},
+  { PREF_T_FLOAT,   "Poster_CannySigma", "1.0", &YaIPS_ToolData_info[0].Poster_CannySigma},
+  { PREF_T_INT,  "Poster_EdgeHighlight",  "30", &YaIPS_ToolData_info[0].Poster_EdgeHighlight},
+  { PREF_T_INT,   "Poster_EdgeStrength",  "50", &YaIPS_ToolData_info[0].Poster_EdgeStrength},
+  { PREF_T_INT,        "Poster_EdgeCol",   "0", &YaIPS_ToolData_info[0].Poster_EdgeCol},
 };
 
 // Automatic add this preference settings at startup of the program.
@@ -189,10 +219,26 @@ static IqeB_PreferencesGroup MyPreferencesAdd( MY_WIN_PREF_NAME, MyPreferences, 
 
 // defines for function selection
 
-#define YAIPS_SELECTION_FIFO        0       // Image FIFO
-#define YAIPS_SELECTION_CHROMA_KEY  1       // Chroma key processing
+#define YAIPS_SELECTION_FIFO            0       // Image FIFO
+#define YAIPS_SELECTION_CHROMA_KEY      1       // Chroma key processing
+#define YAIPS_SELECTION_POSTER_SIMPLE   2       // Simple image posterization.
+#define YAIPS_SELECTION_POSTER_SIMP_AVG 3       // Simple average image posterization.
 
-#define YAIPS_SELECTION_BUTTON_MAX    (YAIPS_SELECTION_CHROMA_KEY + 1)  // Number of selection radio buttons
+#ifdef USE_POSTER_POPUL // Use 'Popularity algorithm' posterization
+
+#define YAIPS_SELECTION_POSTER_POPUL    4       // 'Popularity algorithm' posterization.
+#define YAIPS_SELECTION_POSTER_DRAWING  5       // 'Drawing algorithm' posterization.
+#define YAIPS_SELECTION_POSTER_KMEANS   6       // K-means posterization algorithm
+
+#define YAIPS_SELECTION_BUTTON_MAX    (YAIPS_SELECTION_POSTER_KMEANS + 1)  // Number of selection radio buttons
+
+#else
+
+#define YAIPS_SELECTION_POSTER_DRAWING  4       // 'Drawing algorithm' posterization.
+#define YAIPS_SELECTION_POSTER_KMEANS   5       // K-means posterization algorithm
+
+#define YAIPS_SELECTION_BUTTON_MAX    (YAIPS_SELECTION_POSTER_KMEANS + 1)  // Number of selection radio buttons
+#endif
 
 // ...
 
@@ -214,6 +260,17 @@ static IqeFl_Int_Input *pInt_Chroma_HueThres,  *pInt_Chroma_SatThres, *pInt_Chro
 static IqeFl_Int_Input *pInt_Chroma_HueFade,  *pInt_Chroma_SatFade, *pInt_Chroma_IDaFade, *pInt_Chroma_IBrFade;     // Pointer to GUI input element
 static Fl_Radio_Round_Button *pRadio_Chroma_Output_0, *pRadio_Chroma_Output_1, *pRadio_Chroma_Output_2, *pRadio_Chroma_Output_3, *pRadio_Chroma_Output_4;
 static IqeFl_Check_Bit *pCheck_Bit_Chrom_Smootstep, *pCheck_Bit_Chrom_Despill_O, *pCheck_Bit_Chrom_Despill_I;
+
+// YAIPS_SELECTION_POSTER_XXX
+
+static IqeFl_Int_Input *pInt_Poster_nColors;
+#ifdef USE_POSTER_POPUL // Use 'Popularity algorithm' posterization
+static IqeFl_Int_Input *pInt_Poster_ParPopul;
+#endif
+static IqeFl_Int_Input *pInt_Poster_ParDraw, *pInt_Poster_ParKMeans, *pInt_Poster_EdgeHighlight, *pInt_Poster_EdgeStrength;
+static Fl_Check_Button *pCBox_Poster_BlendEdges;
+static IqeFl_Float_Input  *pFloat_Poster_CannyResMult, *pFloat_Poster_CannySigma;
+static Fl_Button *pButCol_Poster_EdgeCol;
 
 /************************************************************************************
  * FIFO support function.
@@ -357,6 +414,32 @@ static void MyParWinUpdate()
   IqeB_GUI_WidgetActivate( pCheck_Bit_Chrom_Smootstep, TempEnable);
   IqeB_GUI_WidgetActivate( pCheck_Bit_Chrom_Despill_O, TempEnable);
   IqeB_GUI_WidgetActivate( pCheck_Bit_Chrom_Despill_I, TempEnable);
+
+  // YAIPS_SELECTION_POSTER_XXX
+
+  TempEnable = pToolData->SelectionType == YAIPS_SELECTION_POSTER_SIMPLE ||
+               pToolData->SelectionType == YAIPS_SELECTION_POSTER_SIMP_AVG ||
+#ifdef USE_POSTER_POPUL // Use 'Popularity algorithm' posterization
+               pToolData->SelectionType == YAIPS_SELECTION_POSTER_POPUL ||
+#endif
+               pToolData->SelectionType == YAIPS_SELECTION_POSTER_DRAWING ||
+               pToolData->SelectionType == YAIPS_SELECTION_POSTER_KMEANS;
+
+  IqeB_GUI_WidgetActivate( pInt_Poster_nColors, TempEnable);
+  IqeB_GUI_WidgetActivate( pButCol_Poster_EdgeCol, TempEnable);
+  IqeB_GUI_WidgetActivate( pButCol_Poster_EdgeCol, TempEnable);
+
+#ifdef USE_POSTER_POPUL // Use 'Popularity algorithm' posterization
+  IqeB_GUI_WidgetActivate( pInt_Poster_ParPopul, pToolData->SelectionType == YAIPS_SELECTION_POSTER_POPUL);
+#endif
+  IqeB_GUI_WidgetActivate( pInt_Poster_ParDraw, pToolData->SelectionType == YAIPS_SELECTION_POSTER_DRAWING);
+  IqeB_GUI_WidgetActivate( pInt_Poster_ParKMeans, pToolData->SelectionType == YAIPS_SELECTION_POSTER_KMEANS);
+
+  IqeB_GUI_WidgetActivate( pFloat_Poster_CannyResMult, TempEnable && pToolData->Poster_BlendEdges != 0);
+  IqeB_GUI_WidgetActivate( pFloat_Poster_CannySigma, TempEnable && pToolData->Poster_BlendEdges != 0);
+  IqeB_GUI_WidgetActivate( pInt_Poster_EdgeHighlight, TempEnable && pToolData->Poster_BlendEdges != 0);
+  IqeB_GUI_WidgetActivate( pInt_Poster_EdgeStrength, TempEnable && pToolData->Poster_BlendEdges != 0);
+  IqeB_GUI_WidgetActivate( pButCol_Poster_EdgeCol, TempEnable && pToolData->Poster_BlendEdges != 0);
 }
 
 /************************************************************************************
@@ -449,7 +532,6 @@ static void YaIPS_Filter_Callback( Fl_Widget *w, void *data)
  * Callback, set a float or double value
  */
 
-#ifdef use_again
 static void IqeB_GUI_Float_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 {
   void *pValue;
@@ -490,7 +572,6 @@ static void IqeB_GUI_Float_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   pToolData->Input1_Change = 0;                    // Force recalculation output
 }
-#endif
 
 /************************************************************************************
  * IqeB_GUI_Int_SetValue_Callback
@@ -571,7 +652,6 @@ static void YaIPS_Chroma_Output_Callback( Fl_Widget *w, void *data)
  * IqeB_GUI_CBox_SetValue_Callback
  */
 
-#ifdef use_again
 static void IqeB_GUI_CBox_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 {
   int *pValue;
@@ -592,7 +672,6 @@ static void IqeB_GUI_CBox_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   pToolData->Input1_Change = 0;          // Force recalculation output
 }
-#endif
 
 /************************************************************************************
  * IqeB_GUI_But_Color_SetValue_Callback
@@ -698,10 +777,10 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   int yGroup;
   char TempBuffer[ 256];
 
-  //x/Fl_Check_Button *pCheckTemp;
+  Fl_Check_Button *pCheckTemp;
   Fl_Box          *pTemp_Box;
   IqeFl_Int_Input    *pTemp_Int;
-  //x/IqeFl_Float_Input  *pFloatTemp;
+  IqeFl_Float_Input  *pFloatTemp;
   IqeFl_Tabs      *pTemp_Tabs;
   Fl_Group        *pTemp_Group,*pTemp_Group2;
   Fl_Button       *pTemp_Button;
@@ -737,6 +816,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LangStringLookup( "&GUI_Other_TabA1=FIFO"));
 
     y += 8;
+
+    x1 = 4 + 4;
 
     xx1 = (pMyParWin->w() - 8) / 2;
 
@@ -1079,6 +1160,256 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Check_Bit->callback( IqeB_GUI_Check_Bit_Callback, &pToolData->Chroma_Flags);
 
     pCheck_Bit_Chrom_Despill_I = pTemp_Check_Bit;
+
+    // Finish things for this group
+
+    pTemp_Group->end();
+
+  //
+  // Group 'XXX'
+  //
+
+  y = yGroup;
+
+  x1  = 4;
+
+  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LangStringLookup( "&GUI_Other_TabC1=Poster"));
+
+    y += 8;
+
+    x1 = 4 + 4;
+
+    xx1 = (pMyParWin->w() - 8) / 2;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx1 - 2, yy, LangStringLookup( "&GUI_Other_TabC2=Simple posterization"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Other_TabC2a="
+                            "Simple and fast image posterization.\n"
+                            "Quantize the colors."));
+
+    pRadioButTemp->callback( YaIPS_Filter_Callback, (void *)YAIPS_SELECTION_POSTER_SIMPLE);
+    SelectionButtons[ YAIPS_SELECTION_POSTER_SIMPLE] = pRadioButTemp;
+
+    x1 += xx1;
+
+    xx1 = 30;
+    x1 = pMyParWin->w() - xx1 - 8;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx1, yy, LangStringLookup( "&GUI_Other_TabC3=Colors"));
+    pTemp_Int->tooltip( LangStringLookup( "&GUI_Other_TabC3a="
+                        "Number of Colors.\n"
+                        "Range: 2 .. 32"));
+    pTemp_Int->SetValue( pToolData->Poster_nColors);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Poster_nColors);
+    pTemp_Int->SetModifyData( 2, YAIPS_RLC_POSTER_MAX_LEVEL, 1, 0);
+    pInt_Poster_nColors = pTemp_Int;
+
+    // Next Line
+
+    y += yy + 4;
+
+    x1 = 4 + 4;
+
+    xx1 = (pMyParWin->w() - 8) / 2;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx1 - 2, yy, LangStringLookup( "&GUI_Other_TabC4=Simple average"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Other_TabC4a="
+                                    "Simple and fast image posterization.\n"
+                                    "Averages the colors after quantization."));
+
+    pRadioButTemp->callback( YaIPS_Filter_Callback, (void *)YAIPS_SELECTION_POSTER_SIMP_AVG);
+    SelectionButtons[ YAIPS_SELECTION_POSTER_SIMP_AVG] = pRadioButTemp;
+
+#ifdef USE_POSTER_POPUL // Use 'Popularity algorithm' posterization
+    // Next Line
+
+    y += yy + 4;
+
+    x1 = 4 + 4;
+
+    xx1 = (pMyParWin->w() - 8) / 2;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx1 - 2, yy, LangStringLookup( "&GUI_Other_TabC5=Popularity algorithm"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Other_TabC5a="
+                            "The most frequent colors are determined."));
+
+    pRadioButTemp->callback( YaIPS_Filter_Callback, (void *)YAIPS_SELECTION_POSTER_POPUL);
+    SelectionButtons[ YAIPS_SELECTION_POSTER_POPUL] = pRadioButTemp;
+
+    x1 += xx1;
+
+    xx1 = 30;
+    x1 = pMyParWin->w() - xx1 - 8;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx1, yy, LangStringLookup( "&GUI_Other_TabC6=Radius"));
+    pTemp_Int->tooltip( LangStringLookup( "&GUI_Other_TabA6a="
+                        "Remove size in gray values.\n"
+                        "Once the most common color in the color space\n"
+                        "has been identified, colors around that point\n"
+                        "are removed before the next search.\n"
+                        "Range: 20 .. 2100"));
+    pTemp_Int->SetValue( pToolData->Poster_ParPopul);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Poster_ParPopul);
+    pTemp_Int->SetModifyData( 20, 200, 10, 1);
+    pInt_Poster_ParPopul = pTemp_Int;
+#endif
+
+    // Next Line
+
+    y += yy + 4;
+
+    x1 = 4 + 4;
+
+    xx1 = (pMyParWin->w() - 8) / 2;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx1 - 2, yy, LangStringLookup( "&GUI_Other_TabC7=Drawing algorithm"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Other_TabC7a="
+                            "This algorithm is specifically optimized for\n"
+                            "documents and drawings on a light background."));
+
+    pRadioButTemp->callback( YaIPS_Filter_Callback, (void *)YAIPS_SELECTION_POSTER_DRAWING);
+    SelectionButtons[ YAIPS_SELECTION_POSTER_DRAWING] = pRadioButTemp;
+
+    x1 += xx1;
+
+    xx1 = 30;
+    x1 = pMyParWin->w() - xx1 - 8;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx1, yy, LangStringLookup( "&GUI_Other_TabC8=Radius"));
+    pTemp_Int->tooltip( LangStringLookup( "&GUI_Other_TabA8a="
+                        "Radius around color values.\n"
+                        "Used to separate the color values.\n"
+                        "Range: 0 .. 100\n"
+                        "  0 = Recommended value for low contrast.\n"
+                        "100 = Recommended value for high contrast."));
+    pTemp_Int->SetValue( pToolData->Poster_ParDraw);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Poster_ParDraw);
+    pTemp_Int->SetModifyData( 0, 100, 10, 1);
+    pInt_Poster_ParDraw = pTemp_Int;
+
+    // Next Line
+
+    y += yy + 4;
+
+    x1 = 4 + 4;
+
+    xx1 = (pMyParWin->w() - 8) / 2;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx1 - 2, yy, LangStringLookup( "&GUI_Other_TabC9=k-Means algorithm"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Other_TabC9a="
+                            "Adaptive quantization.\n"
+                            "Instead of using fixed color levels, the\n"
+                            "algorithm learns from the image itself\n"
+                            "which colors are important.\n"
+                            "Very time-consuming to compute!"));
+
+    pRadioButTemp->callback( YaIPS_Filter_Callback, (void *)YAIPS_SELECTION_POSTER_KMEANS);
+    SelectionButtons[ YAIPS_SELECTION_POSTER_KMEANS] = pRadioButTemp;
+
+    x1 += xx1;
+
+    xx1 = 30;
+    x1 = pMyParWin->w() - xx1 - 8;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx1, yy, LangStringLookup( "&GUI_Other_TabC10=Iterations"));
+    pTemp_Int->tooltip( LangStringLookup( "&GUI_Other_TabA10a="
+                        "Number of iterations.\n"
+                        "A higher value improves the result\n"
+                        "but requires more computation time.\n"
+                        "Range: 2 .. 20"));
+    pTemp_Int->SetValue( pToolData->Poster_ParKMeans);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Poster_ParKMeans);
+    pTemp_Int->SetModifyData( 2, 20, 1, 0);
+    pInt_Poster_ParKMeans = pTemp_Int;
+
+    // Next Line
+
+    y += yy + 4;
+
+    x1 = 4 + 4;
+
+    xx1 = 100;
+
+    pCheckTemp = new Fl_Check_Button( x1, y, xx1, yy, LangStringLookup( "&GUI_Other_TabC11=Edges"));
+    pCheckTemp->tooltip( LangStringLookup( "&GUI_Other_TabC11a="
+                         "If enabled, edges are added to the posterized image.\n"
+                         "The Canny edge detection algorithm is used for this purpose.\n"
+                         "* G (Gain) adjusts the amplitude of the edges.\n"
+                         "* W (Width) adjusts the width of the edges\n"
+                         "* T (Threshold) suppresses lower-intensity edges\n"
+                         "* C (Contrast) adjusts the sharpness"));
+    pCheckTemp->value( pToolData->Poster_BlendEdges);
+    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolData->Poster_BlendEdges);
+    pCBox_Poster_BlendEdges = pCheckTemp;
+
+    x1 += xx1;
+    x1 += 18; //83;
+
+    xx1 = 34;
+
+    pFloatTemp = new IqeFl_Float_Input( x1, y, xx1, yy, LangStringLookup( "&GUI_Other_TabC12=G"));
+    pFloatTemp->type( FL_FLOAT_INPUT);
+    pFloatTemp->tooltip( LangStringLookup( "&GUI_Other_TabC12a="
+                                           "Gain.\n"
+                                           "Adjusts the amplitude of the edges.\n"
+                                           "Range 0.5 ... 16.0"));
+    pFloatTemp->SetValue( pToolData->Poster_CannyResMult);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->Poster_CannyResMult);
+    pFloatTemp->SetModifyData( 0.5, 16.0, 0.5, 0.1);
+    pFloat_Poster_CannyResMult = pFloatTemp;
+
+    x1 += xx1;
+    x1 += 20;
+
+    pFloatTemp = new IqeFl_Float_Input( x1, y, xx1, yy, LangStringLookup( "&GUI_Other_TabC13=W"));
+    pFloatTemp->type( FL_FLOAT_INPUT);
+    pFloatTemp->tooltip( LangStringLookup( "&GUI_Other_TabC13a="
+                                           "Width.\n"
+                                           "Adjusts the width of the edges.\n"
+                                           "Range 0.5 ... 8.0"));
+    pFloatTemp->SetValue( pToolData->Poster_CannySigma);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->Poster_CannySigma);
+    pFloatTemp->SetModifyData( 0.0, 8.0, 0.5, 0.1);
+    pFloat_Poster_CannySigma = pFloatTemp;
+
+    x1 += xx1;
+    x1 += 20;
+
+    xx1 = 30;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx1, yy, LangStringLookup( "&GUI_Other_TabC14=T"));
+    pTemp_Int->tooltip( LangStringLookup( "&GUI_Other_TabA14a="
+                        "Threshold.\n"
+                        "Suppresses lower-intensity edges.\n"
+                        "Range: 0 .. 100"));
+    pTemp_Int->SetValue( pToolData->Poster_EdgeHighlight);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Poster_EdgeHighlight);
+    pTemp_Int->SetModifyData( 0, 100, 10, 1);
+    pInt_Poster_EdgeHighlight = pTemp_Int;
+
+    x1 += xx1;
+    x1 += 20;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx1, yy, LangStringLookup( "&GUI_Other_TabC15=C"));
+    pTemp_Int->tooltip( LangStringLookup( "&GUI_Other_TabA15a="
+                        "Contrast.\n"
+                        "Adjusts the sharpness\n"
+                        "Range: 0 .. 100"));
+    pTemp_Int->SetValue( pToolData->Poster_EdgeStrength);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Poster_EdgeStrength);
+    pTemp_Int->SetModifyData( 0, 100, 10, 1);
+    pInt_Poster_EdgeStrength = pTemp_Int;
+
+    x1 += xx1;
+    x1 += 4;
+
+    xx1 = 33;
+
+    pTemp_Button = new Fl_Button( x1, y, xx1, yy, "");
+    pTemp_Button->color( pToolData->Poster_EdgeCol);
+    pTemp_Button->callback( IqeB_GUI_But_Color_SetValue_Callback, &pToolData->Poster_EdgeCol);
+    pTemp_Button->tooltip( LangStringLookup( "&GUI_Other_TabC16a="
+                           "Edge color"));
+    pButCol_Poster_EdgeCol = pTemp_Button;
 
     // Finish things for this group
 
@@ -1698,15 +2029,99 @@ static void IqeB_GUI_ToolsMyIdleAction( void *)
 
           } else if( ierr > 0) { // Source image is no color image
 
-            YaIPS_ImageDispStrInfo( &pToolData->YaIPS_ImageDisp, FL_GREEN, FL_BLACK, LangStringLookup( "&GUI_Other_Chroma_ErrCol=Chroma Key: No color image"));
+            strcpy( errbuffer, LangStringLookup( "&GUI_Other_Chroma_ErrCol=Chroma Key: No color image"));
+            errstring = errbuffer;
+
+            YaIPS_ImageDispStrInfo( &pToolData->YaIPS_ImageDisp, FL_GREEN, FL_BLACK, errbuffer);
 
           } else {
 
-            YaIPS_ImageDispStrInfo( &pToolData->YaIPS_ImageDisp, FL_GREEN, FL_BLACK, LangStringLookup( "&GUI_Other_Chroma_ErrOther=Chroma Key: Error"));
+            strcpy( errbuffer, LangStringLookup( "&GUI_Other_Chroma_ErrOther=Chroma Key: Error"));
+            errstring = errbuffer;
+
+            YaIPS_ImageDispStrInfo( &pToolData->YaIPS_ImageDisp, FL_GREEN, FL_BLACK, errbuffer);
           }
 
         }
         break;
+
+      case YAIPS_SELECTION_POSTER_SIMPLE:
+      case YAIPS_SELECTION_POSTER_SIMP_AVG:
+#ifdef USE_POSTER_POPUL // Use 'Popularity algorithm' posterization
+      case YAIPS_SELECTION_POSTER_POPUL:
+#endif
+      case YAIPS_SELECTION_POSTER_DRAWING:
+      case YAIPS_SELECTION_POSTER_KMEANS:
+        {
+          int nColorsMax;
+
+          nColorsMax = pToolData->Poster_nColors;          // Preset max colors in the posterized output image
+
+          if( pToolData->SelectionType == YAIPS_SELECTION_POSTER_SIMPLE ||
+              pToolData->SelectionType == YAIPS_SELECTION_POSTER_SIMP_AVG) {
+
+            if( pImgIn1->d() >= 3) {    // Is a color image
+
+              nColorsMax = pToolData->Poster_nColors * pToolData->Poster_nColors * pToolData->Poster_nColors;
+            }
+
+            ierr = YaIPS_RGB_PosterizeSimple( &pToolData->YaIPS_ImageDisp.pImage_Img, pImgIn1, pToolData->Poster_nColors,
+                                              pToolData->SelectionType == YAIPS_SELECTION_POSTER_SIMP_AVG);
+
+#ifdef USE_POSTER_POPUL // Use 'Popularity algorithm' posterization
+          } else if( pToolData->SelectionType == YAIPS_SELECTION_POSTER_POPUL ||
+                     pToolData->SelectionType == YAIPS_SELECTION_POSTER_DRAWING) {
+#else
+          } else if( pToolData->SelectionType == YAIPS_SELECTION_POSTER_DRAWING) {
+#endif
+
+            ierr = YaIPS_RGB_PosterizeEx1( &pToolData->YaIPS_ImageDisp.pImage_Img, pImgIn1, pToolData->Poster_nColors,
+                                           pToolData->SelectionType == YAIPS_SELECTION_POSTER_DRAWING, pToolData->Poster_ParDraw);
+
+          } else {       // Must be YAIPS_SELECTION_POSTER_KMEANS
+
+
+            ierr = YaIPS_RGB_PosterizeKmeans( &pToolData->YaIPS_ImageDisp.pImage_Img, pImgIn1, pToolData->Poster_nColors,
+                                              pToolData->Poster_ParKMeans);
+          }
+
+          if( ierr >= 0) {       // Is OK, number of colors in the posterized output image.
+
+            char TempString[ 256];
+
+            sprintf( TempString, LangStringLookup( "&GUI_Other_Poster_OK=Poster: %d col. of %d"), ierr, nColorsMax);
+
+            YaIPS_ImageDispStrInfo( &pToolData->YaIPS_ImageDisp, FL_GREEN, FL_BLACK, TempString);
+
+            ierr = 0;    // Like no error output later
+
+            // Blend edges into already posterized image. Ignore error
+
+            if( pToolData->Poster_BlendEdges != 0) {   // Enable edge processing
+
+              YaIPS_RGB_PosterizeEdges( pToolData->YaIPS_ImageDisp.pImage_Img, pImgIn1,
+                                        pToolData->Poster_CannySigma, pToolData->Poster_CannyResMult,
+                                        pToolData->Poster_EdgeCol, pToolData->Poster_EdgeHighlight, pToolData->Poster_EdgeStrength);
+            }
+
+          } else if( ierr == -4711) { // Source image is no color image
+
+            strcpy( errbuffer, LangStringLookup( "&GUI_Other_Poster_ErrCol=Poster: No color image"));
+            errstring = errbuffer;
+
+            YaIPS_ImageDispStrInfo( &pToolData->YaIPS_ImageDisp, FL_GREEN, FL_BLACK, errbuffer);
+
+          } else {
+
+            strcpy( errbuffer, LangStringLookup( "&GUI_Other_Poster_ErrOther=Poster: Error"));
+            errstring = errbuffer;
+
+            YaIPS_ImageDispStrInfo( &pToolData->YaIPS_ImageDisp, FL_GREEN, FL_BLACK, errbuffer);
+          }
+        }
+
+        break;
+
       } // end switch
 
       // Has a valid output image

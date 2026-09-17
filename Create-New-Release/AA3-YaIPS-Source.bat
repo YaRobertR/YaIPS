@@ -89,8 +89,8 @@ rem XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 rem Doku
 rem XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-xcopy /q ..\Doku\%ManDir-DE%  %tempDir%\Doku\%ManDir-DE%
-xcopy /q ..\Doku\%ManDir-EN%  %tempDir%\Doku\%ManDir-EN%
+xcopy /q /s ..\Doku\%ManDir-DE%  %tempDir%\Doku\%ManDir-DE%
+xcopy /q /s ..\Doku\%ManDir-EN%  %tempDir%\Doku\%ManDir-EN%
 xcopy /q ..\Doku\ReadMe-for-developers\*.*   %tempDir%\Doku\ReadMe-for-developers
 
 rem XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

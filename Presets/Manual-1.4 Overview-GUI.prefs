@@ -24,7 +24,7 @@
 
 WinPosX:-611
 WinPosY:130
-Language:English
+Language:Deutsch
 
 [./WinOvelay-1]
 
@@ -64,8 +64,8 @@ Language:English
 
 [./GUI_Main]
 
-WinPosX:-1575
-WinPosY:129
+WinPosX:122
+WinPosY:81
 WinSizeX:964
 WinSizeY:715
 FileBrowserLastDir:E:\\Robert\\RRGameTools\\Eclipse_IDE\\eclipse-workspace\\YaI
@@ -157,8 +157,8 @@ RightSideWidth:259
 
 [./WinImage-1]
 
-WinPosX:-861
-WinPosY:172
+WinPosX:836
+WinPosY:124
 IsOpen:1
 WinSizeX:205
 WinSizeY:190
@@ -221,8 +221,8 @@ LastFileName:E:\\Robert\\RRGameTools\\Eclipse_IDE\\eclipse-workspace\\YaI
 
 [./WinCombine-1]
 
-WinPosX:-860
-WinPosY:631
+WinPosX:837
+WinPosY:583
 IsOpen:1
 WinSizeX:221
 WinSizeY:190
@@ -245,8 +245,8 @@ MyParPosY:331
 
 [./Win_Color-1]
 
-WinPosX:-868
-WinPosY:403
+WinPosX:829
+WinPosY:355
 IsOpen:1
 WinSizeX:246
 WinSizeY:190
@@ -298,4 +298,10 @@ MyParPosY:364
 
 
 [./WinCalibration]
+
+
+[./Win_Color-5]
+
+
+[./Win_Color-6]
 

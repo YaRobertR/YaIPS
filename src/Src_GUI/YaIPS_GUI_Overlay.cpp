@@ -5,6 +5,14 @@
   Overlay images, shapes, text to an image.
 
   04.06.2025 RR: First edition of this file.
+  03.09.2026 RR: * Replace use of the working directory string
+                   'YaIPS_WorkingDirectory' by '.'.
+                 * IqeB_GUI_BGndFileLoad_Callback()
+                 * DropFile_cb()
+                   Ensure normalized path characters and working directory
+                   for last loaded background file.
+                 * Reworked clipboard handling
+                   Replaced patch './Images/YaIPS' with YaIPS_CLIPBOARD_PATH.
 
 *****************************************************************************
 */
@@ -2479,7 +2487,7 @@ static void IqeB_GUI_BGndFileLoad_Callback( Fl_Widget *w)
 
   if( pTempImage != NULL) {                   // Got an image
 
-    // Remember last used directory
+    // Get last used directory
     IqeB_FileGetPath( pFileName, YaIPS_BrowserDirectory, sizeof( YaIPS_BrowserDirectory));
 
     if( BrowserSelected >= 0) {                       // Any selected
@@ -2487,6 +2495,8 @@ static void IqeB_GUI_BGndFileLoad_Callback( Fl_Widget *w)
       // Remember last loaded file name
       memset( CurrentShapeGen.BGndFileName, 0, sizeof( CurrentShapeGen.BGndFileName));
       strncpy( CurrentShapeGen.BGndFileName, pFileName, sizeof( CurrentShapeGen.BGndFileName) - 1);
+
+      IqeB_FileNormPathCharsAndCWD( CurrentShapeGen.BGndFileName);  // Ensure normalized path characters and working directory
 
       if( memcmp( &pToolData->Overlay[ BrowserSelected].ShapeGen, &CurrentShapeGen, sizeof( YaIPS_RGB_ShapeGen_Par_t)) != 0) { // is different
 
@@ -2736,6 +2746,8 @@ static int DropFile_cb( Fl_Widget *w, void *pFileNameArg, void *pImageDispArg, i
     // Remember last loaded file name
     memset( pOverlay->ShapeGen.BGndFileName, 0, sizeof( pOverlay->ShapeGen.BGndFileName));
     strncpy( pOverlay->ShapeGen.BGndFileName, pFileName, sizeof( pOverlay->ShapeGen.BGndFileName) - 1);
+
+    IqeB_FileNormPathCharsAndCWD( pOverlay->ShapeGen.BGndFileName);  // Ensure normalized path characters and working directory
 
     // Done, can exit here
 
@@ -5645,7 +5657,7 @@ static void close_cb( Fl_Widget *w, long int iToolData)
 
     // Save text buffer if used or ensure deleted if not used
 
-    sprintf( TempFileName, "%s/Images/YaIPS/Overlay-Text-%02d-%02d.txt", YaIPS_WorkingDirectory, (int)iToolData + 1, iOverlay + 1);
+    sprintf( TempFileName, "%s/Overlay-Text-%02d-%02d.txt", YaIPS_CLIPBOARD_PATH, (int)iToolData + 1, iOverlay + 1);
     IqeB_FileNormalizePathChars( TempFileName);
 
     DeleteFile = false;         // Preset no delete
@@ -5682,7 +5694,7 @@ static void close_cb( Fl_Widget *w, long int iToolData)
 
     // Construct a file name for the clipboard image
 
-    sprintf( TempFileName, "%s/Images/YaIPS/Clipboard-Overlay-%d-%d.png", YaIPS_WorkingDirectory, (int)iToolData + 1, iOverlay + 1);
+    sprintf( TempFileName, "%s/Clipboard-Overlay-%d-%d.png", YaIPS_CLIPBOARD_PATH, (int)iToolData + 1, iOverlay + 1);
     IqeB_FileNormalizePathChars( TempFileName);
 
     if( pToolData->Overlay[ iOverlay].ShapeGen.BGndType != YAIPS_SHAPE_GEN_BGND_IMAGE) {
@@ -6193,7 +6205,7 @@ static void YaIPS_GUI_MyChangeOutput( int iToolData,                           /
 
   // Construct a file name for the image
 
-  sprintf( TempFileName, "%s/Images/YaIPS/Clipboard-Overlay-%d-%d.png", YaIPS_WorkingDirectory, iToolData + 1, BrowserSelected + 1);
+  sprintf( TempFileName, "%s/Clipboard-Overlay-%d-%d.png", YaIPS_CLIPBOARD_PATH, iToolData + 1, BrowserSelected + 1);
 
   IqeB_FileNormalizePathChars( TempFileName);
 
@@ -6280,7 +6292,7 @@ static void IqeB_GUI_OverlayWinIntern( int xLeft, int xRight, int yTop, int yBot
     pOverlay->pTextBuffer = NULL; // Has no text buffer until now
 
     // Load text buffers (if exisiting)
-    sprintf( TempFileName, "%s/Images/YaIPS/Overlay-Text-%02d-%02d.txt", YaIPS_WorkingDirectory, (int)iToolData + 1, iOverlay + 1);
+    sprintf( TempFileName, "%s/Overlay-Text-%02d-%02d.txt", YaIPS_CLIPBOARD_PATH, (int)iToolData + 1, iOverlay + 1);
 
     IqeB_FileNormalizePathChars( TempFileName);
 

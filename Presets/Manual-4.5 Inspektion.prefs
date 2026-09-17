@@ -131,13 +131,12 @@ Obj_BinThresPc:50
 
 [./GUI_Main]
 
-WinPosX:-1912
-WinPosY:73
+WinPosX:38
+WinPosY:42
 WinSizeX:1862
 WinSizeY:968
 RightSideWidth:617
-FileBrowserLastDir:E:\\Robert\\RRGameTools\\Eclipse_IDE\\eclipse-workspace\\YaI
-+PS\\Images\\Demo\\Inspection-1\\
+FileBrowserLastDir:.\\Images\\Demo\\Inspection-1\\
 ImageSourceID_Last:106
 YaIPS_BigImageResolution:0
 FileBrowserLastVideo:E:\\Robert\\Temp\\XX-Temp-4\\
@@ -159,8 +158,8 @@ RightSideWidthFS:385
 
 [./WinInspRefImg-1]
 
-WinPosX:-377
-WinPosY:237
+WinPosX:1573
+WinPosY:206
 IsOpen:1
 WinSizeX:227
 WinSizeY:190
@@ -180,8 +179,8 @@ ContourPlaneThres:24
 
 [./WinPosCorr-1]
 
-WinPosX:-658
-WinPosY:471
+WinPosX:1292
+WinPosY:440
 IsOpen:1
 WinSizeX:262
 WinSizeY:190
@@ -269,8 +268,8 @@ Base_OutsiteBlend:0
 
 [./Win_Edges-1]
 
-WinPosX:-659
-WinPosY:702
+WinPosX:1291
+WinPosY:671
 IsOpen:1
 WinSizeX:262
 WinSizeY:190
@@ -315,8 +314,8 @@ OrientationAngle:15
 
 [./WinInspCompare-1]
 
-WinPosX:-380
-WinPosY:704
+WinPosX:1570
+WinPosY:673
 IsOpen:1
 WinSizeX:262
 WinSizeY:190
@@ -347,8 +346,8 @@ FlagDarken:1
 
 [./WinInspColor-1]
 
-WinPosX:-379
-WinPosY:474
+WinPosX:1571
+WinPosY:443
 IsOpen:1
 WinSizeX:262
 WinSizeY:190
@@ -409,13 +408,12 @@ NewHeight:12
 
 [./WinImage-1]
 
-WinPosX:-654
-WinPosY:234
+WinPosX:1296
+WinPosY:203
 IsOpen:1
 WinSizeX:205
 WinSizeY:190
-LastFileName:E:\\Robert\\RRGameTools\\Eclipse_IDE\\eclipse-workspace\\YaI
-+PS\\Images\\Demo\\Inspection-1\\06.png
+LastFileName:.\\Images\\Demo\\Inspection-1\\01 - Reference.png
 
 [./WinImage-2]
 
@@ -757,3 +755,9 @@ Distance_X:70
 Distance_Y:70
 Calib_Image_X:0.119658
 Calib_Image_Y:0.119658
+
+[./Win_Color-5]
+
+
+[./Win_Color-6]
+

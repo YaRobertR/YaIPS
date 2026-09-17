@@ -12,9 +12,8 @@ images_Manual/
 /CustomColors/*
 !/CustomColors/Default?colors.txt
 
-# Presets: Keep only 'ResetToDefaults.prefs' file
+# Presets: 
 /Presets/*
-!/Presets/ResetToDefaults.prefs
 
 # Compiled Object files
 *.o

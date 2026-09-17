@@ -2,7 +2,7 @@
 ; YaIPS_GUI_Main.cpp
 ;-------------------------------------------------------
 ;
-; 123 entries
+; 124 entries
 ;
 GUI_Main_Menu_Color_Copy           "Copy color to clipboard"
 
@@ -69,6 +69,8 @@ GUI_Main_Menu1e                    "File/Save screens&hot"
 GUI_Main_Menu1f                    "File/Load presets"
 
 GUI_Main_Menu1g                    "File/Save presets"
+
+GUI_Main_Menu1h                    "File/Reset presets"
 
 GUI_Main_Menu1m                    "File/TEST show all"
 

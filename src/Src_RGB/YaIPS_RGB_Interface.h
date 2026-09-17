@@ -823,6 +823,39 @@ int YaIPS_RGB_Morphology( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to RG
                           int MoprhRuns);       // Number of runs
 
 //--------------------------------------------------------------------------
+// YaIPS_RGB_Posterization.cpp
+//--------------------------------------------------------------------------
+
+#define YAIPS_RLC_POSTER_MAX_LEVEL        32   // Max nLevels value
+
+int YaIPS_RGB_PosterizeSimple( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to RGB image
+                               Fl_RGB_Image *pSrc,   // Source image
+                               int nLevels,          // In: Number of levels
+                               int Average = false); // In: If set average colors
+
+// A more complex image posterization
+int YaIPS_RGB_PosterizeEx1( Fl_RGB_Image **ppDst,    // Out: Pointer to pointer to RGB image
+                            Fl_RGB_Image *pSrc,      // Source image
+                            int i_maxcolors,         // Maximum colors to extract
+                            int i_algorithm,         // Algorithm type
+                            int i_parameter);        // Algorithm parameter
+
+// k-Means posterization algorithm
+int YaIPS_RGB_PosterizeKmeans( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to RGB image
+                               Fl_RGB_Image *pSrc,   // Source image
+                               int nLevels,          // In: Number of levels
+                               int nIterations);     // In: If set average colors
+
+// Blend edges into already posterized image
+int YaIPS_RGB_PosterizeEdges( Fl_RGB_Image *pDst,    // InOut: Already posterized.
+                              Fl_RGB_Image *pSrc,    // In: Source image
+                              float CannySigma,      // In: Sigma for gaussian filter
+                              float CannyResMult,    // In: Edge strength
+                              unsigned int EdgeCol,  // In: Edge color
+                              int EdgeHighlight = 0, // In: Highlights stronger edges. 0 = no, 100 = max highlight.
+                              int EdgeStrength = 0); // In: Edge strength. 0 = no, 100 max strength.
+
+//--------------------------------------------------------------------------
 // YaIPS_RGB_RunLengthCode.cpp
 //--------------------------------------------------------------------------
 

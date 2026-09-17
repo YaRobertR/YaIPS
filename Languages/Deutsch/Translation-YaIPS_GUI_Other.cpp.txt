@@ -2,7 +2,7 @@
 ; YaIPS_GUI_Other.cpp
 ;-------------------------------------------------------
 ;
-; 43 entries
+; 79 entries
 ;
 GUI_Other_Title                    "Sonstige"
 
@@ -111,11 +111,109 @@ GUI_Other_TabB32                   "Despill In"
 GUI_Other_TabB32a                  "Entfernt Farbreste von der innerhalb\n"
                                    "der Maske und den Rändern."
 
+GUI_Other_TabC1                    "Poster"
+
+GUI_Other_TabC2                    "Einfache Quantisierung"
+
+GUI_Other_TabC2a                   "Einfache und schnelle Posterisierung.\n"
+                                   "Farben quantisieren."
+
+GUI_Other_TabC3                    "Farben"
+
+GUI_Other_TabC3a                   "Anzahl der Farben.\n"
+                                   "Bereich: 2 .. 32"
+
+GUI_Other_TabC4                    "Einfacher Mittelwert"
+
+GUI_Other_TabC4a                   "Einfache und schnelle Posterisierung.\n"
+                                   "Mittelt die Farben nach der Quantisierung."
+
+GUI_Other_TabC5                    "Popularitätsalgorithmus"
+
+GUI_Other_TabC5a                   "Die häufigsten Farben werden ermittelt."
+
+GUI_Other_TabC6                    "Radius"
+
+GUI_Other_TabA6a                   "Radius um Farbwerte.\n"
+                                   "Sobald die häufigste Farbe im Farbraum\n"
+                                   "ermittelt wurde, werden die Farben rund um\n"
+                                   "diesen Punkt vor der nächsten Suche entfernt.\n"
+                                   "Bereich: 20 .. 2100"
+
+GUI_Other_TabC7                    "Drawing algorithm"
+
+GUI_Other_TabC7a                   "Dieser Algorithmus ist speziell für Dokumente und\n"
+                                   "Zeichnungen auf hellem Hintergrund optimiert."
+
+GUI_Other_TabC8                    "Radius"
+
+GUI_Other_TabA8a                   "Radius um Farbwerte.\n"
+                                   "Wird zur Trennung der Farbwerte verwendet.\n"
+                                   "Bereich: 0 .. 100\n"
+                                   "  0 = Empfohlener Wert bei geringem Kontrast.\n"
+                                   "100 = Empfohlener Wert für hohen Kontrast."
+
+GUI_Other_TabC9                    "k-Means Algorithmus"
+
+GUI_Other_TabC9a                   "Adaptive Quantisierung.\n"
+                                   "Anstatt feste Farbstufen zu verwenden,\n"
+                                   "lernt der Algorithmus aus dem Bild\n"
+                                   "selbst, welche Farben wichtig sind.\n"
+                                   "Die Berechnung ist sehr zeitaufwendig!"
+
+GUI_Other_TabC10                   "Wiederholungen"
+
+GUI_Other_TabA10a                  "Anzahl der Wiederholungen.\n"
+                                   "Ein höherer Wert verbessert das Ergebnis,\n"
+                                   "erfordert jedoch mehr Rechenzeit.\n"
+                                   "Bereich: 2 .. 20"
+
+GUI_Other_TabC11                   "Kanten"
+
+GUI_Other_TabC11a                  "Falls aktiviert, werden Kanten zum posterisierten Bild\n"
+                                   "hinzugefügt. Hierfür wird der Canny-Filter verwendet.\n"
+                                   "* V (Verstärkung) passt die Amplitude der Kanten an\n"
+                                   "* B (Breite) passt die Breite der Kanten ans\n"
+                                   "* S (Schwelle) unterdrückt Kanten geringerer Intensität\n"
+                                   "* K (Kontrast) passt die Schärfe an"
+
+GUI_Other_TabC12                   "V"
+
+GUI_Other_TabC12a                  "Verstärkung.\n"
+                                   "Passt die Amplitude der Kanten an.\n"
+                                   "Bereich 0.5 ... 16.0"
+
+GUI_Other_TabC13                   "B"
+
+GUI_Other_TabC13a                  "Breite.\n"
+                                   "Passt die Breite der Kanten an.\n"
+                                   "Bereich 0.5 ... 8.0"
+
+GUI_Other_TabC14                   "S"
+
+GUI_Other_TabA14a                  "Schwelle.\n"
+                                   "Unterdrückt Kanten geringerer Intensität.\n"
+                                   "Bereich: 0 .. 100"
+
+GUI_Other_TabC15                   "K"
+
+GUI_Other_TabA15a                  "Kontrast.\n"
+                                   "Passt die Schärfe an\n"
+                                   "Bereich: 0 .. 100"
+
+GUI_Other_TabC16a                  "Kantenfarbe"
+
 GUI_Other_Chroma_OK                "Chroma-Key"
 
 GUI_Other_Chroma_ErrCol            "Chroma-Key: Kein Farbbild"
 
 GUI_Other_Chroma_ErrOther          "Chroma-Key: Fehler"
+
+GUI_Other_Poster_OK                "Poster: Farben %d / %d"
+
+GUI_Other_Poster_ErrCol            "Poster: Kein Farbbild"
+
+GUI_Other_Poster_ErrOther          "Poster: Fehler"
 
 ;
 ;

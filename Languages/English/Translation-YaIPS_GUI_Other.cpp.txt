@@ -2,7 +2,7 @@
 ; YaIPS_GUI_Other.cpp
 ;-------------------------------------------------------
 ;
-; 46 entries
+; 79 entries
 ;
 GUI_Other_Title                    "Other"
 
@@ -111,11 +111,109 @@ GUI_Other_TabB32                   "Despill In"
 GUI_Other_TabB32a                  "Removes color residue from the inside\n"
                                    "of the mask."
 
+GUI_Other_TabC1                    "Poster"
+
+GUI_Other_TabC2                    "Simple posterization"
+
+GUI_Other_TabC2a                   "Simple and fast image posterization.\n"
+                                   "Quantize the colors."
+
+GUI_Other_TabC3                    "Colors"
+
+GUI_Other_TabC3a                   "Number of Colors.\n"
+                                   "Range: 2 .. 32"
+
+GUI_Other_TabC4                    "Simple average"
+
+GUI_Other_TabC4a                   "Simple and fast image posterization.\n"
+                                   "Averages the colors after quantization."
+
+GUI_Other_TabC5                    "Popularity algorithm"
+
+GUI_Other_TabC5a                   "The most frequent colors are determined."
+
+GUI_Other_TabC6                    "Radius"
+
+GUI_Other_TabA6a                   "Remove size in gray values.\n"
+                                   "Once the most common color in the color space\n"
+                                   "has been identified, colors around that point\n"
+                                   "are removed before the next search.\n"
+                                   "Range: 20 .. 2100"
+
+GUI_Other_TabC7                    "Drawing algorithm"
+
+GUI_Other_TabC7a                   "This algorithm is specifically optimized for\n"
+                                   "documents and drawings on a light background."
+
+GUI_Other_TabC8                    "Radius"
+
+GUI_Other_TabA8a                   "Radius around color values.\n"
+                                   "Used to separate the color values.\n"
+                                   "Range: 0 .. 100\n"
+                                   "  0 = Recommended value for low contrast.\n"
+                                   "100 = Recommended value for high contrast."
+
+GUI_Other_TabC9                    "k-Means algorithm"
+
+GUI_Other_TabC9a                   "Adaptive quantization.\n"
+                                   "Instead of using fixed color levels, the\n"
+                                   "algorithm learns from the image itself\n"
+                                   "which colors are important.\n"
+                                   "Very time-consuming to compute!"
+
+GUI_Other_TabC10                   "Iterations"
+
+GUI_Other_TabA10a                  "Number of iterations.\n"
+                                   "A higher value improves the result.\n"
+                                   "but requires more computation time\n"
+                                   "Range: 2 .. 20"
+
+GUI_Other_TabC11                   "Edges"
+
+GUI_Other_TabC11a                  "If enabled, edges are added to the posterized image.\n"
+                                   "The Canny edge detection algorithm is used for this purpose.\n"
+                                   "* G (Gain) adjusts the amplitude of the edges.\n"
+                                   "* W (Width) adjusts the width of the edges\n"
+                                   "* T (Threshold) suppresses lower-intensity edges\n"
+                                   "* C (Contrast) adjusts the sharpness"
+
+GUI_Other_TabC12                   "G"
+
+GUI_Other_TabC12a                  "Gain.\n"
+                                   "Adjusts the amplitude of the edges.\n"
+                                   "Range 0.5 ... 16.0"
+
+GUI_Other_TabC13                   "W"
+
+GUI_Other_TabC13a                  "Width.\n"
+                                   "Adjusts the width of the edges.\n"
+                                   "Range 0.5 ... 8.0"
+
+GUI_Other_TabC14                   "T"
+
+GUI_Other_TabA14a                  "Threshold.\n"
+                                   "Suppresses lower-intensity edges.\n"
+                                   "Range: 0 .. 100"
+
+GUI_Other_TabC15                   "C"
+
+GUI_Other_TabA15a                  "Contrast.\n"
+                                   "Adjusts the sharpness\n"
+                                   "Range: 0 .. 100"
+
+GUI_Other_TabC16a                  "Edge color"
+
 GUI_Other_Chroma_OK                "Chroma Key"
 
 GUI_Other_Chroma_ErrCol            "Chroma Key: No color image"
 
 GUI_Other_Chroma_ErrOther          "Chroma Key: Error"
+
+GUI_Other_Poster_OK                "Poster: %d col. of %d"
+
+GUI_Other_Poster_ErrCol            "Poster: No color image"
+
+GUI_Other_Poster_ErrOther          "Poster: Error"
 
 ;
 ;

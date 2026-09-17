@@ -5,6 +5,9 @@
   Read and display a video.
 
   25.05.2026 RR: First edition of this file.
+  03.09.2026 RR: * Function VideoLoadFile()
+                   Ensure normalized path characters and working directory
+                   for last loaded file.
 
 *****************************************************************************
 */
@@ -1518,8 +1521,12 @@ static int VideoLoadFile( YaIPS_ToolData_info_t *pToolData, char *pFileName)
   memset( pToolData->LastFileName, 0, sizeof( pToolData->LastFileName));
   strncpy( pToolData->LastFileName, pFileName, sizeof( pToolData->LastFileName) - 1);
 
+  IqeB_FileNormPathCharsAndCWD( pToolData->LastFileName);  // Ensure normalized path characters and working directory
+
   // Remember last used directory
   IqeB_FileGetPath( pFileName, YaIPS_BrowserDirVideos, sizeof( YaIPS_BrowserDirVideos));
+
+  IqeB_FileNormPathCharsAndCWD( YaIPS_BrowserDirVideos);  // Ensure normalized path characters and working directory
 
   pToolData->VideoState |= VIDEO_STATE_LOADED;        // Video is loaded
 

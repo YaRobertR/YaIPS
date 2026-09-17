@@ -6,6 +6,18 @@
   Creates an window which shows the loaded image.
 
   06.02.2025 RR: First edition of this file.
+  03.09.2026 RR: * Replace use of the working directory string
+                   'YaIPS_WorkingDirectory' by '.'.
+                 * Function Load_cb()
+                 * Function DropFile_cb()
+                 * Function FilePrev_cb()
+                 * Function FileNext_cb()
+                 * Function YaIPS_GUI_MyChangeOutput()
+                   Ensure normalized path characters and working directory
+                   for last loaded file.
+                 * Reworked clipboard handling
+                   Replaced patch './Images/YaIPS' with YaIPS_CLIPBOARD_PATH.
+
 
 *****************************************************************************
 */
@@ -359,7 +371,7 @@ static void close_cb( Fl_Widget *w, long int iToolData)
 
   // Construct a file name for the clipboard image
 
-  sprintf( TempFileName, "%s/Images/YaIPS/Clipboard-ImageView-%d.png", YaIPS_WorkingDirectory, (int)iToolData + 1);
+  sprintf( TempFileName, "%s/Clipboard-ImageView-%d.png", YaIPS_CLIPBOARD_PATH, (int)iToolData + 1);
   IqeB_FileNormalizePathChars( TempFileName);
 
   // Check for clipboard image
@@ -470,8 +482,12 @@ static void Load_cb( Fl_Widget *w, long int iToolData)
     memset( pToolData->LastFileName, 0, sizeof( pToolData->LastFileName));
     strncpy( pToolData->LastFileName, pFileName, sizeof( pToolData->LastFileName) - 1);
 
+    IqeB_FileNormPathCharsAndCWD( pToolData->LastFileName);  // Ensure normalized path characters and working directory
+
     // Remember last used directory
     IqeB_FileGetPath( pFileName, YaIPS_BrowserDirectory, sizeof( YaIPS_BrowserDirectory));
+
+    IqeB_FileNormPathCharsAndCWD( YaIPS_BrowserDirectory);  // Ensure normalized path characters and working directory
 
     // Set windows title
 
@@ -579,6 +595,8 @@ static void Save_cb( Fl_Widget *w, long int iToolData)
   // Remember last used directory
   IqeB_FileGetPath( pFileName, YaIPS_BrowserDirectory, sizeof( YaIPS_BrowserDirectory));
 
+  IqeB_FileNormPathCharsAndCWD( YaIPS_BrowserDirectory);  // Ensure normalized path characters and working directory
+
   // Save latched display image
   if( pToolData->YaIPS_ImageDisp.pImage_Img != NULL) {   // Have a latched image
 
@@ -672,6 +690,8 @@ static int DropFile_cb( Fl_Widget *w, void *pFileNameArg, void *pImageDispArg, i
       // Remember last loaded file name
       memset( pToolData->LastFileName, 0, sizeof( pToolData->LastFileName));
       strncpy( pToolData->LastFileName, pFileName, sizeof( pToolData->LastFileName) - 1);
+
+      IqeB_FileNormPathCharsAndCWD( pToolData->LastFileName);  // Ensure normalized path characters and working directory
 
       // Set windows title
 
@@ -862,8 +882,12 @@ static void FilePrev_cb( Fl_Widget *w, long int iToolData)
         memset( pToolData->LastFileName, 0, sizeof( pToolData->LastFileName));
         strncpy( pToolData->LastFileName, TempString1, sizeof( pToolData->LastFileName) - 1);
 
+        IqeB_FileNormPathCharsAndCWD( pToolData->LastFileName);  // Ensure normalized path characters and working directory
+
         // Remember last used directory
         IqeB_FileGetPath( TempString1, YaIPS_BrowserDirectory, sizeof( YaIPS_BrowserDirectory));
+
+        IqeB_FileNormPathCharsAndCWD( YaIPS_BrowserDirectory);  // Ensure normalized path characters and working directory
 
         // Set windows title
 
@@ -952,8 +976,12 @@ static void FileNext_cb( Fl_Widget *w, long int iToolData)
         memset( pToolData->LastFileName, 0, sizeof( pToolData->LastFileName));
         strncpy( pToolData->LastFileName, TempString1, sizeof( pToolData->LastFileName) - 1);
 
+        IqeB_FileNormPathCharsAndCWD( pToolData->LastFileName);  // Ensure normalized path characters and working directory
+
         // Remember last used directory
         IqeB_FileGetPath( TempString1, YaIPS_BrowserDirectory, sizeof( YaIPS_BrowserDirectory));
+
+        IqeB_FileNormPathCharsAndCWD( YaIPS_BrowserDirectory);  // Ensure normalized path characters and working directory
 
         // Set windows title
 
@@ -1111,6 +1139,8 @@ static void MyWinUpdate( int iToolData, int DoEnable)
     // Get path name out of last loaded file
     IqeB_FileGetPath( pToolData->LastFileName, ThisDirName, sizeof( ThisDirName));
 
+    IqeB_FileNormPathCharsAndCWD( ThisDirName);  // Ensure normalized path characters and working directory
+
     if( strcmp( ThisDirName, pToolData->LastDirName) != 0) {  // Is different than last file name
 
       // Has to change last loaded directory
@@ -1249,7 +1279,7 @@ static void YaIPS_GUI_MyChangeOutput( int iToolData,                           /
 
   // Construct a file name for the image
 
-  sprintf( TempFileName, "%s/Images/YaIPS/Clipboard-ImageView-%d.png", YaIPS_WorkingDirectory, iToolData + 1);
+  sprintf( TempFileName, "%s/Clipboard-ImageView-%d.png", YaIPS_CLIPBOARD_PATH, iToolData + 1);
 
   IqeB_FileNormalizePathChars( TempFileName);
 
@@ -1277,6 +1307,8 @@ static void YaIPS_GUI_MyChangeOutput( int iToolData,                           /
     // Remember last loaded file name
     memset( pToolData->LastFileName, 0, sizeof( pToolData->LastFileName));
     strncpy( pToolData->LastFileName, TempFileName, sizeof( pToolData->LastFileName) - 1);
+
+    IqeB_FileNormPathCharsAndCWD( pToolData->LastFileName);  // Ensure normalized path characters and working directory
 
     YaIPS_Image_Write_PNG( TempFileName, pToolData->YaIPS_ImageDisp.pImage_Img);
   }

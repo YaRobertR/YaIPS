@@ -3,6 +3,14 @@
   YaIPS.h
 
   03.01.2025 RR: First edition of this file.
+  03.09.2026 RR: * Added reference to IqeB_FileNormPathCharsAndCWD().
+                 * Added reference to IqeB_DirExsits().
+                 * Reworked clipboard handling
+                   Added defines YaIPS_CLIPBOARD_DIR and YaIPS_CLIPBOARD_PATH.
+  08.09.2026 RR: * Added reference to
+                   * IqeB_FileCopyFilesInDir()
+                   * IqeB_FileDelFilesInDir()
+                   * IqeB_PresetCleanClipboard()
 
 *****************************************************************************
 */
@@ -15,8 +23,8 @@
  */
 
 #define WIN_PROG_NAME         "&VersionInfo_PName=YaIPS"
-#define WIN_PROG_VERSION_NR   "V1.00"
-#define WIN_PROG_VERSION_DATE "&VersionInfo_Date=August 21, 2026"  // Date like: April 9  2017
+#define WIN_PROG_VERSION_NR   "V1.01"
+#define WIN_PROG_VERSION_DATE "&VersionInfo_Date=September 16, 2026"  // Date like: April 9  2017
 #define WIN_DEFAULT_TITLE     "&VersionInfo_Title=Yet another Image Processing Software"
 #define WIN_ENGLISH_TITLE     "Yet another Image Processing Software"
 
@@ -556,14 +564,21 @@ void YaIPS_GUI_SettingsWin( int xLeft, int xRight, int yTop, int yBotton, int Su
 // Get the greatest common divisor of two numbers.
 int GreatestcommonDivisor( int a, int b);
 
+// File system utilities
+
 void IqeB_FileNormalizePathChars( char *pPath);
+void IqeB_FileNormPathCharsAndCWD( char *pPath);
 void IqeB_FileGetBaseName( char *pFilename, char *pBasename, int SizeBasename);
 void IqeB_FileGetFileName( char *pFilename, char *pOut, int SizeOut);
 void IqeB_FileGetPath( char *pFilename, char *pOut, int SizeOut);
 void IqeB_FileEnsureExtension( char *pFilename, char *pExtension, char *pOut, int SizeOut);
 int  IqeB_FileCheckExtension( char *pFilename, const char *pExtensionList);
 int  IqeB_FileExsits( char *pFilename);
+int  IqeB_DirExsits( char *pPath);
 void IqeB_FileDelete( char *pFilename);
+void IqeB_FileMakePath( char *pPath);
+void IqeB_FileCopyFilesInDir( char *pDirDst, char *pDirSrc);
+void IqeB_FileDelFilesInDir( char *pDir);
 
 // string utilities
 
@@ -1037,8 +1052,18 @@ void YaIPS_DialogRemoveMinMaxButton( Fl_Window *pFlWin);
 //
 
 // Execute this before creation of a tool windows
-#define YAIPS_BEFORE_TOOL_WIN_CREATE() pGUI_Main->make_current()  // Make the main window the parent of the new windo
-//x/#define YAIPS_BEFORE_TOOL_WIN_CREATE() Fl_Group::current( NULL)  // Make the main window the parent of the new windo
+#define YAIPS_BEFORE_TOOL_WIN_CREATE() pGUI_Main->make_current()  // Make the main window the parent of the new window
+//x/#define YAIPS_BEFORE_TOOL_WIN_CREATE() Fl_Group::current( NULL)  // Make the main window the parent of the new window
+
+// Clip board files
+
+#define YaIPS_CLIPBOARD_DIR   "Clipboard"                  // Name of clipboard directory
+#define YaIPS_CLIPBOARD_PATH  "./Images/YaIPS/Clipboard"   // Path to clip board directory
+
+// Preset director
+
+#define YaIPS_PRESET_DIR_NAME   "Presets"                  // Name of preset directory
+#define YaIPS_PRESET_CLIPB_DIR  ".Clipboard"               // Name of clipboard directories below preset directory
 
 // preferences handling
 
@@ -1127,8 +1152,11 @@ void IqeB_PreferencesRestoreDefaults( T_GUI_PreferenceEntry *pSettingTable = NUL
 // Save the current references to a preset file
 void IqeB_PresetSave_cb( Fl_Widget *pWidget, void *pValueArg);
 
-// Load a preset file from file
+// Load a preset file from file or reset presets
 void IqeB_PresetLoad_cb( Fl_Widget *pWidget, void *pValueArg);
+
+// Clean not used clipboard subdirectories
+void IqeB_PresetCleanClipboard();
 
 // Startup the windows from last session
 void YaIPS_WindowsStartup( int DoStartup, int xLeft, int xRight, int yTop, int yBotton);

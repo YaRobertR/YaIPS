@@ -31,7 +31,7 @@ YaIPS is therefore ideally suited for **trying out** and **understanding image p
 
 ##### User Interface Overview
 
-![Screenshot-01.png](./Images/YaIPS/Screenshot-01.png)
+<img title="" src="./Images/YaIPS/Screenshot-01.png" alt="Screenshot-01.png" width="556" data-align="center">
 
 The main window is the central element of the user interface. It is divided into three areas:
 

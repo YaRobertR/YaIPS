@@ -61,6 +61,7 @@ mkdir %tempDir%\Images
 mkdir %tempDir%\Images\Backgrounds
 mkdir %tempDir%\Images\Charts
 mkdir %tempDir%\Images\Demo
+mkdir %tempDir%\Images\OpenMoji
 mkdir %tempDir%\Images\Various-Images
 mkdir %tempDir%\Images\YaIPS
 mkdir %tempDir%\Languages
@@ -100,10 +101,12 @@ rem XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 xcopy /q  ..\Images\Backgrounds\*.*       %tempDir%\Images\Backgrounds
 xcopy /q  ..\Images\Charts\*.*            %tempDir%\Images\Charts
 xcopy /q /s  ..\Images\Demo\*.*           %tempDir%\Images\Demo
+xcopy /q /s  ..\Images\OpenMoji\*.*       %tempDir%\Images\OpenMoji
 xcopy /q  ..\Images\Various-Images\*.*    %tempDir%\Images\Various-Images
 
-xcopy /q  ..\Images\YaIPS\Icon-YaIPS.png  %tempDir%\Images\YaIPS
-xcopy /q  ..\Images\YaIPS\Screenshot-*.*  %tempDir%\Images\YaIPS
+xcopy /q  ..\Images\YaIPS\Icon-YaIPS.png      %tempDir%\Images\YaIPS
+xcopy /q  ..\Images\YaIPS\Icon-YaIPS-128.png  %tempDir%\Images\YaIPS
+xcopy /q  ..\Images\YaIPS\Screenshot-*.*      %tempDir%\Images\YaIPS
 
 rem XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 rem Languages
@@ -115,7 +118,6 @@ rem XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 rem Presets
 rem XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-xcopy /q  ..\Presets\ResetToDefaults.prefs    %tempDir%\Presets 
 
 rem XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 rem Videos

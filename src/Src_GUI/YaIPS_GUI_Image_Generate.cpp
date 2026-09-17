@@ -5,6 +5,10 @@
   Read and display videos.
 
   25.05.2025 RR: First edition of this file.
+  03.09.2026 RR: * Replace use of the working directory string
+                   'YaIPS_WorkingDirectory' by '.'.
+                 * Reworked clipboard handling
+                   Replaced patch './Images/YaIPS' with YaIPS_CLIPBOARD_PATH.
 
 *****************************************************************************
 */
@@ -686,9 +690,13 @@ static void IqeB_GUI_BGndFileLoad_Callback( Fl_Widget *w)
     // Remember last used directory
     IqeB_FileGetPath( pFileName, YaIPS_BrowserDirectory, sizeof( YaIPS_BrowserDirectory));
 
+    IqeB_FileNormPathCharsAndCWD( YaIPS_BrowserDirectory);  // Ensure normalized path characters and working directory
+
     // Remember last loaded file name
     memset( pToolData->BGndFileName, 0, sizeof( pToolData->BGndFileName));
     strncpy( pToolData->BGndFileName, pFileName, sizeof( pToolData->BGndFileName) - 1);
+
+    IqeB_FileNormPathCharsAndCWD( pToolData->BGndFileName);  // Ensure normalized path characters and working directory
 
     // Set new loaded file
 
@@ -2284,7 +2292,8 @@ static void close_cb( Fl_Widget *w, long int iToolData)
 
   // Construct a file name for the clipboard image
 
-  sprintf( TempFileName, "%s/Images/YaIPS/Clipboard-NewImage-%d.png", YaIPS_WorkingDirectory, (int)iToolData + 1);
+  sprintf( TempFileName, "%s/Clipboard-NewImage-%d.png", YaIPS_CLIPBOARD_PATH, (int)iToolData + 1);
+
   IqeB_FileNormalizePathChars( TempFileName);
 
   if( pToolData->BGndType != YAIPS_SHAPE_GEN_BGND_IMAGE) {
@@ -3013,7 +3022,7 @@ static void YaIPS_GUI_MyChangeOutput( int iToolData,                           /
 
   // Construct a file name for the image
 
-  sprintf( TempFileName, "%s/Images/YaIPS/Clipboard-NewImage-%d.png", YaIPS_WorkingDirectory, iToolData + 1);
+  sprintf( TempFileName, "%s/Clipboard-NewImage-%d.png", YaIPS_CLIPBOARD_PATH, iToolData + 1);
 
   IqeB_FileNormalizePathChars( TempFileName);
 

@@ -5,6 +5,17 @@
   Manage preferences and windows.
 
   03.01.2025 RR: First edition of this file.
+  03.09.2026 RR: Replace use of the working directory string
+                 'YaIPS_WorkingDirectory' by '.'.
+  08.09.2026 RR: * IqeB_PresetSave_cb()
+                   Added coded to save the clip board files. The files
+                   are stored in a sub directory of the "Preset" directory.
+                   This sub directory has the name of the saved preset file.
+                 * IqeB_PresetLoad_cb()
+                   * Restore clipboard files.
+                   * if 'pValueArg' is != 0 reset presets.
+                 * Added IqeB_PresetCleanClipboard()
+                   Clean not used clipboard subdirectories.
 
 *****************************************************************************
 */
@@ -675,6 +686,8 @@ void IqeB_PresetSave_cb( Fl_Widget *pWidget, void *pValueArg)
   char FileNameSrc[ MAX_FILENAME_LEN];
   char PathPresets[ MAX_FILENAME_LEN];
   char TempFileName[ MAX_FILENAME_LEN];
+  char TempDirDst[ MAX_FILENAME_LEN];
+  char TempBaseName[ MAX_FILENAME_LEN];
 
   // Ensure all presets are saved to file
   IqeB_PreferencesUpdateChanges();
@@ -688,8 +701,8 @@ void IqeB_PresetSave_cb( Fl_Widget *pWidget, void *pValueArg)
 
   // Construct path to preset directory
   strcpy( PathPresets, YaIPS_WorkingDirectory);
-
-  strcat( PathPresets, "/Presets");
+  strcat( PathPresets, "/");
+  strcat( PathPresets, YaIPS_PRESET_DIR_NAME);
   IqeB_FileNormalizePathChars( PathPresets);
 
   // Initialize the file chooser. Only can save prefs images
@@ -722,6 +735,31 @@ void IqeB_PresetSave_cb( Fl_Widget *pWidget, void *pValueArg)
   IqeB_FileEnsureExtension( pFileName, (char *)"prefs", TempFileName, sizeof( TempFileName));
 
   ierr = CopyFile( FileNameSrc, TempFileName, false);
+
+  //
+  // Save clip board data
+  //
+
+  // Build path to directory for saved clipboard files
+  IqeB_FileGetBaseName( pFileName, TempBaseName, sizeof( TempBaseName)); // Get base name of file
+  IqeB_FileGetPath( pFileName, TempDirDst, sizeof( TempDirDst));         // Get path to file
+
+  strcat( TempDirDst, (char *)YaIPS_PRESET_CLIPB_DIR);                   // Add directory for clip boards
+  strcat( TempDirDst, "/");                                              // Add path character
+  strcat( TempDirDst, TempBaseName);                                     // Add base name as directory name
+
+  IqeB_FileNormPathCharsAndCWD( TempDirDst);
+
+  if( IqeB_DirExsits( TempDirDst)) {                                     // If directory exists
+
+    IqeB_FileDelFilesInDir( TempDirDst);                                 // Empty directory
+
+  } else {                                                               // If directory does not exist
+
+    IqeB_FileMakePath( TempDirDst);                                      // Create path to directory
+  }
+
+  IqeB_FileCopyFilesInDir( TempDirDst, (char *)YaIPS_CLIPBOARD_PATH);    // Copy clipboard files
 
   // ...
 
@@ -817,7 +855,10 @@ static void CopyPreferenceGroup( Fl_Preferences *pSrc, Fl_Preferences *pDst)
 /************************************************************************************
  * IqeB_PresetLoad_cb
  *
- * Load a preset file from file
+ * Load a preset file from file or reset presets.
+ *
+ * *pValueArg:  0  Load presets from file
+ *              1  Reset presets
  *
  */
 
@@ -825,11 +866,17 @@ void IqeB_PresetLoad_cb( Fl_Widget *pWidget, void *pValueArg)
 {
   Fl_Native_File_Chooser fc;
   char *pFileName;
-  int ierr;
+  int ierr, ArgInt;
   char FileNameSrc[ MAX_FILENAME_LEN];
   char PathPresets[ MAX_FILENAME_LEN];
   char TempFileName[ MAX_FILENAME_LEN];
+  char TempDirDst[ MAX_FILENAME_LEN];
+  char TempBaseName[ MAX_FILENAME_LEN];
   Fl_Preferences *pPreferences = NULL;
+
+  // Get argument
+
+  ArgInt = (long long)pValueArg;
 
   // Ensure all presets are saved to file
   IqeB_PreferencesUpdateChanges();
@@ -841,43 +888,49 @@ void IqeB_PresetLoad_cb( Fl_Widget *pWidget, void *pValueArg)
     return;
   }
 
-  // Construct path to preset directory
-  strcpy( PathPresets, YaIPS_WorkingDirectory);
+  pFileName = NULL;             // Keep compiler happy (no compile warning)
 
-  strcat( PathPresets, "/Presets");
-  IqeB_FileNormalizePathChars( PathPresets);
+  if( ArgInt == 0) {            // Load presets from file
 
-  // Initialize the file chooser. Only can save prefs images
-  strcpy( TempFileName, LangStringLookup( "&Utils_Preset_FileType=Presets"));
-  strcat( TempFileName, "\t*.{prefs}\n");
-  fc.filter( TempFileName);
+    // Construct path to preset directory
+    strcpy( PathPresets, YaIPS_WorkingDirectory);
+    strcat( PathPresets, "/");
+    strcat( PathPresets, YaIPS_PRESET_DIR_NAME);
+    IqeB_FileNormalizePathChars( PathPresets);
 
-  fc.directory( PathPresets);
+    // Initialize the file chooser. Only can save prefs images
+    strcpy( TempFileName, LangStringLookup( "&Utils_Preset_FileType=Presets"));
+    strcat( TempFileName, "\t*.{prefs}\n");
+    fc.filter( TempFileName);
 
-  strcpy( TempFileName, PathPresets);
-  strcat( TempFileName, "/---");
-  IqeB_FileNormalizePathChars( TempFileName);
-  fc.preset_file( TempFileName);
+    fc.directory( PathPresets);
 
-  fc.title( LangStringLookup( "&Utils_Preset_Load1=Load preset"));
-  fc.type( Fl_Native_File_Chooser::BROWSE_FILE);  // only picks files that exist
+    strcpy( TempFileName, PathPresets);
+    strcat( TempFileName, "/---");
+    IqeB_FileNormalizePathChars( TempFileName);
+    fc.preset_file( TempFileName);
 
-  ierr = fc.show();                                    // Open file chooser dialog
+    fc.title( LangStringLookup( "&Utils_Preset_Load1=Load preset"));
+    fc.type( Fl_Native_File_Chooser::BROWSE_FILE);  // only picks files that exist
 
-  if( ierr != 0) {      // User cancelled or error
+    ierr = fc.show();                                    // Open file chooser dialog
 
-    goto ExitPoint;
-  }
+    if( ierr != 0) {      // User cancelled or error
 
-  // Have a filename here. Ensure a prefs file extension.
+      goto ExitPoint;
+    }
 
-  pFileName = (char *)fc.filename();
+    // Have a filename here. Ensure a prefs file extension.
 
-  pPreferences = new Fl_Preferences( pFileName, "ya3dag.de", NULL, (Fl_Preferences::Root)0);   // create a temporary preference file
+    pFileName = (char *)fc.filename();
 
-  if( pPreferences == NULL) {     // Load Error
+    pPreferences = new Fl_Preferences( pFileName, "ya3dag.de", NULL, (Fl_Preferences::Root)0);   // create a temporary preference file
 
-    goto ExitPoint;
+    if( pPreferences == NULL) {     // Load Error
+
+      goto ExitPoint;
+    }
+
   }
 
   // Creating and loading preferences was OK
@@ -890,7 +943,10 @@ void IqeB_PresetLoad_cb( Fl_Widget *pWidget, void *pValueArg)
 
   IqeB_PreferencesData.clear();        // Empty the data base
 
-  CopyPreferenceGroup( pPreferences, &IqeB_PreferencesData);   // Copy the preferences
+  if( pPreferences != NULL) {          // Have preferences loaded from file ?
+
+    CopyPreferenceGroup( pPreferences, &IqeB_PreferencesData);   // Copy the preferences
+  }
 
   // Reset the pointer in the settings table. Was overwritten before.
 
@@ -907,9 +963,38 @@ void IqeB_PresetLoad_cb( Fl_Widget *pWidget, void *pValueArg)
   // Get the preferences from the file and store to the variables.
   IqeB_PreferencesGetFromFile();
 
-  delete pPreferences;                 // Release temporary loaded preferences
+  if( pPreferences != NULL) {          // Have preferences loaded from file ?
 
+    delete pPreferences;                 // Release temporary loaded preferences
+  }
+
+  //
+  // Restore clip board data
+  //
+
+  IqeB_FileDelFilesInDir( (char *)YaIPS_CLIPBOARD_PATH);      // Empty clipboard directory
+
+  if( pPreferences != NULL) {          // Have preferences loaded from file ?
+
+    // Build path to directory for saved clipboard files
+    IqeB_FileGetBaseName( pFileName, TempBaseName, sizeof( TempBaseName)); // Get base name of file
+    IqeB_FileGetPath( pFileName, TempDirDst, sizeof( TempDirDst));         // Get path to file
+
+    strcat( TempDirDst, (char *)YaIPS_PRESET_CLIPB_DIR);                   // Add directory for clip boards
+    strcat( TempDirDst, "/");                                              // Add path character
+    strcat( TempDirDst, TempBaseName);                                     // Add base name as directory name
+
+    IqeB_FileNormPathCharsAndCWD( TempDirDst);
+
+    if( IqeB_DirExsits( TempDirDst)) {                                     // If directory exists
+
+      IqeB_FileCopyFilesInDir( (char *)YaIPS_CLIPBOARD_PATH, TempDirDst);  // Copy files to clipboard directory
+    }
+  }
+
+  //
   // Startup the windows from last session
+  //
 
   YaIPS_BigImageDisp.ImageSourceID = YaIPS_Main_ImageSourceID_Last;
 
@@ -952,6 +1037,141 @@ void IqeB_PresetLoad_cb( Fl_Widget *pWidget, void *pValueArg)
   // ...
 
 ExitPoint: ;
+
+}
+
+/************************************************************************************
+ * IqeB_PresetCleanClipboard
+ *
+ * Clean not used clipboard subdirectories.
+ * For each preference file there is also a sub directory
+ * with saved clipboard files.
+ * This functions remove subdirectories without an associated
+ * preference file
+ *
+ */
+
+void IqeB_PresetCleanClipboard()
+{
+  int numPresets, numDirs, iPreset, iDir, LenPreset, LenDir, LenTemp, FoundOne;
+  char PathDirs[ MAX_FILENAME_LEN];
+  char PathPresets[ MAX_FILENAME_LEN];
+  char TempDirPath[ MAX_FILENAME_LEN];
+  dirent **listPresets, **listDirs;
+  char *pPreset, *pDir;
+
+  // Get files in preset directory
+
+  strcpy( PathPresets, YaIPS_WorkingDirectory);           // Construct path to preset files
+  strcat( PathPresets, "/");
+  strcat( PathPresets, YaIPS_PRESET_DIR_NAME);
+
+  IqeB_FileNormalizePathChars( PathPresets);
+
+  numPresets = fl_filename_list( PathPresets, &listPresets, fl_alphasort);
+
+  // Get files in '.Clipboard' subdirectory
+
+  strcpy( PathPresets, YaIPS_WorkingDirectory);           // Construct path to preset files
+  strcat( PathPresets, "/");
+  strcat( PathPresets, YaIPS_PRESET_DIR_NAME);
+  strcat( PathDirs, "/");
+  strcat( PathDirs, YaIPS_PRESET_CLIPB_DIR);
+
+  IqeB_FileNormalizePathChars( PathDirs);
+
+  numDirs = fl_filename_list( PathDirs, &listDirs, fl_alphasort);
+
+  for( iDir = 0; iDir < numDirs; iDir++) {       // Walk all subdirectories
+
+    pDir = listDirs[ iDir]->d_name;
+
+    LenDir = strlen( pDir);
+
+    // Skip files. Directories have a '/' as last character
+    if( LenDir == 0 ||                           // No name
+        pDir[ LenDir - 1] != '/') {              // Is NOT a directory
+
+      continue;
+    }
+
+    if( LenDir == 2 && pDir[ 0] == '.' ) {       // Is current directory
+
+      continue;
+    }
+
+    if( LenDir == 3 && pDir[ 0] == '.' && pDir[ 1] == '.' ) { // Is directory up
+
+      continue;
+    }
+
+    // Have a directory here
+    // Check for a matching preset file
+
+    FoundOne = false;
+
+    for( iPreset = 0; iPreset < numPresets; iPreset++) {  // Walk all preset files
+
+      pPreset = listPresets[ iPreset]->d_name;
+
+      LenPreset = strlen( pPreset);
+
+      // Skip directories. Directories have a '/' as last character
+      if( LenPreset == 0 ||                               // No name
+          pPreset[ LenPreset - 1] == '/') {               // Is a directory
+
+        continue;
+      }
+
+      // have a file here
+
+      // Check for '.prefs' extension
+
+      if( LenPreset <= 6 ||
+          stricmp( pPreset + LenPreset - 6, ".prefs") != 0) {
+
+        continue;
+      }
+
+      // Check for base name of file is equal the directory name.
+      // NOTE: The directory still has a path character at the end.
+      if( LenDir - 1 == LenPreset - 6 &&
+          strnicmp( pDir, pPreset, LenDir - 1) == 0) {
+
+        FoundOne = true;    // Found one
+
+        break;              // Can break loop
+      }
+    }
+
+    if( ! FoundOne) {       // No match found
+
+      // Build path to subdirectory
+
+      strcpy( TempDirPath, PathDirs);
+      strcat( TempDirPath, "/");
+      strcat( TempDirPath, pDir);
+
+      // remove trailing path character
+      LenTemp = strlen( TempDirPath);
+      if( LenTemp > 0 &&
+          (TempDirPath[ LenTemp - 1] == '/' || TempDirPath[ LenTemp - 1] == '\\')) {
+
+        TempDirPath[ LenTemp - 1] = '\0';
+      }
+
+      IqeB_FileNormalizePathChars( TempDirPath);
+
+      IqeB_FileDelFilesInDir( TempDirPath);      // Empty sub directory
+
+      fl_rmdir( TempDirPath);                    // Remove directory
+    }
+  }
+
+  // Free the file list
+
+  fl_filename_free_list( &listPresets, numPresets);
+  fl_filename_free_list( &listDirs, numDirs);
 
 }
 

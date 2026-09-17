@@ -5,6 +5,8 @@
   Custom color manager
 
   15.03.2026 RR: First edition of this file.
+  03.09.2026 RR: Replace use of the working directory string
+                 'YaIPS_WorkingDirectory' by '.'.
 
 *****************************************************************************
 */
@@ -323,7 +325,7 @@ static void CustomColor_Load_cb( Fl_Widget *w)
   fc.type( Fl_Native_File_Chooser::BROWSE_FILE);  // only picks files that exist
 
   // Path for directory with custom colors
-  sprintf( TempFileName, "%s/CustomColors", YaIPS_WorkingDirectory);
+  sprintf( TempFileName, "./CustomColors");
   IqeB_FileNormalizePathChars( TempFileName);
   fc.directory( TempFileName);                         // Set browser directory
 
@@ -534,7 +536,7 @@ static void CustomColor_Save_cb( Fl_Widget *w)
   fc.type( Fl_Native_File_Chooser::BROWSE_SAVE_FILE);  // need this if file doesn't exist yet
 
   // Path for directory with custom colors
-  sprintf( TempFileName, "%s/CustomColors", YaIPS_WorkingDirectory);
+  sprintf( TempFileName, "./CustomColors");
   IqeB_FileNormalizePathChars( TempFileName);
   fc.directory( TempFileName);                         // Set browser directory
 

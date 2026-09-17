@@ -70,6 +70,8 @@ GUI_Main_Menu1f                    "Datei/Laden Presets"
 
 GUI_Main_Menu1g                    "Datei/Speichern Presets"
 
+GUI_Main_Menu1h                    "Datei/Presets zurücksetzen"
+
 GUI_Main_Menu1m                    "Datei/TEST show all"
 
 GUI_Main_Menu1n                    "Datei/TEST hide all"

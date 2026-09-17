@@ -4,7 +4,9 @@
 
   Language handling.
 
- 15.07.2025 RR: First edition of this file.
+  15.07.2025 RR: First edition of this file.
+  03.09.2026 RR: Replace use of the working directory string
+                 'YaIPS_WorkingDirectory' by '.'.
 
 *****************************************************************************
 */
@@ -360,8 +362,7 @@ int LangLoadTranslations( char *pLanguage,
   Lang_FreeData();
 
   // Construct path to language files
-  strcpy( Files_path, YaIPS_WorkingDirectory);
-  strcat( Files_path, "/Languages/");
+  strcpy( Files_path, "./Languages/");
   strcat( Files_path, pLanguage);
 
   IqeB_FileNormalizePathChars( Files_path);
@@ -403,8 +404,7 @@ int LangLoadTranslations( char *pLanguage,
 
     // Construct path to language file
 
-    strcpy( Files_path, YaIPS_WorkingDirectory);
-    strcat( Files_path, "/Languages/");
+    strcpy( Files_path, "./Languages/");
     strcat( Files_path, pLanguage);
     strcat( Files_path, "/");
     strcat( Files_path, pName);
@@ -430,6 +430,12 @@ int LangLoadTranslations( char *pLanguage,
 
   nLangTagsTextSpaceAlloced = nData;
   nLangTagsTextSpaceUsed    = 0;
+
+  if( nTranslations == 0 ||    // No translations found
+      nData == 0) {
+
+    return( -3);
+  }
 
   // pass 2, save the translations
 
@@ -464,8 +470,7 @@ int LangLoadTranslations( char *pLanguage,
 
     // Construct path to language file
 
-    strcpy( Files_path, YaIPS_WorkingDirectory);
-    strcat( Files_path, "/Languages/");
+    strcpy( Files_path, "./Languages/");
     strcat( Files_path, pLanguage);
     strcat( Files_path, "/");
     strcat( Files_path, pName);
@@ -565,7 +570,7 @@ void Lang_Init( int NewLineCharForMultipleStringLines)
   Arguments:
 
     char *pString       Look up this language definition.
-                        It should be in the format "&tag=string".
+//                      It should be in the format "&tag=string".
 
   Return:
 

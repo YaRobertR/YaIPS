@@ -32,15 +32,15 @@ CopyPasteColor:-3618816
 
 [./WinOvelay-1]
 
-WinPosX:-484
-WinPosY:170
+WinPosX:1278
+WinPosY:156
 IsOpen:1
 WinSizeX:256
 WinSizeY:392
 MyParPosX:-589
 MyParPosY:499
 Input1_WinIdNr:90
-nOverlays:7
+nOverlays:8
 OV_AOI_XX_01:1850
 OV_AOI_YY_01:500
 OV_SizeX_01:185
@@ -50,7 +50,7 @@ OV_AOI_YY_Lock_01:0
 OV_ShapeFlags_01:196857
 OV_LineColor_01:-16744448
 OV_BGndType_01:0
-TeachMode:0
+TeachMode:1
 OV_AOI_X_01:160
 OV_AOI_Y_01:80
 OV_PosX_01:16
@@ -237,32 +237,34 @@ OV_ShadowBlur_07:50
 OV_ShadowTrans_07:50
 OV_AoiUnit_06:1
 OV_AoiUnit_07:1
-OV_AOI_X_08:0
-OV_AOI_Y_08:0
-OV_AOI_XX_08:0
-OV_AOI_YY_08:0
-OV_PosX_08:0
-OV_PosY_08:0
-OV_SizeX_08:0
-OV_SizeY_08:0
-OV_AoiUnit_08:0
-OV_AOI_XX_Lock_08:0
-OV_AOI_YY_Lock_08:0
-OV_ShapeFlags_08:0
-OV_LineColor_08:0
-OV_BGndType_08:0
-OV_BGnd_WinIdNr_08:0
+OV_AOI_X_08:1541
+OV_AOI_Y_08:1784
+OV_AOI_XX_08:328
+OV_AOI_YY_08:328
+OV_PosX_08:154.1
+OV_PosY_08:178.4
+OV_SizeX_08:32.8
+OV_SizeY_08:32.8
+OV_AoiUnit_08:1
+OV_AOI_XX_Lock_08:618
+OV_AOI_YY_Lock_08:618
+OV_ShapeFlags_08:135384
+OV_LineColor_08:1
+OV_BGndType_08:1
+OV_BGnd_WinIdNr_08:-1
 OV_ShapeType_08:0
-OV_LineWidth_08:0
-OV_AlphaMult_08:0
-OV_BGndCol_LT_08:0
-OV_BGndCol_RT_08:0
-OV_BGndCol_LB_08:0
-OV_BGndCol_RB_08:0
-OV_FontSize_08:0
-OV_ShadowAngle_08:0
-OV_ShadowDist_08:0
+OV_LineWidth_08:1
+OV_AlphaMult_08:100
+OV_BGndCol_LT_08:2
+OV_BGndCol_RT_08:3
+OV_BGndCol_LB_08:1
+OV_BGndCol_RB_08:6
+OV_FontSize_08:16
+OV_ShadowAngle_08:315
+OV_ShadowDist_08:8
 OV_AlphaMult_07:65.2
+OV_BGndFileName_08:.\\Images\\OpenMoji\\smileys-emotion\\grinning face.png
+OV_Rotate_08:345
 
 [./WinOvelay-2]
 
@@ -299,8 +301,8 @@ OV_AlphaMult_07:65.2
 
 [./GUI_Main]
 
-WinPosX:-1660
-WinPosY:95
+WinPosX:102
+WinPosY:81
 WinSizeX:1478
 WinSizeY:851
 RightSideWidth:535
@@ -374,8 +376,8 @@ YaIPS_BigImageColModDarken:0
 
 [./WinNewImage-1]
 
-WinPosX:-704
-WinPosY:165
+WinPosX:1058
+WinPosY:151
 IsOpen:1
 WinSizeX:205
 WinSizeY:194
@@ -560,3 +562,9 @@ UnitsPerPixel_Y:0.1
 Calib_Unit:1
 Calib_Mode:1
 Calib_DPI:254
+
+[./Win_Color-5]
+
+
+[./Win_Color-6]
+

@@ -70,6 +70,8 @@ GUI_Main_Menu1f                    "File/Load presets"
 
 GUI_Main_Menu1g                    "File/Save presets"
 
+GUI_Main_Menu1h                    "File/Reset presets"
+
 GUI_Main_Menu1m                    "File/TEST show all"
 
 GUI_Main_Menu1n                    "File/TEST hide all"

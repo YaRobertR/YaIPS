@@ -72,8 +72,10 @@
 #define register                 // Replace the keyword register to nothing. This keyword make compiler problems.
 
 #define int8   char              // NOTE 15.05.2025 RR: char is unsigned
+#define uint8  unsigned char
 #define int16  short
 #define int32  long
+#define uint32 unsigned long
 #define sfloat float
 #define lfloat double
 //x/#define string char *
