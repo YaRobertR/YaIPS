@@ -6,9 +6,16 @@
   Shape generation code
 
  11.04.2025 RR: First edition of this file.
+ 30.09.2026 RR: * YaIPS_RGB_CopyBgndToOverlay()
+                  Optimization when resizing images.
+                  Whenever appropriate, the source image is scaled down
+                  by powers of two. As a result, the subsequent
+                  nearest-neighbor resizing produces better results.
 
 *****************************************************************************
 */
+
+#define USE_OVERLAY_SCALE_HACK     1  // Define this to use a hack for better scale results.
 
 #include <windows.h>
 #include <winbase.h>
@@ -1527,25 +1534,87 @@ static Fl_RGB_Image *pShapeGenText( int xxArg, int yyArg,                 // In:
 ****************************************************************************
 */
 
-static int YaIPS_RGB_CopyBgndToOverlay( YaIPS_RGB_ImgD_t *piDst,      // In: output image
+static int YaIPS_RGB_CopyBgndToOverlay( YaIPS_RGB_ImgD_t *piDst,  // In: output image
                                     int xx, int yy,               // In: Size of image
-                                    Fl_RGB_Image *pSrc)           // In: Pointer to pointer to RGB color image
-
+                                    Fl_RGB_Image *pSrcArg)        // In: Pointer to pointer to RGB color image
 {
   YaIPS_RGB_ImgD_t iSrc;
+  Fl_RGB_Image *pSrc;           // Source image
   int ierr, x, y;
   double ScaleFacX, ScaleFacY;
   int xx1, yy1, xSrc, ySrc, xRem, yRem, TempI;
   int xOff, AlphaVal;
   double xSrcD1, ySrcD1;
   uchar *d8, *p8s1, *p8s2;
+#ifdef USE_OVERLAY_SCALE_HACK // Use a hack for better scale results.
+  Fl_RGB_Image *pTmp = NULL;
+#endif
+
+  pSrc = pSrcArg;               // Preset pointer to source image
 
   // Convert loaded image
 
   ierr = YaIPS_RGB_to_ImgD( pSrc, &iSrc);
   if( ierr != 0)  {                           // Check for error
-    return( ierr);
+
+    goto ExitPoint;
   }
+
+#ifdef USE_OVERLAY_SCALE_HACK // Use a hack for better scale results.
+  int SizeShiftX, SizeShiftY, xx2, yy2;
+
+  ScaleFacX = (double)xx / (double)iSrc.xx;
+  ScaleFacY = (double)yy / (double)iSrc.yy;
+
+  if( ScaleFacX <= 0.5 || ScaleFacY <= 0.5) {
+
+    // Calculate shrink
+
+    SizeShiftX = 0;
+    SizeShiftY = 0;
+
+    while( ScaleFacX <= 0.5 && (iSrc.xx >> (0 - SizeShiftX + 1)) >= 16) {
+
+      ScaleFacX *= 2.0;
+      SizeShiftX -= 1;
+    }
+
+    while( ScaleFacY <= 0.5 && (iSrc.yy >> (0 - SizeShiftY + 1)) >= 16) {
+
+      ScaleFacY *= 2.0;
+      SizeShiftY -= 1;
+    }
+
+    ierr = YaIPS_RGB_Geo_Resize2( &pTmp, pSrc, SizeShiftX, SizeShiftY);
+    if( ierr != 0)  {                           // Check for error
+
+      goto ExitPoint;
+    }
+
+    xx2 = iSrc.xx >> (0 - SizeShiftX);
+    yy2 = iSrc.yy >> (0 - SizeShiftY);
+
+    if( xx2 << (0 - SizeShiftX) != iSrc.xx) {                   // Error
+
+      ScaleFacX = ScaleFacX * (float)iSrc.xx / (xx2 << (0 - SizeShiftX)); // Correct size
+    }
+
+    if( yy2 << (0 - SizeShiftY) != iSrc.yy) {                   // Error
+
+      ScaleFacY = ScaleFacY * (float)iSrc.yy / (yy2 << (0 - SizeShiftY)); // Correct size
+    }
+
+    pSrc = pTmp;                              // Use temporary image as source
+
+    // Convert shrinked image
+
+    ierr = YaIPS_RGB_to_ImgD( pSrc, &iSrc);
+    if( ierr != 0)  {                           // Check for error
+
+      goto ExitPoint;
+    }
+  }
+#endif
 
   ScaleFacX = (double)iSrc.xx / (double)xx;
   ScaleFacY = (double)iSrc.yy / (double)yy;
@@ -1601,7 +1670,7 @@ static int YaIPS_RGB_CopyBgndToOverlay( YaIPS_RGB_ImgD_t *piDst,      // In: out
 
       default: // unknown image type
 
-        return( -103);
+        goto ExitPoint;
         break;
 
       case 1: // Black/white image
@@ -1700,7 +1769,19 @@ static int YaIPS_RGB_CopyBgndToOverlay( YaIPS_RGB_ImgD_t *piDst,      // In: out
     }
   }
 
-  return( 0);  // Return OK
+  ierr = 0;  // Return OK
+
+ExitPoint:
+
+#ifdef USE_OVERLAY_SCALE_HACK // Use a hack for better scale results.
+
+  if( pTmp != NULL) {              // used a temporary image
+
+    pTmp->release();               // Release image data
+  }
+#endif
+
+  return( ierr);
 }
 
 /***************************************************************************
@@ -2269,9 +2350,8 @@ static int YaIPS_RGB_OverlaySub( Fl_RGB_Image *pDst,       // Pointer to RGB col
                                  Fl_RGB_Image *pSrc,       // Point to overlay data
                                  int xPos, int yPos,       // Where to overlay
                                  float Rotation,           // Rotation
-                                 float AlphaMult,          // Alpha multiplier %, range 0.0 .. 100.0.
-                                 float ScaleFacX,          // Size correction X
-                                 float ScaleFacY)          // Size correction Y
+                                 float AlphaMult)          // Alpha multiplier %, range 0.0 .. 100.0.
+
 {
   int ierr, nByteSrc, nByteDst;
   int xxDst, yyDst, xxSrc, yySrc, xSrc, ySrc, xmSrc;
@@ -2329,9 +2409,7 @@ static int YaIPS_RGB_OverlaySub( Fl_RGB_Image *pDst,       // Pointer to RGB col
 
   // ...
 
-  if( Rotation == 0.0 &&               // Use fast variant of overlay code
-      ScaleFacX == 1.0 &&
-      ScaleFacY == 1.0) {
+  if( Rotation == 0.0) {               // Use fast variant of overlay code
 
     int ySrcBegin, ySrcEnd, xSrcBegin, xSrcEnd;
     uchar *p8d, *p8s;
@@ -2925,12 +3003,13 @@ int YaIPS_RGB_Overlay( Fl_RGB_Image *pDst,               // Pointer to RGB color
       YOffset -= KernelHalf;
     }
 
-    ierr = YaIPS_RGB_OverlaySub( pDst, pOverlay->pImgShadow, pOverlay->AOI.XPos + XOffset, pOverlay->AOI.YPos + YOffset,
-                                 pOverlay->ShapeGen.RotAngle, pOverlay->ShapeGen.AlphaMult, 1.0, 1.0);
+    ierr = YaIPS_RGB_OverlaySub( pDst, pOverlay->pImgShadow,
+                                 pOverlay->AOI.XPos + XOffset, pOverlay->AOI.YPos + YOffset,
+                                 pOverlay->ShapeGen.RotAngle, pOverlay->ShapeGen.AlphaMult);
 
     if( ierr != 0)  {   // Have an error
 
-      return( ierr);
+      goto ExitPoint;
     }
   }
 
@@ -2938,8 +3017,11 @@ int YaIPS_RGB_Overlay( Fl_RGB_Image *pDst,               // Pointer to RGB color
   // Overlay image part
   //
 
-  ierr = YaIPS_RGB_OverlaySub( pDst, pOverlay->pImgOverlay, pOverlay->AOI.XPos, pOverlay->AOI.YPos,
-                               pOverlay->ShapeGen.RotAngle, pOverlay->ShapeGen.AlphaMult, 1.0, 1.0);
+  ierr = YaIPS_RGB_OverlaySub( pDst, pOverlay->pImgOverlay,
+                               pOverlay->AOI.XPos, pOverlay->AOI.YPos,
+                               pOverlay->ShapeGen.RotAngle, pOverlay->ShapeGen.AlphaMult);
+
+ExitPoint:
 
   return( ierr);       // Return OK
 }

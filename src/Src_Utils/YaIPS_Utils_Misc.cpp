@@ -1175,27 +1175,47 @@ static void draw_doublebar2(Fl_Color col) {
   rectangle(.2,-0.8,.7,.8,col);
 }
 
+// Square frame
+static void draw_squaref1(Fl_Color col)
+{
+  double x = -1.0, y = -1.0 , x2 = 1.0, y2 = 1.0;
+
+  set_outline_color(col);
+  BC; vv(x,y); vv(x2,y); vv(x2,y2); vv(x,y2); EC;
+}
+
+// Square frame
+static void draw_squaref2(Fl_Color col)
+{
+  double x = -0.6, y = -0.6 , x2 = 0.6, y2 = 0.6;
+
+  set_outline_color(col);
+  BC; vv(x,y); vv(x2,y); vv(x2,y2); vv(x,y2); EC;
+}
+
 void YaIPS_Utils_AddSympols()
 {
 
-  fl_add_symbol(     "menu2",     draw_menu2, 1);
-  fl_add_symbol(     "cross",     draw_cross, 1);
-  fl_add_symbol(     "line2",     draw_line2, 1);
-  fl_add_symbol(    "cross2",    draw_cross2, 1);
-  fl_add_symbol(    "pencil",    draw_pencil, 1);
-  fl_add_symbol(    "camera",    draw_camera, 1);
-  fl_add_symbol( "filesave2", draw_filesave2, 1);   // Copied form draw_filesave(). Bright parts are brighter.
-  fl_add_symbol(  "SpacingH",  draw_SpacingH, 1);   // Draw double arrow used for horizontal spacing
-  fl_add_symbol(  "SpacingV",  draw_SpacingV, 1);   // Draw double arrow used for vertical spacing
-  fl_add_symbol(   "AlignHL",   draw_AlignHL, 1);   // Align horizontal left
-  fl_add_symbol(   "AlignHC",   draw_AlignHC, 1);   // Align horizontal center
-  fl_add_symbol(   "AlignHR",   draw_AlignHR, 1);   // Align horizontal right
-  fl_add_symbol(   "AlignVT",   draw_AlignVT, 1);   // Align vertical top
-  fl_add_symbol(   "AlignVC",   draw_AlignVC, 1);   // Align vertical center
-  fl_add_symbol(   "AlignVB",   draw_AlignVB, 1);   // Align vertical bottom
+  fl_add_symbol(     "menu2",      draw_menu2, 1);
+  fl_add_symbol(     "cross",      draw_cross, 1);
+  fl_add_symbol(     "line2",      draw_line2, 1);
+  fl_add_symbol(    "cross2",     draw_cross2, 1);
+  fl_add_symbol(    "pencil",     draw_pencil, 1);
+  fl_add_symbol(    "camera",     draw_camera, 1);
+  fl_add_symbol( "filesave2",  draw_filesave2, 1);  // Copied form draw_filesave(). Bright parts are brighter.
+  fl_add_symbol(  "SpacingH",   draw_SpacingH, 1);  // Draw double arrow used for horizontal spacing
+  fl_add_symbol(  "SpacingV",   draw_SpacingV, 1);  // Draw double arrow used for vertical spacing
+  fl_add_symbol(   "AlignHL",    draw_AlignHL, 1);  // Align horizontal left
+  fl_add_symbol(   "AlignHC",    draw_AlignHC, 1);  // Align horizontal center
+  fl_add_symbol(   "AlignHR",    draw_AlignHR, 1);  // Align horizontal right
+  fl_add_symbol(   "AlignVT",    draw_AlignVT, 1);  // Align vertical top
+  fl_add_symbol(   "AlignVC",    draw_AlignVC, 1);  // Align vertical center
+  fl_add_symbol(   "AlignVB",    draw_AlignVB, 1);  // Align vertical bottom
   fl_add_symbol(  "PadlockC",   draw_PadlockC, 1);  // Closed padlock
   fl_add_symbol(  "PadlockO",   draw_PadlockO, 1);  // Open padlock
   fl_add_symbol(     "Dbar2", draw_doublebar2, 1);  // Double bar 2. This is a variant of the '||' symbol.
+  fl_add_symbol(  "squaref1",   draw_squaref1, 1);  // Square frame big
+  fl_add_symbol(  "squaref2",   draw_squaref2, 1);  // Square frame smaller
 }
 
 /************************************************************************************
@@ -4252,7 +4272,6 @@ int YaIPS_ImageDispAoiRectClip( int ImgXX, int ImgYY,       // Size of image
 
 int YaIPS_ImageDispAoiRectClip( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp,
                                 Fl_YaIPS_AOI_t *pAOI)       // Point to AOI to test
-
 {
 
   if( pYaIPS_ImageDisp->pImage_Box == NULL ||          // Security test, have no big image box
@@ -4842,6 +4861,196 @@ int YaIPS_ImageDispAoiRectIGuiUpdate( Fl_YaIPS_AOI_t *pAOI,       // Point to AO
   }
 
   return( RedrawOnExit);
+}
+
+/************************************************************************************
+ * YaIPS_ImageDispAoiPointCC
+ *
+ * Point clip and check for mouse selection.
+ *
+ * The point is relative to image displayed on the screen 'BigImage_iw/-ih'.
+ *
+ *   pX, pY          Pointer to point to coordinates
+ *   Radius          Check radius
+ *   CursorSel       Want this cursor if selected
+ *   distanceToBeat  For first call must be set to -1.
+ *                   An exit with new best distance, this distance is stored to
+ *                   this variable. A successive call with a other aoi must
+ *                   beat this one to get selected.
+ *   pCursor         Return selection cursor depending on distance to points
+ *   pDeltaAdd       Return bit mask where to add the delta
+ *
+ * return:  < 0  Error
+ *            0  Mouse not inside window or not nearer than best distance
+ *            1  New best distance
+ */
+
+int YaIPS_ImageDispAoiPointCC( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp,
+                               int *pX, int *pY,           // In: Pointer to point to coordinates
+                               int Radius,                 // In: Check radius
+                               int CursorSel,              // In: Want this cursor if selected
+                               int *distanceToBeat,        // In Out: Distance to beat
+                               int *pCursor,               // Out: Cursor shape
+                               int *pDeltaAdd)             // Out: Where to add mouse delta
+{
+  int xMouse, yMouse, dist;
+  int DeltaP1x, DeltaP1y, Cursor, DeltaAdd;
+
+  if( pYaIPS_ImageDisp->pImage_Box == NULL ||          // Security test, have no big image box
+      pYaIPS_ImageDisp->BigImage_Calc_OK == false) {   // Size calculations failed
+
+    return( -1);    // Return error
+  }
+
+  // Ensures that the point is inside the image part displayed on screen.
+
+  if( *pX < 0) {                                    // Clip left
+
+    *pX = 0;
+  }
+
+  if( *pX >= pYaIPS_ImageDisp->BigImage_iw) {
+
+    *pX = pYaIPS_ImageDisp->BigImage_iw - 1;
+  }
+
+  if( *pY < 0) {                                    // Clip upper
+
+    *pY = 0;
+  }
+
+  if( *pY >= pYaIPS_ImageDisp->BigImage_ih) {
+
+    *pY = pYaIPS_ImageDisp->BigImage_ih - 1;
+  }
+
+  // Check for inside window
+
+  xMouse = (int)( pYaIPS_ImageDisp->MouseX / pYaIPS_ImageDisp->PixelImageToScreen + 0.5);  // Mouse relative to displayed screen part
+  yMouse = (int)( pYaIPS_ImageDisp->MouseY / pYaIPS_ImageDisp->PixelImageToScreen + 0.5);
+
+  xMouse += (int)( pYaIPS_ImageDisp->SubImage_x + 0.5);   // Add Offset to displayed screen part
+  yMouse += (int)( pYaIPS_ImageDisp->SubImage_y + 0.5);
+
+  // Check for inside or near the AOI
+
+  if( xMouse > *pX - Radius && xMouse < *pX + Radius &&
+      yMouse > *pY - Radius && yMouse < *pY + Radius) {
+
+    // Get distance to the point
+
+    DeltaP1x = xMouse - *pX;
+    if( DeltaP1x < 0) DeltaP1x = - DeltaP1x;
+
+    DeltaP1y = yMouse - *pY;
+    if( DeltaP1y < 0) DeltaP1y = - DeltaP1y;
+
+    // Get nearest distance to frame
+
+    dist = DeltaP1x;
+    if( DeltaP1y < dist) dist = DeltaP1y;
+
+    if( *distanceToBeat == -1 || dist < *distanceToBeat) {    /* position and border            */
+
+      // save new distance to beat
+      *distanceToBeat = dist;
+
+      Cursor = CursorSel;          // Want this cursor if selected
+      DeltaAdd = 1;                // Add mouse delta
+
+      *pCursor = Cursor;
+      *pDeltaAdd = DeltaAdd;
+
+      return( 1);   // return new best distance
+    }
+  }
+
+  return( 0);       // Mouse not inside window or not nearer than best distance
+}
+
+/************************************************************************************
+ * YaIPS_ImageDispAoiPointClip
+ *
+ * Point clip to image displayed on the screen
+ *
+ * The point is relative to image displayed on the screen 'BigImage_iw/-ih'.
+ *
+ * return:  < 0  Error
+ *            0  OK
+ */
+
+int YaIPS_ImageDispAoiPointClip( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp,
+                                 int *pX, int *pY)           // In: Pointer to point to coordinates
+{
+
+  if( pYaIPS_ImageDisp->pImage_Box == NULL ||          // Security test, have no big image box
+      pYaIPS_ImageDisp->BigImage_Calc_OK == false) {   // Size calculations failed
+
+    return( -1);    // Return error
+  }
+
+  // Ensures that the poit is inside the image part displayed on screen.
+
+  if( *pX < 0) {                                    // Clip left
+
+    *pX = 0;
+  }
+
+  if( *pX >= pYaIPS_ImageDisp->BigImage_iw) {
+
+    *pX = pYaIPS_ImageDisp->BigImage_iw - 1;
+  }
+
+  if( *pY < 0) {                                    // Clip upper
+
+    *pY = 0;
+  }
+
+  if( *pY >= pYaIPS_ImageDisp->BigImage_ih) {
+
+    *pY = pYaIPS_ImageDisp->BigImage_ih - 1;
+  }
+
+  return( 0);       // OK
+}
+
+/************************************************************************************
+ * YaIPS_ImageDispAoiPointDeltaAdd
+ *
+ * Add position change to AOI
+ *
+ * The AOI rectangle is relative to image displayed on the screen 'BigImage_iw/-ih'.
+ *
+ *   pX, pY          Pointer to point to coordinates
+ *   AoiDeltaAdd     Where to add mouse delta
+ *   Delta_x         Delta in X direction
+ *   Delta_y         Delta in y direction
+ *
+ * return:  < 0  Error
+ *            0  OK
+ */
+
+int YaIPS_ImageDispAoiPointDeltaAdd( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp,
+                                     int *pX, int *pY,           // In: Pointer to point to coordinates
+                                     int Delta_x,                // Delta in X direction
+                                     int Delta_y)                // Delta in y direction
+{
+
+  if( pYaIPS_ImageDisp->pImage_Box == NULL ||          // Security test, have no big image box
+      pYaIPS_ImageDisp->BigImage_Calc_OK == false) {   // Size calculations failed
+
+    return( -1);    // Return error
+  }
+
+  // Add to the points
+
+  *pX += Delta_x;
+  *pY += Delta_y;
+
+
+  YaIPS_ImageDispAoiPointClip( pYaIPS_ImageDisp, pX, pY);
+
+  return( 0);       // OK
 }
 
 /************************************************************************************

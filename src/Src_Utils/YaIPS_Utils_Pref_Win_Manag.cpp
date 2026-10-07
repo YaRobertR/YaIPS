@@ -16,6 +16,13 @@
                    * if 'pValueArg' is != 0 reset presets.
                  * Added IqeB_PresetCleanClipboard()
                    Clean not used clipboard subdirectories.
+  23.09.2026 RR: * YaIPS_WindowsToolWinAddPosDelta()
+                   Relaxed criteria for moving tool windows in the right
+                   area of the main window along with the main window.
+                   Previously, the entire tool window had to be located
+                   in the right area of the main window. Now, it is
+                   sufficient for the center of the tool window to be
+                   located in the right area.
 
 *****************************************************************************
 */
@@ -1308,15 +1315,12 @@ void YaIPS_WindowsToolWinAddPosDelta( int RightSide_X, int RightSide_Y,  // Posi
 
     pWin = (Fl_Double_Window *)*pWinManagData->ppMyToolWin; // get pointer to tool window
 
-    // Check pointer to position
+    // Check tool window for being inside right side
 
-    WinPosX = pWin->x();
-    WinPosY = pWin->y();
+#ifdef use_again
 
     WinPosX = pWin->x_root();
     WinPosY = pWin->y_root();
-
-    // Check tool window for being inside right side
 
     if( WinPosX >= RightSide_X &&
         WinPosY >= RightSide_Y &&
@@ -1326,6 +1330,20 @@ void YaIPS_WindowsToolWinAddPosDelta( int RightSide_X, int RightSide_Y,  // Posi
       // Move tool windows
       pWin->position( WinPosX + DeltaX, WinPosY + DeltaY);
     }
+#else
+
+    WinPosX = pWin->x_root() + pWin->w() / 2;
+    WinPosY = pWin->y_root() + pWin->h() / 2;
+
+    if( WinPosX >= RightSide_X &&
+        WinPosY >= RightSide_Y &&
+        WinPosX <= RightSide_X + RightSide_W &&
+        WinPosY <= RightSide_Y + RightSide_H ) {
+
+      // Move tool windows
+      pWin->position( pWin->x_root() + DeltaX, pWin->y_root() + DeltaY);
+    }
+#endif
   }
 }
 
@@ -1958,9 +1976,9 @@ int YaIPS_ToolWinMouseCallbackCall( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp,  // 
 
   // Call the mouse callback. Replace pArg1 but keep pArg2
 
-  if( pOutImage->pImage_Box->MouseTeachState == 3) {      // Check for enabled teach mode
-
-    // Only call for enabled teach mode
+  if( pOutImage->pImage_Box->MouseTeachState == 3 ||        // Check for enabled teach mode
+      (pOutImage->pImage_Box->MouseTeachState == 2 &&       // or also allowed for disabled teach state
+           (pOutImage->pImage_Box->MouseCallbackFlag & YaIPS_MOUSE_CB_FLAG_ALSO_DISABLED) != 0)) {
 
     ierr = pOutImage->pImage_Box->pMouseCallback( pW, event, pYaIPS_ImageDisp, pOutImage->pImage_Box->MouseCallbackArg2);
 

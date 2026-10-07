@@ -6,6 +6,8 @@
   Combine two images
 
  25.04.2025 RR: First edition of this file.
+ 27.09.2026 RR: Finished coding for calculation with constants.
+                See: YaIPS_RGB_CalcConst()
 
 *****************************************************************************
 */
@@ -46,7 +48,7 @@
 * Alpha_Op     Alpha operator
 * ResMultArg   Result multiplier, default should be 1.0
 * Offset       Add this offset to the result
-* MultArg2     2. multiplier. Is used my weighted add.
+* MultArg2     2. multiplier. Is used by weighted add.
 *
 * return     0 OK
 *          < 0 Error
@@ -60,7 +62,7 @@ int YaIPS_RGB_Combine( Fl_RGB_Image **ppDst,   // Out: Pointer to pointer to RGB
                        int Alpha_Op,           // Alpha operator
                        float ResMultArg,       // Result multiplier
                        int Offset,             // Add this offset to the result
-                       float MultArg2,         // Optional: 2. multiplier. Is used my weighted add.
+                       float MultArg2,         // Optional: 2. multiplier. Is used by weighted add.
                        Fl_RGB_Image *pSrc3)    // Optional: a third source image
 {
   int ierr, x, y, iByte, nByteSrc1All, nByteSrc2All, nByteSrc3All, nByteSrc1CollC, nByteSrc2CollC, nByteSrc3CollC;
@@ -1194,6 +1196,735 @@ int YaIPS_RGB_Combine( Fl_RGB_Image **ppDst,   // Out: Pointer to pointer to RGB
   if( pLineSource3 != NULL) {                 // Free allocated memory
 
     free( pLineSource3);
+  }
+
+  return( 0);                                 // Return OK
+}
+
+/***************************************************************************
+* YaIPS_RGB_CalcConst
+* Simple mathematical calculation of an image and a constant.
+*
+* If sources sizes are different, the destination image gets the size
+* of the first source image. The second image is resized to the size
+* of the first source image.
+*
+* ppDst        Pointer to pointer to RGB image
+* pSrc         Source image
+* Operator     Type of operation
+* r, g, b, a   Constants used for Calculation. Range is 0 ... 255.
+* Alpha_Op     Alpha operator
+* Flags,       Flag bits
+* ResMultArg   Result multiplier, default should be 1.0
+* Offset       Add this offset to the result
+*
+* return     0 OK
+*          < 0 Error
+****************************************************************************
+*/
+
+int YaIPS_RGB_CalcConst( Fl_RGB_Image **ppDst,       // Out: Pointer to pointer to RGB image
+                         Fl_RGB_Image *pSrc,         // Source image
+                         int Operator,               // Type of operation
+                         int r, int g, int b, int a, // Constants used for Calculation. Hold RGBA values.
+                         int Alpha_Op,               // Alpha operator
+                         int Flags,                  // Flag bits
+                         float ResMultArg,           // Result multiplier
+                         int Offset)                 // Add this offset to the result
+{
+  int ierr, x, y, iByte, nByteSrc1All;
+  int nByteDstAll, nByteColl, AlphaSrc1, AlphaDst;
+  int xx, yy, t, CalcColor, CalcAlpha, iCalcFirst, iCalcLast;
+  Fl_RGB_Image *pDst;
+  YaIPS_RGB_ImgD_t iDst, iSrc1;
+  uchar *s18, *d8;
+  long ResMultArgLong, ResMultArgLong2;
+  uchar Constants[ 4];
+
+  // Preparations
+
+  CalcColor = (Flags & YAIPS_CALC_CONST_FLAGS_COLOR) != 0;   // Make color calculations
+  CalcAlpha = (Flags & YAIPS_CALC_CONST_FLAGS_ALPHA) != 0;   // Make alpha calculations
+
+  // Check source first
+  ierr = YaIPS_RGB_to_ImgD( pSrc, &iSrc1);
+  if( ierr != 0)  {                           // Check for error
+    return( ierr);
+  }
+
+  // Get image data
+  // NOTE: source 1 and destination has the same width and height.
+  //       Number of bytes may be different, depends from alpha.
+
+  nByteSrc1All = iSrc1.d;                     // # bytes 1. source
+  xx = iSrc1.xx;                              // Destination and 1. source image have the same size
+  yy = iSrc1.yy;
+
+  // Manage color channels and alpha channel usage
+
+  AlphaSrc1 = nByteSrc1All == 2 || nByteSrc1All == 4 ? 1 : 0; // Source 1 has alpha
+
+  if( nByteSrc1All >= 3) {                       // Have a color image
+
+    nByteColl = 3;                               // Output is a color image too
+
+  } else {                                       // Output is a bw image
+
+    nByteColl = 1;                               // Output is a bw image too
+  }
+
+  if( ! AlphaSrc1) {                             // Have no alpha ?
+
+    CalcAlpha = 0;                               // --> don't process alpha
+  }
+
+  if( AlphaSrc1 && CalcAlpha) {                  // Source has alpha and calculate alpha
+
+    AlphaDst = AlphaSrc1;                        // Output has alpha
+
+  } else {                                       // Common alpha processing
+
+    switch( Alpha_Op) {
+    case YAIPS_COMBINE_ALPHA_NO:                 // No alpha. Strip any existing alpha.
+
+      AlphaDst = 0;                              // Output has no alpha
+      break;
+
+    default:
+
+      AlphaDst = AlphaSrc1;                      // Output has alpha if input 1 has alpha
+      break;
+    }
+  }
+
+  nByteDstAll = nByteColl + AlphaDst;            // Bytes for destination
+
+  // Ensure that pPDst image has the same size and same pixel amount as pSrc1
+  ierr = YaIPS_RGB_ImageSetSize( ppDst, xx, yy, nByteDstAll);
+  if( ierr != 0)  {                           // Check for error
+    return( ierr);
+  }
+
+  pDst = *ppDst;                              // Get pointer to destination image
+
+  ierr = YaIPS_RGB_to_ImgD( pDst, &iDst);
+  if( ierr != 0)  {                           // Check for error
+    return( ierr);
+  }
+
+  // Set color constants
+
+  if( nByteSrc1All >= 3) {                    // Have a color image
+
+    Constants[ 0] = r;
+    Constants[ 1] = g;
+    Constants[ 2] = b;
+    Constants[ 3] = a;
+
+  } else {                                    // Have a BW image
+
+    Constants[ 0] = r;
+    Constants[ 1] = a;
+    Constants[ 2] = 0;
+    Constants[ 3] = 0;
+  }
+
+  // Multiply as integer
+
+  // Convert to 32 bit integer
+
+  if( Operator == YAIPS_CALC_CONST_OP_MULT) {     // Multiply
+
+    ResMultArg = ResMultArg / 256.0;             // divide by 256 to normalize result
+  }
+
+  ResMultArgLong = (long)(ResMultArg * (1 << YAIPS_RESULT_SCHIFT));
+  ResMultArgLong2 = ResMultArgLong / 2;
+
+  // What channels to process
+
+  if( CalcColor) {                  // Calculate color
+
+    if( CalcAlpha) {                // and calculate alpha
+
+      iCalcFirst = 0;
+
+      iCalcLast  = nByteDstAll;
+
+    } else {                        // and calculate no alpha
+
+      iCalcFirst = 0;
+
+      iCalcLast  = nByteDstAll - AlphaDst;
+    }
+
+  } else {                          // no color calculation
+
+    if( CalcAlpha) {                // and calculate alpha
+
+      iCalcFirst = nByteDstAll - 1; // Point to alpha channel
+
+      iCalcLast  = nByteDstAll;
+
+    } else {                        // and calculate no alpha
+
+      iCalcFirst = nByteDstAll - AlphaDst;
+
+      iCalcLast  = nByteDstAll - AlphaDst;
+    }
+  }
+
+  // Copy color part
+
+  if( iCalcFirst > 0) {             // No process of color
+
+    for( y = 0; y < yy; y++) {
+
+      d8  = RGB_pixad( 0,  y, &iDst);
+      s18 = RGB_pixad( 0,  y, &iSrc1);
+
+      for( x = 0; x < xx; x++) {
+
+        for( iByte = 0; iByte < iCalcFirst; iByte++) {
+
+          d8[ iByte] = s18[ iByte];
+        }
+
+        d8  += nByteDstAll;
+        s18 += nByteSrc1All;
+      }
+    }
+  }
+
+
+  // Combine ...
+
+  for( y = 0; y < yy; y++) {
+
+    d8  = RGB_pixad( 0,  y, &iDst);
+    s18 = RGB_pixad( 0,  y, &iSrc1);
+
+    if( iCalcFirst == iCalcLast) {             // no calculation at all
+
+      goto SkipCalulations;
+    }
+
+    // ...
+
+    switch( Operator) {
+
+    case YAIPS_CALC_CONST_OP_ADD:     // Addition
+    default:
+
+      for( x = 0; x < xx; x++) {
+
+        for( iByte = iCalcFirst; iByte < iCalcLast; iByte++) {
+
+          t = (int)s18[ iByte] + (int)Constants[ iByte];
+
+          if( ResMultArgLong != (1 << YAIPS_RESULT_SCHIFT)) {        // NOT factor 1.0
+            if( t >= 0) {
+              t = (int)((t * ResMultArgLong + ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            } else {
+              t = (int)((t * ResMultArgLong - ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            }
+          }
+
+          t += Offset;                                 // Add offset
+          RGB_bclip( t, d8 + iByte);                   // Clip and store
+        }
+
+        d8  += nByteDstAll;
+        s18 += nByteSrc1All;
+      }
+      break;
+
+    case YAIPS_CALC_CONST_OP_SUB_I_C:     // Subtraction source image - constant
+
+      for( x = 0; x < xx; x++) {
+
+        for( iByte = iCalcFirst; iByte < iCalcLast; iByte++) {
+
+          t = (int)s18[ iByte] - (int)Constants[ iByte];
+
+          if( ResMultArgLong != (1 << YAIPS_RESULT_SCHIFT)) {        // NOT factor 1.0
+            if( t >= 0) {
+              t = (int)((t * ResMultArgLong + ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            } else {
+              t = (int)((t * ResMultArgLong - ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            }
+          }
+
+          t += Offset;                                 // Add offset
+          RGB_bclip( t, d8 + iByte);                   // Clip and store
+        }
+
+        d8  += nByteDstAll;
+        s18 += nByteSrc1All;
+      }
+      break;
+
+    case YAIPS_CALC_CONST_OP_SUB_C_I:     // Subtraction constant - source image
+
+      for( x = 0; x < xx; x++) {
+
+        for( iByte = iCalcFirst; iByte < iCalcLast; iByte++) {
+
+          t = (int)Constants[ iByte] - (int)s18[ iByte];
+
+          if( ResMultArgLong != (1 << YAIPS_RESULT_SCHIFT)) {        // NOT factor 1.0
+            if( t >= 0) {
+              t = (int)((t * ResMultArgLong + ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            } else {
+              t = (int)((t * ResMultArgLong - ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            }
+          }
+
+          t += Offset;                                 // Add offset
+          RGB_bclip( t, d8 + iByte);                   // Clip and store
+        }
+
+        d8  += nByteDstAll;
+        s18 += nByteSrc1All;
+      }
+      break;
+
+    case YAIPS_CALC_CONST_OP_SUB_ABS: // Subtraction with absolute value
+
+      for( x = 0; x < xx; x++) {
+
+        for( iByte = iCalcFirst; iByte < iCalcLast; iByte++) {
+
+          t = (int)s18[ iByte] - (int)Constants[ iByte];
+
+          if( t < 0) {
+            t = - t;
+          }
+
+          if( ResMultArgLong != (1 << YAIPS_RESULT_SCHIFT)) {        // NOT factor 1.0
+            if( t >= 0) {
+              t = (int)((t * ResMultArgLong + ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            } else {
+              t = (int)((t * ResMultArgLong - ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            }
+          }
+
+          t += Offset;                                 // Add offset
+          RGB_bclip( t, d8 + iByte);                   // Clip and store
+        }
+
+        d8  += nByteDstAll;
+        s18 += nByteSrc1All;
+      }
+      break;
+
+    case YAIPS_CALC_CONST_OP_MULT:    // Multiplication
+
+      for( x = 0; x < xx; x++) {
+
+        for( iByte = iCalcFirst; iByte < iCalcLast; iByte++) {
+
+          t = (int)s18[ iByte] * (int)Constants[ iByte];
+
+          if( ResMultArgLong != (1 << YAIPS_RESULT_SCHIFT)) {        // NOT factor 1.0
+            if( t >= 0) {
+              t = (int)((t * ResMultArgLong + ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            } else {
+              t = (int)((t * ResMultArgLong - ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            }
+          }
+
+          t += Offset;                                 // Add offset
+          RGB_bclip( t, d8 + iByte);                   // Clip and store
+        }
+
+        d8  += nByteDstAll;
+        s18 += nByteSrc1All;
+      }
+      break;
+
+    case YAIPS_CALC_CONST_OP_MIN:     // Minimum value
+
+      for( x = 0; x < xx; x++) {
+
+        for( iByte = iCalcFirst; iByte < iCalcLast; iByte++) {
+
+          t = (int)s18[ iByte];
+          if( t > (int)Constants[ iByte]) {
+            t = (int)Constants[ iByte];
+          }
+
+          if( ResMultArgLong != (1 << YAIPS_RESULT_SCHIFT)) {        // NOT factor 1.0
+            if( t >= 0) {
+              t = (int)((t * ResMultArgLong + ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            } else {
+              t = (int)((t * ResMultArgLong - ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            }
+          }
+
+          t += Offset;                                 // Add offset
+          RGB_bclip( t, d8 + iByte);                   // Clip and store
+        }
+
+        d8  += nByteDstAll;
+        s18 += nByteSrc1All;
+      }
+      break;
+
+    case YAIPS_CALC_CONST_OP_MAX:     // Maximum value
+
+      for( x = 0; x < xx; x++) {
+
+        for( iByte = iCalcFirst; iByte < iCalcLast; iByte++) {
+
+          t = (int)s18[ iByte];
+          if( t < (int)Constants[ iByte]) {
+            t = (int)Constants[ iByte];
+          }
+
+          if( ResMultArgLong != (1 << YAIPS_RESULT_SCHIFT)) {        // NOT factor 1.0
+            if( t >= 0) {
+              t = (int)((t * ResMultArgLong + ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            } else {
+              t = (int)((t * ResMultArgLong - ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            }
+          }
+
+          t += Offset;                                 // Add offset
+          RGB_bclip( t, d8 + iByte);                   // Clip and store
+        }
+
+        d8  += nByteDstAll;
+        s18 += nByteSrc1All;
+      }
+      break;
+
+    case YAIPS_CALC_CONST_OP_AVG:     // Average images
+
+      for( x = 0; x < xx; x++) {
+
+        for( iByte = iCalcFirst; iByte < iCalcLast; iByte++) {
+
+          t = ((int)s18[ iByte] + (int)Constants[ iByte] + 1) >> 1;
+
+          if( ResMultArgLong != (1 << YAIPS_RESULT_SCHIFT)) {        // NOT factor 1.0
+            if( t >= 0) {
+              t = (int)((t * ResMultArgLong + ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            } else {
+              t = (int)((t * ResMultArgLong - ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            }
+          }
+
+          t += Offset;                                 // Add offset
+          RGB_bclip( t, d8 + iByte);                   // Clip and store
+        }
+
+        d8  += nByteDstAll;
+        s18 += nByteSrc1All;
+      }
+      break;
+
+    case YAIPS_CALC_CONST_OP_AND:     // AND images
+
+      for( x = 0; x < xx; x++) {
+
+        for( iByte = iCalcFirst; iByte < iCalcLast; iByte++) {
+
+          t = (int)s18[ iByte] & (int)Constants[ iByte];
+
+          if( ResMultArgLong != (1 << YAIPS_RESULT_SCHIFT)) {        // NOT factor 1.0
+            if( t >= 0) {
+              t = (int)((t * ResMultArgLong + ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            } else {
+              t = (int)((t * ResMultArgLong - ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            }
+          }
+
+          t += Offset;                                 // Add offset
+          RGB_bclip( t, d8 + iByte);                   // Clip and store
+        }
+
+        d8  += nByteDstAll;
+        s18 += nByteSrc1All;
+      }
+      break;
+
+    case YAIPS_CALC_CONST_OP_OR:      // OR images
+
+      for( x = 0; x < xx; x++) {
+
+        for( iByte = iCalcFirst; iByte < iCalcLast; iByte++) {
+
+          t = (int)s18[ iByte] | (int)Constants[ iByte];
+
+          if( ResMultArgLong != (1 << YAIPS_RESULT_SCHIFT)) {        // NOT factor 1.0
+            if( t >= 0) {
+              t = (int)((t * ResMultArgLong + ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            } else {
+              t = (int)((t * ResMultArgLong - ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            }
+          }
+
+          t += Offset;                                 // Add offset
+          RGB_bclip( t, d8 + iByte);                   // Clip and store
+        }
+
+        d8  += nByteDstAll;
+        s18 += nByteSrc1All;
+      }
+      break;
+
+    case YAIPS_CALC_CONST_OP_XOR:     // XOR images
+
+      for( x = 0; x < xx; x++) {
+
+        for( iByte = iCalcFirst; iByte < iCalcLast; iByte++) {
+
+          t = (int)s18[ iByte] ^ (int)Constants[ iByte];
+
+          if( ResMultArgLong != (1 << YAIPS_RESULT_SCHIFT)) {        // NOT factor 1.0
+            if( t >= 0) {
+              t = (int)((t * ResMultArgLong + ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            } else {
+              t = (int)((t * ResMultArgLong - ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            }
+          }
+
+          t += Offset;                                 // Add offset
+          RGB_bclip( t, d8 + iByte);                   // Clip and store
+        }
+
+        d8  += nByteDstAll;
+        s18 += nByteSrc1All;
+      }
+      break;
+
+    case YAIPS_CALC_CONST_OP_CMP_EQ:    // Compare images ==
+
+      for( x = 0; x < xx; x++) {
+
+        for( iByte = iCalcFirst; iByte < iCalcLast; iByte++) {
+
+          t = ((int)s18[ iByte] == (int)Constants[ iByte]) * 255;
+
+          if( ResMultArgLong != (1 << YAIPS_RESULT_SCHIFT)) {        // NOT factor 1.0
+            if( t >= 0) {
+              t = (int)((t * ResMultArgLong + ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            } else {
+              t = (int)((t * ResMultArgLong - ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            }
+          }
+
+          t += Offset;                                 // Add offset
+          RGB_bclip( t, d8 + iByte);                   // Clip and store
+        }
+
+        d8  += nByteDstAll;
+        s18 += nByteSrc1All;
+      }
+      break;
+
+    case YAIPS_CALC_CONST_OP_CMP_NE:     // Compare images !=
+
+      for( x = 0; x < xx; x++) {
+
+        for( iByte = iCalcFirst; iByte < iCalcLast; iByte++) {
+
+          t = ((int)s18[ iByte] != (int)Constants[ iByte]) * 255;
+
+          if( ResMultArgLong != (1 << YAIPS_RESULT_SCHIFT)) {        // NOT factor 1.0
+            if( t >= 0) {
+              t = (int)((t * ResMultArgLong + ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            } else {
+              t = (int)((t * ResMultArgLong - ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            }
+          }
+
+          t += Offset;                                 // Add offset
+          RGB_bclip( t, d8 + iByte);                   // Clip and store
+        }
+
+        d8  += nByteDstAll;
+        s18 += nByteSrc1All;
+      }
+      break;
+
+    case YAIPS_CALC_CONST_OP_CMP_GT:     // Compare images >
+
+      for( x = 0; x < xx; x++) {
+
+        for( iByte = iCalcFirst; iByte < iCalcLast; iByte++) {
+
+          t = ((int)s18[ iByte] > (int)Constants[ iByte]) * 255;
+
+          if( ResMultArgLong != (1 << YAIPS_RESULT_SCHIFT)) {        // NOT factor 1.0
+            if( t >= 0) {
+              t = (int)((t * ResMultArgLong + ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            } else {
+              t = (int)((t * ResMultArgLong - ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            }
+          }
+
+          t += Offset;                                 // Add offset
+          RGB_bclip( t, d8 + iByte);                   // Clip and store
+        }
+
+        d8  += nByteDstAll;
+        s18 += nByteSrc1All;
+      }
+      break;
+
+    case YAIPS_CALC_CONST_OP_CMP_LE:     // Compare images <=
+
+      for( x = 0; x < xx; x++) {
+
+        for( iByte = iCalcFirst; iByte < iCalcLast; iByte++) {
+
+          t = ((int)s18[ iByte] <= (int)Constants[ iByte]) * 255;
+
+          if( ResMultArgLong != (1 << YAIPS_RESULT_SCHIFT)) {        // NOT factor 1.0
+            if( t >= 0) {
+              t = (int)((t * ResMultArgLong + ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            } else {
+              t = (int)((t * ResMultArgLong - ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            }
+          }
+
+          t += Offset;                                 // Add offset
+          RGB_bclip( t, d8 + iByte);                   // Clip and store
+        }
+
+        d8  += nByteDstAll;
+        s18 += nByteSrc1All;
+      }
+      break;
+
+    case YAIPS_CALC_CONST_OP_CMP_GE:     // Compare images >=
+
+      for( x = 0; x < xx; x++) {
+
+        for( iByte = iCalcFirst; iByte < iCalcLast; iByte++) {
+
+          t = ((int)s18[ iByte] >= (int)Constants[ iByte]) * 255;
+
+          if( ResMultArgLong != (1 << YAIPS_RESULT_SCHIFT)) {        // NOT factor 1.0
+            if( t >= 0) {
+              t = (int)((t * ResMultArgLong + ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            } else {
+              t = (int)((t * ResMultArgLong - ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            }
+          }
+
+          t += Offset;                                 // Add offset
+          RGB_bclip( t, d8 + iByte);                   // Clip and store
+        }
+
+        d8  += nByteDstAll;
+        s18 += nByteSrc1All;
+      }
+      break;
+
+    case YAIPS_CALC_CONST_OP_CMP_LT:     // Compare images <
+
+      for( x = 0; x < xx; x++) {
+
+        for( iByte = iCalcFirst; iByte < iCalcLast; iByte++) {
+
+          t = ((int)s18[ iByte] < (int)Constants[ iByte]) * 255;
+
+          if( ResMultArgLong != (1 << YAIPS_RESULT_SCHIFT)) {        // NOT factor 1.0
+            if( t >= 0) {
+              t = (int)((t * ResMultArgLong + ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            } else {
+              t = (int)((t * ResMultArgLong - ResMultArgLong2) >> YAIPS_RESULT_SCHIFT);
+            }
+          }
+
+          t += Offset;                                 // Add offset
+          RGB_bclip( t, d8 + iByte);                   // Clip and store
+        }
+
+        d8  += nByteDstAll;
+        s18 += nByteSrc1All;
+      }
+      break;
+
+    }  // end switch( Operator)
+
+SkipCalulations:
+
+    if( CalcAlpha == false && AlphaDst > 0 ) {  // No alpha calculation and destination has alpha output
+
+      d8  = RGB_pixad( 0,  y, &iDst);
+      d8 += nByteColl;          // Point to alpha
+
+      s18 = RGB_pixad( 0,  y, &iSrc1);
+
+      s18 += nByteColl;         // Point to alpha
+
+      switch( Alpha_Op) {
+      case YAIPS_COMBINE_ALPHA_NO:      // No alpha. Strip any existing alpha.
+      default:
+
+        // Nothing to do here
+        break;
+
+      case YAIPS_COMBINE_ALPHA_KEEP_1:  // Keep alpha from first input.
+
+        for( x = 0; x < xx; x++) {
+
+          *d8 = *s18;
+
+          d8  += nByteDstAll;
+          s18 += nByteSrc1All;
+        }
+        break;
+
+      case YAIPS_COMBINE_ALPHA_KEEP_2:  // Keep alpha from second input.
+
+        for( x = 0; x < xx; x++) {
+
+          *d8 = (uchar)a;
+
+          d8  += nByteDstAll;
+        }
+        break;
+
+      case YAIPS_COMBINE_ALPHA_MIN:     // If both inputs have alpha, output minimum of alpha values.
+
+        for( x = 0; x < xx; x++) {
+
+          if( *s18 < (uchar)a) {
+
+            *d8 = *s18;
+          } else {
+
+            *d8 = (uchar)a;
+          }
+
+          d8  += nByteDstAll;
+          s18 += nByteSrc1All;
+        }
+        break;
+
+      case YAIPS_COMBINE_ALPHA_MAX:     // If both inputs have alpha, output maximum of alpha values.
+
+        for( x = 0; x < xx; x++) {
+
+          if( *s18 > (uchar)a) {
+
+            *d8 = *s18;
+          } else {
+
+            *d8 = (uchar)a;
+          }
+
+          d8  += nByteDstAll;
+          s18 += nByteSrc1All;
+        }
+        break;
+      }
+    }
   }
 
   return( 0);                                 // Return OK

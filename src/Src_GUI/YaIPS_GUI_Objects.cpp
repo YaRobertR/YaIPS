@@ -2484,7 +2484,7 @@ static void YaIPS_GUI_MyDrawAfter_Other( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp,
 
   pToolData = YaIPS_ToolData_info + SubWinIDx;               // Point to info data
 
-  YaIPS_GUI_MyDrawAfter_Func( pYaIPS_ImageDisp, pToolData, false);
+  YaIPS_GUI_MyDrawAfter_Func( pYaIPS_ImageDisp, pToolData, true);
 }
 
 /************************************************************************************

@@ -33,6 +33,7 @@ char * LangStringLookup( const char *pString);
 #define LANGDEF_BUTTON_CLOSE          LangStringLookup( "&Button_Close=Close")      // Button close
 #define LANGDEF_BUTTON_OK             LangStringLookup( "&Button_OK=OK")            // Button OK
 #define LANGDEF_BUTTON_RESET          LangStringLookup( "&Button_Reset=Reset")      // Button Reset
+#define LANGDEF_BUTTON_RESET_SHORT    LangStringLookup( "&Button_Reset_Short=R")    // Button Reset short
 #define LANGDEF_BUTTON_CANCEL         LangStringLookup( "&Button_Cancel=Cancel")    // Button Cancel
 #define LANGDEF_BUTTON_NO             LangStringLookup( "&Button_No=No")            // Button No
 #define LANGDEF_BUTTON_YES            LangStringLookup( "&Button_Yes=Yes")          // Button Yes
@@ -59,6 +60,11 @@ char * LangStringLookup( const char *pString);
 #define LANGDEF_COLOR_B               LangStringLookup( "&Text_ColorB=B")
 #define LANGDEF_COLOR_A               LangStringLookup( "&Text_ColorA=A")
 #define LANGDEF_COLOR_BW              LangStringLookup( "&Text_ColorBW=BW")     // Black white
+
+#define LANGDEF_COLOR_ALPHA           LangStringLookup( "&Text_ColorAlpha=Alpha")
+
+#define LANGDEF_COLOR_RED_FOR_ALL     LangStringLookup( "&Text_ColorRedForAll=If set, the red value is used\nfor all three channels.")
+
 
 // Pixel depth
 

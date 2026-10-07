@@ -3038,7 +3038,7 @@ static void YaIPS_GUI_MyDrawAfter_Other( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp,
 
   pToolData = YaIPS_ToolData_info + SubWinIDx;               // Point to info data
 
-  YaIPS_GUI_MyDrawAfter_Func( pYaIPS_ImageDisp, pToolData, false);
+  YaIPS_GUI_MyDrawAfter_Func( pYaIPS_ImageDisp, pToolData, true);
 }
 
 /************************************************************************************
@@ -3244,7 +3244,7 @@ static int YaIPS_GUI_MyMouse_cb( Fl_Widget *pW, int event,
         pYaIPS_ImageDisp->Latched_AoiDeltaAdd = 0;               // Reset latched data
         pYaIPS_ImageDisp->Latched_CursorShape = 0;
 
-        if( AoiIdNrEntry >= 0 && AoiIdNrEntry != pYaIPS_ImageDisp->AoiIdNr) {  // Window selecion has changed
+        if( AoiIdNrEntry >= 0 && AoiIdNrEntry != pYaIPS_ImageDisp->AoiIdNr) {  // Window selection has changed
 
           pYaIPS_ImageDisp->RedrawOnExit   = true;                      // Set redraw on exit
           pYaIPS_ImageDisp->BigImageUpdate = pYaIPS_ImageDisp->MyWinID; // Update big image

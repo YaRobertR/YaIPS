@@ -2,7 +2,7 @@
 ; YaIPS_GUI_InspColor.cpp
 ;-------------------------------------------------------
 ;
-; 45 entries
+; 42 entries
 ;
 GUI_InspColor_Title                "Farbprüfung"
 
@@ -55,9 +55,6 @@ GUI_InspColor_TabA14               "Absolut"
 GUI_InspColor_TabA14a              "Diese Option führt zu einem schlechten Prüfergebnis,"
                                    "wenn der berechnete Wert höher als der 'Hellschwellenwert'"
                                    "oder niedriger als der 'Dunkelschwellenwert' ist."
-
-GUI_InspColor_TabA15a              "Wenn gesetzt, wird der Rotwert\n"
-                                   "für alle drei Farbkanäle verwendet."
 
 GUI_InspColor_TabA16               "Dunkelschw."
 

@@ -2,7 +2,7 @@
 ; YaIPS_GUI_Color.cpp
 ;-------------------------------------------------------
 ;
-; 107 entries
+; 105 entries
 ;
 GUI_Color_Title                    "Farbe"
 
@@ -63,9 +63,6 @@ GUI_Color_TabB7a                   "Helligkeit für den grünen Farbkanal."
 
 GUI_Color_TabB8a                   "Helligkeit für den blauen Farbkanal."
 
-GUI_Color_TabB9a                   "Falls gesetzt, wird der rote Wert\n"
-                                   "für alle drei Kanäle verwendet."
-
 GUI_Color_TabB10                   "Offset  R"
 
 GUI_Color_TabB10a                  "Offset für den roten Farbkanal."
@@ -87,9 +84,6 @@ GUI_Color_TabB15a                  "Gammafaktor für den grünen Farbkanal."
 
 GUI_Color_TabB16a                  "Gammafaktor für den blauen Farbkanal."
                                    "Bei 1.0 wird keine Korrektur durchgeführt."
-
-GUI_Color_TabB17a                  "Falls gesetzt, wird der rote Wert\n"
-                                   "für alle drei Kanäle verwendet."
 
 GUI_Color_TabM1                    "LUT2"
 

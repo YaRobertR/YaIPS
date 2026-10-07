@@ -18,6 +18,10 @@
                  * Function main()
                    Added call to IqeB_PresetCleanClipboard().
                    Clean not used clipboard subdirectories.
+  23.09.2026 RR: * IqeB_MainWindow_GUI_Setup().
+                   Added 'Reset' button into right upper corner of
+                   the windows left area.
+                   Pressing the button resets the display settings.
 
 *****************************************************************************
 */
@@ -2948,7 +2952,7 @@ const Fl_Menu_Item * My_find_item_user_data( Fl_Menu_Bar *menubar, Fl_Callback *
  * Main Window GUI
  */
 
-static void  IqeB_MainWindow_GUI_Setup( Fl_Double_Window *pWin)
+static void IqeB_MainWindow_GUI_Setup( Fl_Double_Window *pWin)
 {
   int x, x1, y, yy, xx, xx2, yBox, hWin, wWin;
   int BigImage_bx, BigImage_by, BigImage_bw, BigImage_bh;
@@ -3002,6 +3006,14 @@ static void  IqeB_MainWindow_GUI_Setup( Fl_Double_Window *pWin)
   y = GUI_MENUHEIGHT + 27;
 
   yy = 16;
+
+  // Reset button
+
+  xx2 = 54;
+
+  pTempButton = new Fl_Button( x + xx - xx2, y - yy - 4, xx2, yy + 2, LANGDEF_BUTTON_RESET);
+  pTempButton->tooltip( LangStringLookup( "&GUI_Main_Reseth=Reset display settings."));
+  pTempButton->callback( IqeB_Main_Reset_Display, NULL);
 
   //
   // Image enlargement

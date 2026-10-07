@@ -956,9 +956,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     xx1 = pMyParWin->w() - x1 - 8;
 
     pCheckTemp = new Fl_Check_Button( x1, y, xx1, yy, LANGDEF_ALL);
-    pCheckTemp->tooltip( LangStringLookup( "&GUI_InspColor_TabA15a="
-                                           "If set, the red value is used\n"
-                                           "for all three color channels."));
+    pCheckTemp->tooltip( LANGDEF_COLOR_RED_FOR_ALL);
     pCheckTemp->value( pToolData->BT_Thres1FA);
     pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->BT_Thres1FA);
     pBT_Thres1FA = pCheckTemp;
@@ -2384,7 +2382,7 @@ static void YaIPS_GUI_MyDrawAfter_Other( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp,
 
   pToolData = YaIPS_ToolData_info + SubWinIDx;               // Point to info data
 
-  YaIPS_GUI_MyDrawAfter_Func( pYaIPS_ImageDisp, pToolData, false);
+  YaIPS_GUI_MyDrawAfter_Func( pYaIPS_ImageDisp, pToolData, true);
 }
 
 /************************************************************************************

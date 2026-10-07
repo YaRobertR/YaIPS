@@ -2128,7 +2128,7 @@ static void YaIPS_GUI_MyDrawAfter_Other( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp,
     return;
   }
 
-  YaIPS_GUI_MyDrawAfter_Func( pYaIPS_ImageDisp, false);     // Additional drawings after the image was drawn
+  YaIPS_GUI_MyDrawAfter_Func( pYaIPS_ImageDisp, true);     // Additional drawings after the image was drawn
 }
 
 /************************************************************************************

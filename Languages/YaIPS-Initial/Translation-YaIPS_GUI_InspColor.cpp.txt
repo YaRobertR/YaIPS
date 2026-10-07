@@ -2,7 +2,7 @@
 ; YaIPS_GUI_InspColor.cpp
 ;-------------------------------------------------------
 ;
-; 43 entries
+; 42 entries
 ;
 GUI_InspColor_Title                "Color testing"
 
@@ -55,9 +55,6 @@ GUI_InspColor_TabA14               "Absolute"
 GUI_InspColor_TabA14a              "Selecting this leads to a bad inspection result,\n"
                                    "if the computed value is higher than 'Bright Threshold'\n"
                                    "or lower than 'Dark Threshold'."
-
-GUI_InspColor_TabA15a              "If set, the red value is used\n"
-                                   "for all three color channels."
 
 GUI_InspColor_TabA16               "Dark Thres."
 

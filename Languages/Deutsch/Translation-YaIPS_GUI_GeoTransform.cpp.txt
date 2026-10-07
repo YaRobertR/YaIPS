@@ -2,9 +2,11 @@
 ; YaIPS_GUI_GeoTransform.cpp
 ;-------------------------------------------------------
 ;
-; 51 entries
+; 73 entries
 ;
 GUI_GeoTrans_Title                 "Geometry Transformation"
+
+GUI_GeoTrans_TabM1a                "Einstellungen für alle anderen."
 
 GUI_GeoTrans_TabM2                 "Farbe außerhalb"
 
@@ -20,6 +22,8 @@ GUI_GeoTrans_TabM3h                "Außenbereich ausblenden.\n"
                                    "Andernfalls ist der Bereich außerhalb des Bildes sichtbar."
 
 GUI_GeoTrans_TabA1                 "Einfach"
+
+GUI_GeoTrans_TabA1a                "Einfache Veränderungen."
 
 GUI_GeoTrans_TabA2                 "Potenz von 2"
 
@@ -61,9 +65,11 @@ GUI_GeoTrans_TabA11a               "Vergrößert das Bild"
 
 GUI_GeoTrans_TabA12a               "Größe [%]"
 
-GUI_GeoTrans_TabB1                 "Objektiv"
+GUI_GeoTrans_TabB1                 "Linse"
 
-GUI_GeoTrans_TabB2                 "Objektivkorrektur"
+GUI_GeoTrans_TabB1a                "Linsenkorrektur bzw. Objektivkorrektur."
+
+GUI_GeoTrans_TabB2                 "Linsenkorrektur"
 
 GUI_GeoTrans_TabB2a                "Korrektur der Linsenverzerrung und geringfügige\n"
                                    "Rotations-, Größen- oder Versatzkorrekturen.."
@@ -78,7 +84,7 @@ GUI_GeoTrans_TabB4a                "Korrektur der Drehlagen [Grad]"
 
 GUI_GeoTrans_TabB5                 "Größe"
 
-GUI_GeoTrans_TabB5a                "Korrektur der Größe [%]]"
+GUI_GeoTrans_TabB5a                "Korrektur der Größe [%]"
 
 GUI_GeoTrans_TabB6                 "Versatz X"
 
@@ -88,7 +94,53 @@ GUI_GeoTrans_TabB7                 "Versatz Y"
 
 GUI_GeoTrans_TabB7a                "Korrektur Versatz [Pixel]"
 
-GUI_GeoTrans_TabC1                 "Par. Pro."
+GUI_GeoTrans_TabE1                 "Tra."
+
+GUI_GeoTrans_TabE1a                "Trapezförmige Verzerrung.."
+
+GUI_GeoTrans_TabE2                 "Trapezverzerrung"
+
+GUI_GeoTrans_TabE2a                "Trapezförmige Verzerrung."
+
+GUI_GeoTrans_TabE3                 "Faktor"
+
+GUI_GeoTrans_TabE3a                "Trapezverzerrungsfaktor"
+
+GUI_GeoTrans_TabE4                 "Drehung"
+
+GUI_GeoTrans_TabE4a                "Korrektur der Drehlagen [Grad]"
+
+GUI_GeoTrans_TabE5                 "Größe"
+
+GUI_GeoTrans_TabE5a                "Korrektur der Größe [%]"
+
+GUI_GeoTrans_TabF1                 "Warp"
+
+GUI_GeoTrans_TabF1a                "Wendet eine perspektivische Transformation auf ein Bild an."
+
+GUI_GeoTrans_TabF2                 "Perspektiventransformation"
+
+GUI_GeoTrans_TabF2a                "Wendet eine perspektivische Transformation auf ein Bild an.\n"
+                                   "Bearbeitungsmodus an: Zeigt das Eingabebild an.\n"
+                                   "4 Punkte an die Ecken eines Objekts schieben.\n"
+                                   "Bearbeitungsmodus aus: Zeigt das Ausgabebild an.\n"
+                                   "4 Punkte mit angewandter Perspektivkorrektur\n"
+                                   "anordnen.\n"
+                                   "HINWEIS: Reihenfolge der Punkte muss im Uhrzeigersinn sein."
+
+GUI_GeoTrans_TabF3a                "Bearbeitungsmodus umschalten.\n"
+                                   "An: Punkte im Eingabebild platzieren\n"
+                                   "Aus: Punkte im Ausgabebild platzieren."
+
+GUI_GeoTrans_TabF4                 "Ein."
+
+GUI_GeoTrans_TabF5a                "Punkte zurücksetzen"
+
+GUI_GeoTrans_TabF6                 "Aus."
+
+GUI_GeoTrans_TabC1                 "ParPro"
+
+GUI_GeoTrans_TabC1a                "Verzerrungen durch parallele Projektion"
 
 GUI_GeoTrans_TabC2                 "Parallelprojektion"
 

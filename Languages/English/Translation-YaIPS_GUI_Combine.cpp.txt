@@ -2,7 +2,7 @@
 ; YaIPS_GUI_Combine.cpp
 ;-------------------------------------------------------
 ;
-; 83 entries
+; 95 entries
 ;
 GUI_Combine_Title                  "Calculation"
 
@@ -33,9 +33,9 @@ GUI_Combine_TabM7                  "Max"
 GUI_Combine_TabM7a                 "Maximum alpha.\n"
                                    "Maximum alpha value from both images."
 
-GUI_Combine_TabA1                  "Simple"
+GUI_Combine_TabA1                  "Images"
 
-GUI_Combine_TabA1a                 "Simple calculations"
+GUI_Combine_TabA1a                 "Combine two images"
 
 GUI_Combine_TabA2                  "+"
 
@@ -43,11 +43,11 @@ GUI_Combine_TabA2a                 "Addition"
 
 GUI_Combine_TabA3                  "1-2"
 
-GUI_Combine_TabA3a                 "Subtraktion\n1. input - 2. input"
+GUI_Combine_TabA3a                 "Subtraction\n1. input - 2. input"
 
 GUI_Combine_TabA4                  "2-1"
 
-GUI_Combine_TabA4a                 "Subtraktion\n2. input - 1. input"
+GUI_Combine_TabA4a                 "Subtraction\n2. input - 1. input"
 
 GUI_Combine_TabA5                  "|-|"
 
@@ -112,6 +112,33 @@ GUI_Combine_TabA19a                "Gain\nMultiplier"
 GUI_Combine_TabA20                 "Offs."
 
 GUI_Combine_TabA20a                "Offset\nAddition"
+
+GUI_Combine_TabD1                  "Const."
+
+GUI_Combine_TabD1a                 "Combine image with constants.\n"
+                                   "NOTE: Only the first input image is required."
+
+GUI_Combine_TabD3                  "I-C"
+
+GUI_Combine_TabD3a                 "Subtraction\n1. input - constant"
+
+GUI_Combine_TabD4                  "C-I"
+
+GUI_Combine_TabD4a                 "Subtraction\nConstant - 1. input"
+
+GUI_Color_TabD30a                  "Use this for calculations\n"
+                                   "of the color channels."
+
+GUI_Color_TabD31a                  "Constant for the red color channel."
+
+GUI_Color_TabD32a                  "Constant for the green color channel."
+
+GUI_Color_TabD33a                  "Constant for the blue color channel."
+
+GUI_Color_TabD35a                  "Use this for alpha channel calculations.\n"
+                                   "NOTE: The input image must have an alpha channel."
+
+GUI_Color_TabD36a                  "Constant for the alpha color channel."
 
 GUI_Combine_TabB1                  "Merge"
 

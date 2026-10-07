@@ -4,6 +4,89 @@ README-ReleaseHistory.txt
 Release history of YaIPS.
 
 ------------------------------------------------------
+ V  1.02  07.10.2026
+
+* The "Calculation" tool window has been updated with the feature
+  "Combine Image with Constants".
+  
+* The "Geometry" tool window has been updated with the features
+  "Trapezoidal distortion" and "Perspective transformation".
+  
+* Improvements to image downsizing.
+  Whenever appropriate, the source image is scaled down
+  by powers of two. As a result, the subsequent
+  nearest-neighbor resizing produces better results.
+  This enhancement is used by:
+  * Tool 'Geometry', resize image by % and parallel projection.
+  * Tool 'New Image' when using an image as a background.
+  * Tool 'Video writer' when using large input images.
+  * Tool 'Overlay' when using images or tool windows as overlays.
+
+* A "Reset" button has been added to the upper-right corner of the
+  left area of the main window.
+  Clicking this button resets the display settings.
+  
+* Relaxed criteria for moving tool windows in the right area of the
+  main window along with the main window.
+  Previously, the entire tool window had to be located in the right
+  area of the main window. Now, it is sufficient for the center of
+  the tool window to be located in the right area.
+  
+------------------------------------------------------
+
+07.10.2026 RR: * YaIPS_RGB_GeoTransform.cpp
+                 * YaIPS_RGB_Geo_Resize2()
+                   Optimize speed by eliminate inner loop of resize code.
+
+05.10.2026 RR: * YaIPS_RGB_GeoTransform.cpp
+                 * Finished coding for YaIPS_RGB_Geo_Warp_4_Points().
+                   Perspective transformation with 4 points in source
+                   and 4 points in destination.
+
+               * YaIPS_GUI_GeoTransform.cpp
+                 * Finished coding for tools
+                   * Trapezoidal distortion
+                   * Warp, applies a perspective transformation to an image.
+
+30.09.2026 RR: * YaIPS_RGB_ShapeGen.cpp
+                 * YaIPS_RGB_CopyBgndToOverlay()
+                   Optimization when resizing images.
+                   Whenever appropriate, the source image is scaled down
+                   by powers of two. As a result, the subsequent
+                   nearest-neighbor resizing produces better results.
+
+29.09.2026 RR: * YaIPS_RGB_GeoTransform.cpp
+                 * YaIPS_RGB_Geo_Resize2()
+                   New function with separate arguments for X and Y scaling.
+                 * YaIPS_RGB_Geo_Transform()
+                   Optimization when resizing images.
+                   Whenever appropriate, the source image is scaled down
+                   by powers of two. As a result, the subsequent
+                   nearest-neighbor resizing produces better results.
+
+27.09.2026 RR: * YaIPS_GUI_Combine.cpp
+                 Finished coding for calculation with constants.
+                 
+               * YaIPS_RGB_Combine.cpp
+                 Finished coding for calculation with constants.
+                 See: YaIPS_RGB_CalcConst()
+
+23.09.2026 RR: * YaIPS_GUI_Main.cpp
+                 * IqeB_MainWindow_GUI_Setup().
+                   Added 'Reset' button into right upper corner of
+                   the windows left area.
+                   Pressing the button resets the display settings.
+                   
+               * YaIPS_Utils_Pref_Win_Manag.cpp
+                 * YaIPS_WindowsToolWinAddPosDelta()
+                   Relaxed criteria for moving tool windows in the right
+                   area of the main window along with the main window.
+                   Previously, the entire tool window had to be located
+                   in the right area of the main window. Now, it is
+                   sufficient for the center of the tool window to be
+                   located in the right area.
+
+------------------------------------------------------
  V  1.01  16.09.2026
 
 * Reworked clipboard handling

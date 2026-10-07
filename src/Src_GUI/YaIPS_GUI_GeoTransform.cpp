@@ -4,7 +4,10 @@
 
   Geometric transformations of Images
 
-  04.06.2025 RR: First edition of this file.
+ 04.06.2025 RR: First edition of this file.
+ 05.10.2026 RR: * Finished coding for tools
+                  * Trapezoidal distortion
+                  * Warp, applies a perspective transformation to an image.
 
 *****************************************************************************
 */
@@ -88,6 +91,8 @@ typedef struct {
   int Tab_Group_Selected;               // Number of last selected tab group.
   int GeoTranType;                      // What geometry transformation to use
 
+  int Teach_mode;                       // 0 = inspection mode, 1 = teach mode
+
   // Group 'Base'
 
   int Base_OutsiteColor;                // Color used for areas outside an image
@@ -106,6 +111,18 @@ typedef struct {
   float Lens_SizeCorrPer;               // Size correction percent [%]
   int Lens_xDelta; int Lens_yDelta;     // Position correction [pixel]
 
+  // Group 'Trapezoid 1' Trapezoidal distortion with parameters
+
+  float Trapezoid_Fac;                  // Trapezoid distortion factor
+  float Trapezoid_Rotation;             // Rotation correction [Degree]
+  float Trapezoid_SizeCorrPer;          // Size correction percent [%]
+  int Trapezoid_xDelta; int Trapezoid_yDelta;  // Position correction [pixel]
+
+  // Group 'Trapezoid 2' Trapezoidal distortion with 4 points
+
+  YaIPS_XY_int Trapezoid_SrcPoint[ 4];  // 4 Source points
+  YaIPS_XY_int Trapezoid_DstPoint[ 4];  // 4 Destination points
+
   // Group 'Parallel projection'
 
   float ParPro_Rotation;                       // Rotation clockwise [Degree]
@@ -114,7 +131,6 @@ typedef struct {
 
   // Tab group 'Cut out'
 
-  int CutOut_AOI_Teach;                       // Change AOI with mouse
   Fl_YaIPS_AOI_t CutOut_AOI;                  // Cut out AOI
 
 } YaIPS_ToolData_info_t;
@@ -155,13 +171,15 @@ static T_GUI_PreferenceEntry MyPreferences[] =
 
   // Hold last selected tab
 
-  { PREF_T_INT,    "Group_Selected",  "0", &YaIPS_ToolData_info[0].Tab_Group_Selected},
-  { PREF_T_INT,   "GeoTranType",      "0", &YaIPS_ToolData_info[0].GeoTranType},
+  { PREF_T_INT,      "Group_Selected",  "0", &YaIPS_ToolData_info[0].Tab_Group_Selected},
+  { PREF_T_INT,        "GeoTranType",   "0", &YaIPS_ToolData_info[0].GeoTranType},
+
+  { PREF_T_INT,         "Teach_mode",   "0", &YaIPS_ToolData_info[0].Teach_mode},
 
   // Group 'Base'
 
-  { PREF_T_INT, "Base_OutsiteColor" ,  "43",  &YaIPS_ToolData_info[0].Base_OutsiteColor},   // Default: Gray 128
-  { PREF_T_INT, "Base_OutsiteBlend" ,   "0",  &YaIPS_ToolData_info[0].Base_OutsiteBlend},
+  { PREF_T_INT,  "Base_OutsiteColor",  "43", &YaIPS_ToolData_info[0].Base_OutsiteColor},   // Default: Gray 128
+  { PREF_T_INT,  "Base_OutsiteBlend",   "0", &YaIPS_ToolData_info[0].Base_OutsiteBlend},
 
   // Group 'Size'
 
@@ -177,6 +195,34 @@ static T_GUI_PreferenceEntry MyPreferences[] =
   { PREF_T_INT,        "Lens_xDelta",      "0", &YaIPS_ToolData_info[0].Lens_xDelta},
   { PREF_T_INT,        "Lens_yDelta",      "0", &YaIPS_ToolData_info[0].Lens_yDelta},
 
+  // Group 'Trapezoid 1' Trapezoidal distortion with parameters
+
+  { PREF_T_FLOAT,    "Trapezoid_Fac",    "0.0", &YaIPS_ToolData_info[0].Trapezoid_Fac},
+  { PREF_T_FLOAT, "Trapezoid_Rotation",  "0.0", &YaIPS_ToolData_info[0].Trapezoid_Rotation},
+  { PREF_T_FLOAT, "Trapezoid_SizeCorrPer",  "0.0", &YaIPS_ToolData_info[0].Trapezoid_SizeCorrPer},
+  { PREF_T_INT,   "Trapezoid_xDelta",      "0", &YaIPS_ToolData_info[0].Trapezoid_xDelta},
+  { PREF_T_INT,   "Trapezoid_yDelta",      "0", &YaIPS_ToolData_info[0].Trapezoid_yDelta},
+
+  // Group 'Trapezoid 2' Trapezoidal distortion with 4 points
+
+  { PREF_T_INT,    "Trapezoid_SP0_x",      "0", &YaIPS_ToolData_info[0].Trapezoid_SrcPoint[ 0].x},
+  { PREF_T_INT,    "Trapezoid_SP0_y",      "0", &YaIPS_ToolData_info[0].Trapezoid_SrcPoint[ 0].y},
+  { PREF_T_INT,    "Trapezoid_SP1_x",    "100", &YaIPS_ToolData_info[0].Trapezoid_SrcPoint[ 1].x},
+  { PREF_T_INT,    "Trapezoid_SP1_y",      "0", &YaIPS_ToolData_info[0].Trapezoid_SrcPoint[ 1].y},
+  { PREF_T_INT,    "Trapezoid_SP2_x",    "100", &YaIPS_ToolData_info[0].Trapezoid_SrcPoint[ 2].x},
+  { PREF_T_INT,    "Trapezoid_SP2_y",    "100", &YaIPS_ToolData_info[0].Trapezoid_SrcPoint[ 2].y},
+  { PREF_T_INT,    "Trapezoid_SP3_x",      "0", &YaIPS_ToolData_info[0].Trapezoid_SrcPoint[ 3].x},
+  { PREF_T_INT,    "Trapezoid_SP3_y",    "100", &YaIPS_ToolData_info[0].Trapezoid_SrcPoint[ 3].y},
+
+  { PREF_T_INT,    "Trapezoid_DP0_x",      "0", &YaIPS_ToolData_info[0].Trapezoid_DstPoint[ 0].x},
+  { PREF_T_INT,    "Trapezoid_DP0_y",      "0", &YaIPS_ToolData_info[0].Trapezoid_DstPoint[ 0].y},
+  { PREF_T_INT,    "Trapezoid_DP1_x",    "100", &YaIPS_ToolData_info[0].Trapezoid_DstPoint[ 1].x},
+  { PREF_T_INT,    "Trapezoid_DP1_y",      "0", &YaIPS_ToolData_info[0].Trapezoid_DstPoint[ 1].y},
+  { PREF_T_INT,    "Trapezoid_DP2_x",    "100", &YaIPS_ToolData_info[0].Trapezoid_DstPoint[ 2].x},
+  { PREF_T_INT,    "Trapezoid_DP2_y",    "100", &YaIPS_ToolData_info[0].Trapezoid_DstPoint[ 2].y},
+  { PREF_T_INT,    "Trapezoid_DP3_x",      "0", &YaIPS_ToolData_info[0].Trapezoid_DstPoint[ 3].x},
+  { PREF_T_INT,    "Trapezoid_DP3_y",    "100", &YaIPS_ToolData_info[0].Trapezoid_DstPoint[ 3].y},
+
   // Group 'Parallel projection'
 
   { PREF_T_FLOAT,  "ParPro_Rotation",    "0.0", &YaIPS_ToolData_info[0].ParPro_Rotation},
@@ -186,7 +232,6 @@ static T_GUI_PreferenceEntry MyPreferences[] =
   { PREF_T_FLOAT,    "ParPro_yshift",    "0.0", &YaIPS_ToolData_info[0].ParPro_yshift},
 
   // Group 'Cut out'
-  { PREF_T_INT,   "CutOut_AOI_Teach",      "0", &YaIPS_ToolData_info[0].CutOut_AOI_Teach},
   { PREF_T_INT,       "CutOut_AOI_X",      "0", &YaIPS_ToolData_info[0].CutOut_AOI.XPos},
   { PREF_T_INT,       "CutOut_AOI_Y",      "0", &YaIPS_ToolData_info[0].CutOut_AOI.YPos},
   { PREF_T_INT,      "CutOut_AOI_XX",     "30", &YaIPS_ToolData_info[0].CutOut_AOI.XSize},
@@ -220,8 +265,10 @@ static IqeB_PreferencesGroup MyPreferencesAdd( MY_WIN_PREF_NAME, MyPreferences, 
 #define YAIPS_GEOTRAN_LENS               8    // Lens corrections
 #define YAIPS_GEOTRAN_PAR_PRO            9    // Parallel projection
 #define YAIPS_GEOTRAN_PAR_CUT_OUT       10    // Cut out an image part
+#define YAIPS_GEOTRAN_TRAPEZOID_1       11    // Trapezoidal distortion with parameters
+#define YAIPS_GEOTRAN_TRAPEZOID_2       12    // Trapezoidal distortion with 4 points
 
-#define YAIPS_GEOTRAN_BUTTON_MAX    (YAIPS_GEOTRAN_PAR_CUT_OUT + 1)  // Number of radio buttons
+#define YAIPS_GEOTRAN_BUTTON_MAX    (YAIPS_GEOTRAN_TRAPEZOID_2 + 1)  // Number of radio buttons
 
 // ...
 
@@ -232,8 +279,63 @@ static IqeFl_Tabs      *pTab_Groups;         // Point to tabulator GUI element
 static Fl_Radio_Round_Button *GeoTranButtons[ YAIPS_GEOTRAN_BUTTON_MAX]; // Table of buttons
 static int GeoTranType_Last;                  // Catch change
 
-static IqeFl_Int_Input *pCC_AOI_X, *pCC_AOI_Y, *pCC_AOI_XX, *pCC_AOI_YY;
-static Fl_Button *pTeachToggle;
+// Group 'Trapezoid 2'
+
+static Fl_Button *pT2_TeachToggle;
+static IqeFl_Int_Input *pInt_T2_SrcX[ 4], *pInt_T2_SrcY[ 4], *pInt_T2_DstX[ 4], *pInt_T2_DstY[ 4];
+
+// Cut out GUI Elements
+
+static IqeFl_Int_Input *pCO_AOI_X, *pCO_AOI_Y, *pCO_AOI_XX, *pCO_AOI_YY;
+static Fl_Button *pCO_TeachToggle;
+
+/************************************************************************************
+ * Support for trapezoid points
+ *
+ */
+
+// Reset trapezoid points
+static void TrapezoidPointsReset( YaIPS_XY_int *pPoints, int xx, int yy, int DeltaX, int DeltaY)
+{
+
+  pPoints[ 0].x = DeltaX;
+  pPoints[ 0].y = DeltaY;
+
+  pPoints[ 1].x = xx - 1 - DeltaX;
+  pPoints[ 1].y = DeltaY;
+
+  pPoints[ 2].x = xx - 1 - DeltaX;
+  pPoints[ 2].y = yy - 1 - DeltaY;
+
+  pPoints[ 3].x = DeltaX;
+  pPoints[ 3].y = yy - 1 - DeltaY;
+}
+
+// Check trapezoid points to be inside image
+static void TrapezoidPointsCheck( YaIPS_XY_int *pPoints, int xx, int yy)
+{
+  int i, DoReset;
+
+  DoReset = false;
+
+  for( i = 0; i < 4; i++) {
+
+    if( pPoints[ i].x < 0 || pPoints[ i].x >= xx) {
+      DoReset = true;
+      break;
+    }
+
+    if( pPoints[ i].y < 0 || pPoints[ i].y >= yy) {
+      DoReset = true;
+      break;
+    }
+  }
+
+  if( DoReset) {
+
+    TrapezoidPointsReset( pPoints, xx, yy, xx / 3, yy / 3);
+  }
+}
 
 /************************************************************************************
  * update GUI of this tool window
@@ -246,6 +348,7 @@ static void MyParWinUpdate()
   Fl_RGB_Image *pImgIn1;
   int ImgXX, ImgYY, RedrawOnExit;
   Fl_Widget *pCurrFocus;
+  Fl_Color TeachColor;
 
   RedrawOnExit = false;
 
@@ -275,18 +378,28 @@ static void MyParWinUpdate()
     }
   }
 
+  // Teach button color
+
+  TeachColor = pToolData->Teach_mode ? FL_GREEN : YAIPS_BCOL_BUTTON;
+
+  // Trapezoid 2: Color teach toggle button
+
+  IqeB_GUI_WidgetActivate( pT2_TeachToggle, pToolData->GeoTranType == YAIPS_GEOTRAN_TRAPEZOID_2);// Only usable for brightness correction
+
+  IqeB_GUI_WidgetLabelColor( pT2_TeachToggle, pToolData->GeoTranType == YAIPS_GEOTRAN_TRAPEZOID_2 ? TeachColor : FL_GRAY);
+
   // Cut out: Enable AOI pos/size input buttons
 
-  IqeB_GUI_WidgetActivate( pCC_AOI_X, pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT && pToolData->CutOut_AOI_Teach);
-  IqeB_GUI_WidgetActivate( pCC_AOI_Y, pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT && pToolData->CutOut_AOI_Teach);
-  IqeB_GUI_WidgetActivate( pCC_AOI_XX, pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT && pToolData->CutOut_AOI_Teach);
-  IqeB_GUI_WidgetActivate( pCC_AOI_YY, pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT && pToolData->CutOut_AOI_Teach);
+  IqeB_GUI_WidgetActivate( pCO_AOI_X, pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT && pToolData->Teach_mode);
+  IqeB_GUI_WidgetActivate( pCO_AOI_Y, pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT && pToolData->Teach_mode);
+  IqeB_GUI_WidgetActivate( pCO_AOI_XX, pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT && pToolData->Teach_mode);
+  IqeB_GUI_WidgetActivate( pCO_AOI_YY, pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT && pToolData->Teach_mode);
 
   // Cut out: Color teach toggle button
 
-  IqeB_GUI_WidgetActivate( pTeachToggle, pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT);// Only usable for brightness correction
+  IqeB_GUI_WidgetActivate( pCO_TeachToggle, pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT);// Only usable for brightness correction
 
-  IqeB_GUI_WidgetLabelColor( pTeachToggle, pToolData->CutOut_AOI_Teach ? FL_GREEN : YAIPS_BCOL_BUTTON);
+  IqeB_GUI_WidgetLabelColor( pCO_TeachToggle, pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT ? TeachColor : FL_GRAY);
 
   // Check Scene input
 
@@ -300,19 +413,70 @@ static void MyParWinUpdate()
     ImgXX = pImgIn1->w();
     ImgYY = pImgIn1->h();
 
+    // Check points to fit in image
+
+    TrapezoidPointsCheck( pToolData->Trapezoid_SrcPoint, ImgXX, ImgYY);
+    TrapezoidPointsCheck( pToolData->Trapezoid_DstPoint, ImgXX, ImgYY);
+
   } else {
 
     ImgXX = 1024;
     ImgYY = 1024;
   }
 
-  // Check AOI
+  // Check limits for warp points
 
-  if( pCurrFocus != pCC_AOI_X  && pCurrFocus != pCC_AOI_Y &&               // Input element has NO keyboard focus ?
-      pCurrFocus != pCC_AOI_XX && pCurrFocus != pCC_AOI_YY) {
+  for( i = 0; i < 4; i++) {
+
+    IqeFl_Int_Input *pInt_T2;
+    YaIPS_XY_int    *pPoint;
+
+    pInt_T2 = pInt_T2_SrcX[ i];
+    pPoint  = pToolData->Trapezoid_SrcPoint + i;
+
+    if( pInt_T2->Max != ImgXX - 1) {
+      pInt_T2->ChangeMinMax( 0, ImgXX - 1);
+    }
+    if( pPoint->x != pInt_T2->GetValue()) {
+      pInt_T2->SetValue( pPoint->x);
+    }
+
+    pInt_T2 = pInt_T2_SrcY[ i];
+
+    if( pInt_T2->Max != ImgYY - 1) {
+      pInt_T2->ChangeMinMax( 0, ImgYY - 1);
+    }
+    if( pPoint->y != pInt_T2->GetValue()) {
+      pInt_T2->SetValue( pPoint->y);
+    }
+
+    pInt_T2 = pInt_T2_DstX[ i];
+    pPoint  = pToolData->Trapezoid_DstPoint + i;
+
+    if( pInt_T2->Max != ImgXX - 1) {
+      pInt_T2->ChangeMinMax( 0, ImgXX - 1);
+    }
+    if( pPoint->x != pInt_T2->GetValue()) {
+      pInt_T2->SetValue( pPoint->x);
+    }
+
+    pInt_T2 = pInt_T2_DstY[ i];
+
+    if( pInt_T2->Max != ImgYY - 1) {
+      pInt_T2->ChangeMinMax( 0, ImgYY - 1);
+    }
+    if( pPoint->y != pInt_T2->GetValue()) {
+      pInt_T2->SetValue( pPoint->y);
+    }
+  }
+
+  // Check cut out AOI
+
+  if( pCurrFocus != pCO_AOI_X  && pCurrFocus != pCO_AOI_Y &&               // Input element has NO keyboard focus ?
+      pCurrFocus != pCO_AOI_XX && pCurrFocus != pCO_AOI_YY) {
 
     if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolData->CutOut_AOI, ImgXX, ImgYY,
-                                        pCC_AOI_X, pCC_AOI_Y, pCC_AOI_XX, pCC_AOI_YY) > 0) {
+                                          pCO_AOI_X, pCO_AOI_Y, pCO_AOI_XX, pCO_AOI_YY) > 0) {
 
       RedrawOnExit = true;                                 // Redraw on exit
     }
@@ -564,9 +728,54 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     return;
   }
 
-  if( w == pTeachToggle) {                   // Toggle Teach / Inspection button
+  if( w == pCO_TeachToggle || w == pT2_TeachToggle) {   // Toggle Teach / Inspection button
 
-    pToolData->CutOut_AOI_Teach = ! pToolData->CutOut_AOI_Teach;
+    pToolData->Teach_mode = ! pToolData->Teach_mode;
+
+  } else if( pValueArg == pToolData->Trapezoid_SrcPoint ||      // Reset warp source points
+             pValueArg == pToolData->Trapezoid_SrcPoint + 1 ||
+             pValueArg == pToolData->Trapezoid_DstPoint ||      // Reset warp destination points
+             pValueArg == pToolData->Trapezoid_DstPoint + 1) {
+
+    int ImgXX, ImgYY, DeltaX, DeltaY;
+    Fl_RGB_Image *pImgIn1;
+
+    // Check Scene input
+
+    pImgIn1 = NULL;       // Will be set if there is a valid scene image
+
+    YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolData->iToolData, pToolData->Input1_WinIdNr,
+                             NULL, &pImgIn1, NULL);
+
+    if( pImgIn1 != NULL) {                  // Have an input image
+
+      ImgXX = pImgIn1->w();
+      ImgYY = pImgIn1->h();
+
+      if( pValueArg == pToolData->Trapezoid_SrcPoint ||      // Reset warp source points
+          pValueArg == pToolData->Trapezoid_DstPoint) {
+
+        DeltaX = 0;
+        DeltaY = 0;
+
+      } else {
+
+        DeltaX = ImgXX / 3;
+        DeltaY = ImgYY / 3;
+      }
+
+
+      if( pValueArg == pToolData->Trapezoid_SrcPoint ||   // Reset warp source points
+          pValueArg == pToolData->Trapezoid_SrcPoint + 1) {
+
+
+        TrapezoidPointsReset( pToolData->Trapezoid_SrcPoint, ImgXX, ImgYY, DeltaX, DeltaY);
+
+      } else {                                            // Reset warp destination points
+
+        TrapezoidPointsReset( pToolData->Trapezoid_DstPoint, ImgXX, ImgYY, DeltaX, DeltaY);
+      }
+    }
 
   } else {
 
@@ -632,7 +841,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     yPos = pToolData->MyParPosY;
   }
 
-  pMyParWin = new Fl_Window( xPos, yPos, 297 /*IQE_GUI_TOOLS_STD_WITDH*/, 142 /* 162 */, LANGDEF_SETTINGS);
+  pMyParWin = new Fl_Window( xPos, yPos, 297 /*IQE_GUI_TOOLS_STD_WITDH*/, 166 /* 162 */, LANGDEF_SETTINGS);
 
   if( pMyParWin == NULL) {  // security test
 
@@ -651,7 +860,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   //x/char TempBuffer[ 256];
 
   Fl_Check_Button *pCheckTemp;
-  //x/Fl_Box          *pTemp_Box;
+  Fl_Box          *pTemp_Box;
   IqeFl_Int_Input    *pTemp_Int;
   IqeFl_Float_Input  *pFloatTemp;
   IqeFl_Tabs      *pTemp_Tabs;
@@ -686,6 +895,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   x1  = 4;
 
   pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LANGDEF_ALL);
+  pTemp_Group->tooltip( LangStringLookup( "&GUI_GeoTrans_TabM1a=Settings for all others."));
 
     y += 8;
     y += 4;
@@ -730,6 +940,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   x1  = 4;
 
   pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LangStringLookup( "&GUI_GeoTrans_TabA1=Simple"));
+  pTemp_Group->tooltip( LangStringLookup( "&GUI_GeoTrans_TabA1a=Simple corrections."));
 
     y += 8;
 
@@ -855,6 +1066,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   x1  = 4;
 
   pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LangStringLookup( "&GUI_GeoTrans_TabB1=Lens"));
+  pTemp_Group->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB1a=Lens correction."));
 
     y += 8;
 
@@ -899,7 +1111,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_GeoTrans_TabB5=Size"));
     pFloatTemp->type( FL_FLOAT_INPUT);
-    pFloatTemp->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB5a=Size correction [%]]"));
+    pFloatTemp->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB5a=Size correction [%]"));
     pFloatTemp->SetValue( pToolData->Lens_SizeCorrPer);
     pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->Lens_SizeCorrPer);
     pFloatTemp->SetModifyData( -50.0, 20.0, 0.5, 0.1);
@@ -920,7 +1132,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     x1 += 136;
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_GeoTrans_TabB7=Offset Y"));
-    pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB7a=KOffset correction [pixels]"));
+    pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB7a=Offset correction [pixels]"));
     pTemp_Int->SetValue( pToolData->Lens_yDelta);
     pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Lens_yDelta);
     pTemp_Int->SetModifyData( -500, 500, 10, 1);
@@ -930,13 +1142,354 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Group->end();
 
   //
-  // Group lens correction
+  // Group 'Trapezoid 1' Trapezoidal distortion with parameters
   //
 
   y = yGroup;
   x1  = 4;
 
-  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LangStringLookup( "&GUI_GeoTrans_TabC1=Par. Pro."));
+  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LangStringLookup( "&GUI_GeoTrans_TabE1=Tra."));
+  pTemp_Group->tooltip( LangStringLookup( "&GUI_GeoTrans_TabE1a=Trapezoidal distortion."));
+
+    y += 8;
+
+    xx2 = 160;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_GeoTrans_TabE2=Trapezoid distortion"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_GeoTrans_TabE2a="
+                            "Trapezoid distortion."));
+    pRadioButTemp->callback( YaIPS_GeoTran_Callback, (void *)YAIPS_GEOTRAN_TRAPEZOID_1);
+    GeoTranButtons[ YAIPS_GEOTRAN_TRAPEZOID_1] = pRadioButTemp;
+
+    // Next line
+
+    x1  = 4;
+    y += yy + 4;
+
+    x1 += 100;
+    xx2 = 50;
+
+    pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_GeoTrans_TabE3=Factor"));
+    pFloatTemp->type( FL_FLOAT_INPUT);
+    pFloatTemp->SetFormat( "%.3f");
+    pFloatTemp->tooltip( LangStringLookup( "&GUI_GeoTrans_TabE3a=Trapezoid distortion factor"));
+    pFloatTemp->SetValue( pToolData->Trapezoid_Fac);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->Trapezoid_Fac);
+    pFloatTemp->SetModifyData( -3.0, 3.0, 0.1, 0.01);
+
+    // Next line
+
+    x1  = 4;
+    y += yy + 4;
+
+    x1 += 100;
+
+    pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_GeoTrans_TabE4=Rotation"));
+    pFloatTemp->type( FL_FLOAT_INPUT);
+    pFloatTemp->tooltip( LangStringLookup( "&GUI_GeoTrans_TabE4a=Correction of rotational position [°]"));
+    pFloatTemp->SetValue( pToolData->Trapezoid_Rotation);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->Trapezoid_Rotation);
+    pFloatTemp->SetModifyData( -180.0, 180.0, 15.0, 1.0, true);
+
+    x1 += 136;
+
+    pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_GeoTrans_TabE5=Size"));
+    pFloatTemp->type( FL_FLOAT_INPUT);
+    pFloatTemp->tooltip( LangStringLookup( "&GUI_GeoTrans_TabE5a=Size correction [%]"));
+    pFloatTemp->SetValue( pToolData->Trapezoid_SizeCorrPer);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->Trapezoid_SizeCorrPer);
+    pFloatTemp->SetModifyData( -10.0, 5.0, 1.0, 0.1);
+
+    // Next line
+
+    x1  = 4;
+    y += yy + 4;
+
+    x1 += 100;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_GeoTrans_TabB6=Offset X"));
+    pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
+    pTemp_Int->SetValue( pToolData->Trapezoid_xDelta);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_xDelta);
+    pTemp_Int->SetModifyData( -500, 500, 10, 1);
+
+    x1 += 136;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_GeoTrans_TabB7=Offset Y"));
+    pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB7a=Offset correction [pixels]"));
+    pTemp_Int->SetValue( pToolData->Trapezoid_yDelta);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_yDelta);
+    pTemp_Int->SetModifyData( -500, 500, 10, 1);
+
+    // Finish things for this group
+
+    pTemp_Group->end();
+
+  //
+  // Group 'Trapezoid 2' Trapezoidal distortion with 4 points
+  //
+
+  y = yGroup;
+  x1  = 4;
+
+  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LangStringLookup( "&GUI_GeoTrans_TabF1=Warp"));
+  pTemp_Group->tooltip( LangStringLookup( "&GUI_GeoTrans_TabF1a=Applies a perspective transformation to an image."));
+
+    y += 8;
+
+    xx2 = 220;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_GeoTrans_TabF2=Perspective Transformation"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_GeoTrans_TabF2a="
+                            "Applies a perspective transformation to an image.\n"
+                            "Edit mode on: Shows input image.\n"
+                            "move 4 Points to the corners of an object.\n"
+                            "Edit mode off: Shows output image.\n"
+                            "arrange the 4 points with perspective\n"
+                            "correction applied.\n"
+                            "NOTE: The point order must be clockwise."));
+    pRadioButTemp->callback( YaIPS_GeoTran_Callback, (void *)YAIPS_GEOTRAN_TRAPEZOID_2);
+    GeoTranButtons[ YAIPS_GEOTRAN_TRAPEZOID_2] = pRadioButTemp;
+
+    x1 = pMyParWin->w() - 7 - yy;
+
+    pTemp_Button = new Fl_Button( x1, y, yy, yy, "@-2pencil");
+    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->Teach_mode);
+    pTemp_Button->tooltip(  LangStringLookup( "&GUI_GeoTrans_TabF3a="
+                                              "Toggle edit mode.\n"
+                                              "On: place points on input image.\n"
+                                              "Off: place points on output image."));
+    pTemp_Button->labelcolor( YAIPS_BCOL_BUTTON);
+    pTemp_Button->shortcut( FL_COMMAND+'t');       // Short cut key
+    pT2_TeachToggle = pTemp_Button;
+
+    // Next line
+
+    x1  = 4;
+    y += yy + 4;
+
+    xx2 = 34;
+
+    pTemp_Box = new Fl_Box( x1, y, xx2, yy, LangStringLookup( "&GUI_GeoTrans_TabF4=Inp."));
+    pTemp_Box->align( FL_ALIGN_INSIDE | FL_ALIGN_LEFT);
+    pTemp_Box->box( FL_NO_BOX);    //  FL_BORDER_BOX FL_DOWN_FRAME
+
+    x1 += xx2 + 12;
+
+    xx2 = 40;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "1");
+    //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
+    pTemp_Int->SetValue( pToolData->Trapezoid_SrcPoint[0].x);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_SrcPoint[0].x);
+    pTemp_Int->SetModifyData( 0, 4096, 10, 1);
+    pInt_T2_SrcX[ 0] = pTemp_Int;
+
+    x1 += xx2 + 10;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "/");
+    //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
+    pTemp_Int->SetValue( pToolData->Trapezoid_SrcPoint[0].y);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_SrcPoint[0].y);
+    pTemp_Int->SetModifyData( 0, 4096, 10, 1);
+    pInt_T2_SrcY[ 0] = pTemp_Int;
+
+    x1 += xx2 + 20;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "2");
+    //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
+    pTemp_Int->SetValue( pToolData->Trapezoid_SrcPoint[1].x);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_SrcPoint[1].x);
+    pTemp_Int->SetModifyData( 0, 4096, 10, 1);
+    pInt_T2_SrcX[ 1] = pTemp_Int;
+
+    x1 += xx2 + 10;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "/");
+    //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
+    pTemp_Int->SetValue( pToolData->Trapezoid_SrcPoint[1].y);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_SrcPoint[1].y);
+    pTemp_Int->SetModifyData( 0, 4096, 10, 1);
+    pInt_T2_SrcY[ 1] = pTemp_Int;
+
+    x1 += xx2 + 2;
+
+    xx2 = yy - 2;
+
+    pTemp_Button = new Fl_Button( x1, y + (yy - xx2) / 2, xx2, xx2, "@-1squaref1");
+    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, pToolData->Trapezoid_SrcPoint);
+    pTemp_Button->tooltip( LangStringLookup( "&GUI_GeoTrans_TabF5a=Reset points"));
+
+    x1 += xx2 + 2;
+
+    pTemp_Button = new Fl_Button( x1, y + (yy - xx2) / 2, xx2, xx2, "@-1squaref2");
+    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, pToolData->Trapezoid_SrcPoint + 1);
+    pTemp_Button->tooltip( LangStringLookup( "&GUI_GeoTrans_TabF5a=Reset points"));
+
+    // Next line
+
+    x1  = 4;
+    y += yy + 4;
+
+    x1 += 46;
+
+    xx2 = 40;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "4");
+    //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
+    pTemp_Int->SetValue( pToolData->Trapezoid_SrcPoint[3].x);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_SrcPoint[3].x);
+    pTemp_Int->SetModifyData( 0, 4096, 10, 1);
+    pInt_T2_SrcX[ 3] = pTemp_Int;
+
+    x1 += xx2 + 10;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "/");
+    //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
+    pTemp_Int->SetValue( pToolData->Trapezoid_SrcPoint[3].y);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_SrcPoint[3].y);
+    pTemp_Int->SetModifyData( 0, 4096, 10, 1);
+    pInt_T2_SrcY[ 3] = pTemp_Int;
+
+    x1 += xx2 + 20;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "3");
+    //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
+    pTemp_Int->SetValue( pToolData->Trapezoid_SrcPoint[2].x);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_SrcPoint[2].x);
+    pTemp_Int->SetModifyData( 0, 4096, 10, 1);
+    pInt_T2_SrcX[ 2] = pTemp_Int;
+
+    x1 += xx2 + 10;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "/");
+    //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
+    pTemp_Int->SetValue( pToolData->Trapezoid_SrcPoint[2].y);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_SrcPoint[2].y);
+    pTemp_Int->SetModifyData( 0, 4096, 10, 1);
+    pInt_T2_SrcY[ 2] = pTemp_Int;
+
+    // Next line
+
+    x1  = 4;
+    y += yy + 4;
+
+    y += 4;
+
+    xx2 = 34;
+
+    pTemp_Box = new Fl_Box( x1, y, xx2, yy, LangStringLookup( "&GUI_GeoTrans_TabF6=Out"));
+    pTemp_Box->align( FL_ALIGN_INSIDE | FL_ALIGN_LEFT);
+    pTemp_Box->box( FL_NO_BOX);    //  FL_BORDER_BOX FL_DOWN_FRAME
+
+    x1 += xx2 + 12;
+
+    xx2 = 40;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "1");
+    //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
+    pTemp_Int->SetValue( pToolData->Trapezoid_DstPoint[0].x);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_DstPoint[0].x);
+    pTemp_Int->SetModifyData( 0, 4096, 10, 1);
+    pInt_T2_DstX[ 0] = pTemp_Int;
+
+    x1 += xx2 + 10;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "/");
+    //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
+    pTemp_Int->SetValue( pToolData->Trapezoid_DstPoint[0].y);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_DstPoint[0].y);
+    pTemp_Int->SetModifyData( 0, 4096, 10, 1);
+    pInt_T2_DstY[ 0] = pTemp_Int;
+
+    x1 += xx2 + 20;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "2");
+    //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
+    pTemp_Int->SetValue( pToolData->Trapezoid_DstPoint[1].x);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_DstPoint[1].x);
+    pTemp_Int->SetModifyData( 0, 4096, 10, 1);
+    pInt_T2_DstX[ 1] = pTemp_Int;
+
+    x1 += xx2 + 10;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "/");
+    //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
+    pTemp_Int->SetValue( pToolData->Trapezoid_DstPoint[1].y);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_DstPoint[1].y);
+    pTemp_Int->SetModifyData( 0, 4096, 10, 1);
+    pInt_T2_DstY[ 1] = pTemp_Int;
+
+    x1 += xx2 + 2;
+
+    xx2 = yy - 2;
+
+    pTemp_Button = new Fl_Button( x1, y + (yy - xx2) / 2, xx2, xx2, "@-1squaref1");
+    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, pToolData->Trapezoid_DstPoint);
+    pTemp_Button->tooltip( LangStringLookup( "&GUI_GeoTrans_TabF5a=Reset points"));
+
+    x1 += xx2 + 2;
+
+    pTemp_Button = new Fl_Button( x1, y + (yy - xx2) / 2, xx2, xx2, "@-1squaref2");
+    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, pToolData->Trapezoid_DstPoint + 1);
+    pTemp_Button->tooltip( LangStringLookup( "&GUI_GeoTrans_TabF5a=Reset points"));
+
+    // Next line
+
+    x1  = 4;
+    y += yy + 4;
+
+    x1 += 46;
+
+    xx2 = 40;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "4");
+    //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
+    pTemp_Int->SetValue( pToolData->Trapezoid_DstPoint[3].x);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_DstPoint[3].x);
+    pTemp_Int->SetModifyData( 0, 4096, 10, 1);
+    pInt_T2_DstX[ 3] = pTemp_Int;
+
+    x1 += xx2 + 10;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "/");
+    //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
+    pTemp_Int->SetValue( pToolData->Trapezoid_DstPoint[3].y);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_DstPoint[3].y);
+    pTemp_Int->SetModifyData( 0, 4096, 10, 1);
+    pInt_T2_DstY[ 3] = pTemp_Int;
+
+    x1 += xx2 + 20;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "3");
+    //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
+    pTemp_Int->SetValue( pToolData->Trapezoid_DstPoint[2].x);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_DstPoint[2].x);
+    pTemp_Int->SetModifyData( 0, 4096, 10, 1);
+    pInt_T2_DstX[ 2] = pTemp_Int;
+
+    x1 += xx2 + 10;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "/");
+    //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
+    pTemp_Int->SetValue( pToolData->Trapezoid_DstPoint[2].y);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_DstPoint[2].y);
+    pTemp_Int->SetModifyData( 0, 4096, 10, 1);
+    pInt_T2_DstY[ 2] = pTemp_Int;
+
+    // Finish things for this group
+
+    pTemp_Group->end();
+
+  //
+  // Group Parallel projection
+  //
+
+  y = yGroup;
+  x1  = 4;
+
+  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LangStringLookup( "&GUI_GeoTrans_TabC1=ParPro"));
+  pTemp_Group->tooltip( LangStringLookup( "&GUI_GeoTrans_TabC1a=Distortions by parallel projection"));
 
     y += 8;
 
@@ -1059,7 +1612,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int->SetValue( pToolData->CutOut_AOI.XPos);
     pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CutOut_AOI.XPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
-    pCC_AOI_X = pTemp_Int;
+    pCO_AOI_X = pTemp_Int;
 
     x1 += xx2;
     x1 += 50;
@@ -1070,17 +1623,17 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int->SetValue( pToolData->CutOut_AOI.YPos);
     pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CutOut_AOI.YPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
-    pCC_AOI_Y = pTemp_Int;
+    pCO_AOI_Y = pTemp_Int;
 
     x1 += xx2;
     x1 += 8;
 
     pTemp_Button = new Fl_Button( x1, y, 28, 28, "@+1pencil");
-    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->CutOut_AOI_Teach);
+    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->Teach_mode);
     pTemp_Button->tooltip( LANGDEF_AOI_TEACH_TOOLTIP);
     pTemp_Button->labelcolor( YAIPS_BCOL_BUTTON);
     pTemp_Button->shortcut( FL_COMMAND+'t');       // Short cut key
-    pTeachToggle = pTemp_Button;
+    pCO_TeachToggle = pTemp_Button;
 
     // Next line
 
@@ -1097,7 +1650,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int->SetValue( pToolData->CutOut_AOI.XSize);
     pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CutOut_AOI.XSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
-    pCC_AOI_XX = pTemp_Int;
+    pCO_AOI_XX = pTemp_Int;
 
     x1 += xx2;
     x1 += 50;
@@ -1108,7 +1661,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int->SetValue( pToolData->CutOut_AOI.YSize);
     pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CutOut_AOI.YSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
-    pCC_AOI_YY = pTemp_Int;
+    pCO_AOI_YY = pTemp_Int;
 
     // Finish things for this group
 
@@ -1306,6 +1859,7 @@ public:
     pToolData->YaIPS_ImageDisp.pImage_Box->DrawCallbackArg2    = pToolData;                    // Optional pointer to ToolData
 
     pToolData->YaIPS_ImageDisp.pImage_Box->pMouseCallback      = YaIPS_GUI_MyMouse_cb;         // Mouse event callback
+    pToolData->YaIPS_ImageDisp.pImage_Box->MouseCallbackFlag   = YaIPS_MOUSE_CB_FLAG_ALSO_DISABLED; // Also call mouse callback function for disabled 'MouseTeachState'.
     pToolData->YaIPS_ImageDisp.pImage_Box->MouseCallbackArg1   = &pToolData->YaIPS_ImageDisp;  // Pointer to Fl_YaIPS_ImageDisp_t
     pToolData->YaIPS_ImageDisp.pImage_Box->MouseCallbackArg2   = pToolData;                    // Optional pointer to ToolData
 
@@ -1416,9 +1970,10 @@ static void YaIPS_ToolWin_GUI_Callback( Fl_Widget *w, long int iToolData)
 
   } else if( w == pMyToolWin->pGUI_TeachToggle) {              // Toggle Teach / Inspection
 
-    if( pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT) { // Only usable for cut out
+    if( pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT || // Only usable for cut out
+        pToolData->GeoTranType == YAIPS_GEOTRAN_TRAPEZOID_2) { // or trapezoid 2
 
-      pToolData->CutOut_AOI_Teach = ! pToolData->CutOut_AOI_Teach;
+      pToolData->Teach_mode = ! pToolData->Teach_mode;
 
       pToolData->Input1_Change = 0;          // Force recalculation output
     }
@@ -1503,9 +2058,10 @@ static void MyWinUpdate( int iToolData, int DoEnable)
 
   // Is teach mode available
   if( DoEnable &&                                                 // Enable GUI elements
-      pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT) {      // Only usable for cut out
+      (pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT ||     // Only usable for cut out
+       pToolData->GeoTranType == YAIPS_GEOTRAN_TRAPEZOID_2)) {    // or trapezoid 2
 
-    MouseTeachState = pToolData->CutOut_AOI_Teach ? 3 : 2;
+    MouseTeachState = pToolData->Teach_mode ? 3 : 2;
   }
 
   pToolData->YaIPS_ImageDisp.pImage_Box->MouseTeachState = MouseTeachState;  // Shadow setting of teach
@@ -1682,6 +2238,203 @@ static void IqeB_GUI_ToolsMyIdleAction( void *)
                                    pToolData->Lens_SizeCorrPer, pToolData->Lens_xDelta, pToolData->Lens_yDelta);
         break;
 
+      case YAIPS_GEOTRAN_TRAPEZOID_1:
+        {
+          YaIPS_XY_float SrcPoints[ 4], DstPoints[ 4];
+          int xx, yy, iPoint;
+          double PX1, PY1, PX2, PY2, PXD, PYD, Trapezoid_Fac, Angle, SinAngle, CosAngle;
+
+          xx = pImgIn1->data_w();
+          yy = pImgIn1->data_h();
+
+          // Source points
+
+          // Prepare trapezoidal distortion
+
+          Trapezoid_Fac = pToolData->Trapezoid_Fac;
+
+          if( Trapezoid_Fac > 3.0) {            // Clip
+
+            Trapezoid_Fac = 3.0;
+
+          } else if( Trapezoid_Fac < -3.0) {
+
+            Trapezoid_Fac = -3.0;
+          }
+
+          // Prepare rotation
+
+          Angle = pToolData->Trapezoid_Rotation * M_PI / 180.0; // convert rotation from degree to radiant
+          Angle = -1.0 * Angle;                                 // change direction, we work backwards
+
+          SinAngle = sin( Angle);
+          CosAngle = cos( Angle);
+
+          for( iPoint = 0; iPoint < 4; iPoint++) {
+
+            // Corner points
+
+            switch( iPoint) {
+
+            default:
+            case 0:
+              PX1 = xx * -0.5;
+              PY1 = yy * -0.5;
+              break;
+
+            case 1:
+              PX1 = xx * 0.5;
+              PY1 = yy * -0.5;
+              break;
+
+            case 2:
+              PX1 = xx * 0.5;
+              PY1 = yy * 0.5;
+              break;
+
+            case 3:
+              PX1 = xx * -0.5;
+              PY1 = yy * 0.5;
+              break;
+            }
+
+            // Remember for destination point
+
+            PXD = PX1;
+            PYD = PY1;
+
+            // Trapezoid for source point
+
+            if( Trapezoid_Fac >= 0.0) {
+
+              if( iPoint == 0 || iPoint == 1)
+
+                PX1 = PX1 * (1.0 + Trapezoid_Fac);
+            }  else {
+
+              if( iPoint == 2 || iPoint == 3) {
+
+                PX1 = PX1 * (1.0 - Trapezoid_Fac);
+              }
+            }
+
+            // Rotation
+
+            PX2 = PX1 * CosAngle - PY1 * SinAngle;
+            PY2 = PY1 * CosAngle + PX1 * SinAngle;
+
+            // Size correction
+
+            PX2 *= 1.0 - pToolData->Trapezoid_SizeCorrPer * 0.1;
+            PY2 *= 1.0 - pToolData->Trapezoid_SizeCorrPer * 0.1;
+
+            // Store point
+
+            SrcPoints[ iPoint].x = PX2 + xx * 0.5 + pToolData->Trapezoid_xDelta;
+            SrcPoints[ iPoint].y = PY2 + yy * 0.5 + pToolData->Trapezoid_yDelta;
+
+            // Continue with destination point
+
+            PX1 = PXD;
+            PY1 = PYD;
+
+            // Rotation
+
+            PX2 = PX1 * CosAngle - PY1 * SinAngle;
+            PY2 = PY1 * CosAngle + PX1 * SinAngle;
+
+            // Store point
+
+            DstPoints[ iPoint].x = PX2 + xx * 0.5 + pToolData->Trapezoid_xDelta;
+            DstPoints[ iPoint].y = PY2 + yy * 0.5 + pToolData->Trapezoid_yDelta;
+          }
+
+          // Warp 4 points in source to 4 points in destination.
+          ierr = YaIPS_RGB_Geo_Warp_4_Points( &pToolData->YaIPS_ImageDisp.pImage_Img, pImgIn1,
+                                              pToolData->Base_OutsiteColor, pToolData->Base_OutsiteBlend,
+                                              SrcPoints,       // Point to 4 source points x + y
+                                              DstPoints,       // Point to 4 destination points x + y
+                                              xx, yy);         // Destination height if > 0 else compute from pDstPoints
+
+        }
+        break;
+
+      case YAIPS_GEOTRAN_TRAPEZOID_2:
+
+        if( pToolData->Teach_mode)  {    // Teach mode
+
+          // Copy image. Also shows points on source image
+
+          ierr = YaIPS_RGB_CopyImg( &pToolData->YaIPS_ImageDisp.pImage_Img, pImgIn1);
+
+        } else {
+
+          YaIPS_XY_float SrcPoints[ 4], DstPoints[ 4];
+          int xx, yy, iPoint, x, y;
+
+          xx = pImgIn1->data_w();
+          yy = pImgIn1->data_h();
+
+          TrapezoidPointsCheck( pToolData->Trapezoid_SrcPoint, xx, yy);
+          TrapezoidPointsCheck( pToolData->Trapezoid_DstPoint, xx, yy);
+
+          for( iPoint = 0; iPoint < 4; iPoint++) {
+
+            // Convert source points
+
+            x = pToolData->Trapezoid_SrcPoint[ iPoint].x;
+            y = pToolData->Trapezoid_SrcPoint[ iPoint].y;
+
+            if( x >= xx) {
+              x = xx - 1;
+            }
+            if( x < 0) {
+              x = 0;
+            }
+
+            if( y >= yy) {
+              y = yy - 1;
+            }
+            if( y < 0) {
+              y = 0;
+            }
+
+            SrcPoints[ iPoint].x = x + 0.5;
+            SrcPoints[ iPoint].y = y + 0.5;
+
+            // Convert destination points
+
+            x = pToolData->Trapezoid_DstPoint[ iPoint].x;
+            y = pToolData->Trapezoid_DstPoint[ iPoint].y;
+
+            if( x >= xx) {
+              x = xx - 1;
+            }
+            if( x < 0) {
+              x = 0;
+            }
+
+            if( y >= yy) {
+              y = yy - 1;
+            }
+            if( y < 0) {
+              y = 0;
+            }
+
+            DstPoints[ iPoint].x = x + 0.5;
+            DstPoints[ iPoint].y = y + 0.5;
+          }
+
+          // Warp 4 points in source to 4 points in destination.
+          ierr = YaIPS_RGB_Geo_Warp_4_Points( &pToolData->YaIPS_ImageDisp.pImage_Img, pImgIn1,
+                                              pToolData->Base_OutsiteColor, pToolData->Base_OutsiteBlend,
+                                              SrcPoints,       // Point to 4 source points x + y
+                                              DstPoints,       // Point to 4 destination points x + y
+                                              xx, yy);         // Destination height if > 0 else compute from pDstPoints
+
+        }
+        break;
+
       case YAIPS_GEOTRAN_PAR_PRO:
 
         ierr = YaIPS_RGB_Geo_Transform( &pToolData->YaIPS_ImageDisp.pImage_Img, pImgIn1,
@@ -1693,7 +2446,7 @@ static void IqeB_GUI_ToolsMyIdleAction( void *)
 
       case YAIPS_GEOTRAN_PAR_CUT_OUT:
 
-        if( pToolData->CutOut_AOI_Teach)  {    // Teach mode
+        if( pToolData->Teach_mode)  {    // Teach mode
 
           // Copy image. Also show AOI rectangle.
           ierr = YaIPS_RGB_CopyImg( &pToolData->YaIPS_ImageDisp.pImage_Img, pImgIn1);
@@ -1864,10 +2617,209 @@ static void YaIPS_GUI_MyDrawAfter_Func( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp, 
                                         int DoClip)                              // if true (> 0) handle clipping of draw region else caller must do it
 {
 
+  // Draw AOI for trapezoid 2
+
+  if( pToolData->GeoTranType == YAIPS_GEOTRAN_TRAPEZOID_2 &&   // Trapezoid selected ?
+      pYaIPS_ImageDisp->pImage_Img != NULL) {                  // Have a source image
+
+    int SrcXX, SrcYY, Radius, LineWidth, iPoint;
+    int x1, y1, x, y, xx, yy, OffX, OffY, DrawText;
+    YaIPS_XY_int Point[ 4];
+    char TempString[ 256];
+
+
+    // Preparations
+
+    x1 = pYaIPS_ImageDisp->BigImage_sx;
+    y1 = pYaIPS_ImageDisp->BigImage_sy;
+    xx = pYaIPS_ImageDisp->BigImage_sw;
+    yy = pYaIPS_ImageDisp->BigImage_sh;
+
+    // Points relative to image
+
+    OffX = (int)( pYaIPS_ImageDisp->SubImage_x + 0.5);
+    OffY = (int)( pYaIPS_ImageDisp->SubImage_y + 0.5);
+
+    LineWidth = YaIPS_Setting_Wide_Graphic_Lines ? YAIPS_LINE_WIDTH_WIDE : YAIPS_LINE_WIDTH_SMALL;
+
+    // Clipping ?
+
+    if( DoClip > 0) {      // The the draw clipping
+
+      DoClip = -1;         // Need to pop clipping
+
+      fl_push_clip( x1, y1, xx, yy);
+    }
+
+    // Prepare font size
+
+    DrawText = false;                                            // Preset, do not draw text
+
+    if( pYaIPS_ImageDisp->PixelImageToScreen >= 0.33) {              // Is NOT to tiny
+
+      int TempFontSize;
+
+      DrawText = true;                                           // Draw text
+
+      if( pYaIPS_ImageDisp->PixelImageToScreen > 1.0) {
+        TempFontSize = (int)(pYaIPS_ImageDisp->PixelImageToScreen * 16.0 + 0.5);
+      } else {
+        TempFontSize = (int)(16.0 + 0.5);
+      }
+
+      if( TempFontSize < 10) {
+        TempFontSize = 10;
+      }
+
+      fl_font( FL_HELVETICA, TempFontSize);
+    }
+
+    SrcXX  = pYaIPS_ImageDisp->pImage_Img->w();
+    SrcYY  = pYaIPS_ImageDisp->pImage_Img->h();
+    Radius = YAIPS_AOI_FRAME_DIST;
+    if( pYaIPS_ImageDisp->PixelImageToScreen > 1.0) {
+      Radius = (int)( Radius * pYaIPS_ImageDisp->PixelImageToScreen + 0.5);
+    }
+
+    // Get points
+
+    for( iPoint = 0; iPoint < 4; iPoint++) {
+
+      // Get points
+
+      if( pToolData->Teach_mode) {
+
+        x = pToolData->Trapezoid_SrcPoint[ iPoint].x;
+        y = pToolData->Trapezoid_SrcPoint[ iPoint].y;
+
+      } else {
+
+        x = pToolData->Trapezoid_DstPoint[ iPoint].x;
+        y = pToolData->Trapezoid_DstPoint[ iPoint].y;
+      }
+
+      // Clip Points to image
+
+      if( x >= SrcXX) {
+        x = SrcXX - 1;
+      }
+      if( x < 0) {
+        x = 0;
+      }
+
+      if( y >= SrcYY) {
+        y = SrcYY - 1;
+      }
+      if( y < 0) {
+        y = 0;
+      }
+
+      // Convert to image space
+
+      x = (int)( (x - OffX) * pYaIPS_ImageDisp->PixelImageToScreen + 0.5);
+      y = (int)( (y - OffY) * pYaIPS_ImageDisp->PixelImageToScreen + 0.5);
+
+      Point[ iPoint].x = x;
+      Point[ iPoint].y = y;
+    }
+
+    // Connect the 4 points by lines
+
+    fl_line_style( 0, LineWidth);   // Set line width
+
+    fl_color( FL_CYAN);
+
+    for( iPoint = 0; iPoint < 4; iPoint++) {
+
+      fl_line( x1 + Point[ iPoint].x, y1 + Point[ iPoint].y,
+               x1 + Point[ (iPoint + 1) & 0x03].x, y1 + Point[ (iPoint + 1) & 0x03].y);
+    }
+
+    // Draw circles around points
+
+    for( iPoint = 0; iPoint < 4; iPoint++) {
+
+      x = Point[ iPoint].x;
+      y = Point[ iPoint].y;
+
+      // Draw Points
+
+      fl_line_style( 0, LineWidth);   // Set line width
+
+      int IsSelected;
+
+      IsSelected = (pYaIPS_ImageDisp->Flags & YAIPS_IDISP_FLAG_MOUSE_AOI_SEL) != 0 &&  // Mouse is over any AOI
+                   pYaIPS_ImageDisp->AoiIdNr == iPoint;                                // and mouse is over this AOI
+
+      // Draw color for AOI
+      if( IsSelected) {  // Mouse is over point
+
+        fl_color( FL_RED);
+      } else {
+
+        fl_color( FL_GREEN - 2);
+      }
+
+      fl_begin_loop();
+
+      fl_circle( x1 + x, y1 + y, Radius);
+
+      fl_end_loop();
+
+      // Draw label and quality of correlation to screen
+
+      if( DrawText) {                                                 // Draw text
+
+        int mdx, mdy, mw, mh;
+
+        sprintf( TempString, "%d", iPoint + 1);
+
+        fl_text_extents( TempString, mdx, mdy, mw, mh);
+
+#ifdef use_again
+
+        x += Radius;
+
+        if( y + mdy < 4) {         // To near to upper border
+
+          y += mh + 5;             // Show below upper frame
+          x += 4;
+
+        } else {                   // Fits above upper frame
+
+          y -= 4;
+        }
+#else
+        if( x + mw + Radius >= xx) {
+
+          x = x - Radius - mw - 2;
+
+        } else {
+
+          x = x + Radius;
+        }
+
+        if( y + mdy < 4) {         // To near to upper border
+
+          y = y + mh + Radius + 2;
+
+        } else {
+
+          y = y - Radius - 2;
+        }
+#endif
+
+        fl_draw( TempString, x1 + x, y1 + y);
+      }
+    }
+
+    goto ExitPoint;
+  }
+
   // Draw AOI for cut out ?
 
   if( pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT &&   // Cut out selected ?
-      pToolData->CutOut_AOI_Teach &&                           // Change AOI active ?
+      pToolData->Teach_mode &&                                 // Change AOI active ?
       pYaIPS_ImageDisp->pImage_Img != NULL) {                  // Have a source image
 
     int AOI_XX, AOI_YY, LineWidth;
@@ -2018,7 +2970,7 @@ static void YaIPS_GUI_MyDrawAfter_Other( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp,
 
   pToolData = YaIPS_ToolData_info + SubWinIDx;               // Point to info data
 
-  YaIPS_GUI_MyDrawAfter_Func( pYaIPS_ImageDisp, pToolData, false);
+  YaIPS_GUI_MyDrawAfter_Func( pYaIPS_ImageDisp, pToolData, true);
 }
 
 /************************************************************************************
@@ -2077,14 +3029,17 @@ static int YaIPS_GUI_MyMouse_cb( Fl_Widget *pW, int event,
                                  void *pArg2)        // Optional pointer to ToolData
 {
   Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp;
-  int ierr, x, y;
+  int ierr, x, y, AoiIdNrEntry;
   int minAoiDist, CursorShapeTest, AoiDeltaAddTest, IsBigImageDisp;
   YaIPS_ToolData_info_t *pToolData;
-  Fl_YaIPS_AOI_t *pAOI_Best, *pAOI_This;
   static int Last_x = -9999, Last_y = -9999;           // Must be static
   static int Pressed_x, Pressed_y;                     // Used for move with pressed mouse button
+  Fl_YaIPS_AOI_t *pAOI_Best, *pAOI_This;
   static Fl_YaIPS_AOI_t Pressed_AOI;                   // AOI on press of mouse button
   static Fl_YaIPS_AOI_t *pPressed_AOI_Best;            // What AOI to modify
+  YaIPS_XY_int *pPoint_Best, *pPoint_This;
+  static YaIPS_XY_int Pressed_Point;                   // Point on press of mouse button
+  static YaIPS_XY_int *pPressed_Point_Best;            // What Point to modify
 
   pYaIPS_ImageDisp = (Fl_YaIPS_ImageDisp_t *)pArg1;    // Get pointer to image display data
 
@@ -2119,6 +3074,8 @@ static int YaIPS_GUI_MyMouse_cb( Fl_Widget *pW, int event,
   pYaIPS_ImageDisp->MyWinID = MY_WIN_ID + pToolData->iToolData;  // Overwrite: Update big image, set my tool window ID
   minAoiDist     = -1;                                // Needed for section of nearest AOI
   pAOI_Best      = NULL;                              // Modify this AOI
+  pPoint_Best    = NULL;                              // Modify this point
+  AoiIdNrEntry   = -1;                                // Not set
 
   // Process mouse events
 
@@ -2150,8 +3107,107 @@ static int YaIPS_GUI_MyMouse_cb( Fl_Widget *pW, int event,
 
     if( pYaIPS_ImageDisp->DisplayResolution >= YAIPS_DISP_RESOLUTION_AUTO) {  // Any resolution
 
-      if( pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT &&             // Need an AOI
-          pToolData->CutOut_AOI_Teach != 0) {                                // and can be changed with the mouse
+      // Support for trapezoid 2
+      if( pToolData->GeoTranType == YAIPS_GEOTRAN_TRAPEZOID_2) {              // Need an AOI
+
+        int iPoint, Radius;
+
+        Radius = YAIPS_AOI_FRAME_DIST;
+        if( pYaIPS_ImageDisp->PixelImageToScreen < 1.0) {
+          Radius = (int)( Radius / pYaIPS_ImageDisp->PixelImageToScreen + 0.5);
+        }
+
+        AoiIdNrEntry = pYaIPS_ImageDisp->AoiIdNr;
+
+        for( iPoint = 0; iPoint < 4; iPoint++) {
+
+          // Get points
+
+          if( pToolData->Teach_mode) {
+
+            pPoint_This = &pToolData->Trapezoid_SrcPoint[ iPoint];
+
+          } else {
+
+            pPoint_This = &pToolData->Trapezoid_DstPoint[ iPoint];
+
+          }
+
+          ierr = YaIPS_ImageDispAoiPointCC( pYaIPS_ImageDisp, &pPoint_This->x, &pPoint_This->y, Radius,
+                                            pYaIPS_ImageDisp == &YaIPS_BigImageDisp ? FL_CURSOR_ARROW : FL_CURSOR_CROSS,
+                                            &minAoiDist, &CursorShapeTest, &AoiDeltaAddTest);
+
+          if( ierr == true) {     // Got one (or a better one)
+
+            // nearer aoi found
+            pYaIPS_ImageDisp->CursorShape = CursorShapeTest;
+            pYaIPS_ImageDisp->AoiDeltaAdd = AoiDeltaAddTest;
+            pYaIPS_ImageDisp->AoiIdNr = iPoint;           // AOI selected
+            pPoint_Best   = pPoint_This;
+          }
+        }
+
+        if( pYaIPS_ImageDisp->mouseleft) {                    // Left mouse button pressed
+
+          if( pYaIPS_ImageDisp->AoiDeltaAdd != 0 && pYaIPS_ImageDisp->Latched_AoiDeltaAdd == 0) {   // Latch AOI mouse modification
+
+            pYaIPS_ImageDisp->Latched_AoiDeltaAdd = pYaIPS_ImageDisp->AoiDeltaAdd;
+            pYaIPS_ImageDisp->Latched_CursorShape = pYaIPS_ImageDisp->CursorShape;
+
+            pPressed_Point_Best = pPoint_Best;                // Modify this point
+            Pressed_x = Last_x + pYaIPS_ImageDisp->Delta_x;   // Latch position at button press
+            Pressed_y = Last_y + pYaIPS_ImageDisp->Delta_y;
+
+            memcpy( &Pressed_Point, pPoint_Best, sizeof( YaIPS_XY_int)); // Remember AOI data a button press
+          }
+
+          if( pYaIPS_ImageDisp->Latched_AoiDeltaAdd != 0) {        // Have latched AOI mouse modification
+
+            pYaIPS_ImageDisp->AoiDeltaAdd = pYaIPS_ImageDisp->Latched_AoiDeltaAdd;   // Use it
+            pYaIPS_ImageDisp->CursorShape = pYaIPS_ImageDisp->Latched_CursorShape;
+            pPoint_Best   = pPressed_Point_Best;
+          }
+
+        } else {                                                   // Left mouse button is NOT pressed
+
+          pYaIPS_ImageDisp->Latched_AoiDeltaAdd = 0;               // Reset latched data
+          pYaIPS_ImageDisp->Latched_CursorShape = 0;
+
+          if( AoiIdNrEntry >= 0 && AoiIdNrEntry != pYaIPS_ImageDisp->AoiIdNr) {  // Window selection has changed
+
+            pYaIPS_ImageDisp->RedrawOnExit   = true;                      // Set redraw on exit
+            pYaIPS_ImageDisp->BigImageUpdate = pYaIPS_ImageDisp->MyWinID; // Update big image
+
+            pYaIPS_ImageDisp->Flags |= YAIPS_IDISP_FLAG_MOUSE_AOI_CHA;    // Set AOI changed flag bit
+          }
+        }
+
+        if( pYaIPS_ImageDisp->mouseleft &&                                        // and left button pressed
+            pYaIPS_ImageDisp->AoiDeltaAdd != 0 &&                                 // and add deltas
+            (pYaIPS_ImageDisp->Delta_x != 0 || pYaIPS_ImageDisp->Delta_y != 0)) { // and mouse has moved
+
+          memcpy( pPoint_Best, &Pressed_Point, sizeof( YaIPS_XY_int)); // Restore AOI data from button press
+
+          pYaIPS_ImageDisp->Delta_x = dto32( (Last_x - Pressed_x) / pYaIPS_ImageDisp->PixelImageToScreen);
+          pYaIPS_ImageDisp->Delta_y = dto32( (Last_y - Pressed_y) / pYaIPS_ImageDisp->PixelImageToScreen);
+
+          YaIPS_ImageDispAoiPointDeltaAdd( pYaIPS_ImageDisp, &pPoint_Best->x, &pPoint_Best->y,
+                                           pYaIPS_ImageDisp->Delta_x, pYaIPS_ImageDisp->Delta_y);
+
+          pToolData->Input1_Change = 0;                                 // Force recalculation output
+
+          pYaIPS_ImageDisp->RedrawOnExit   = true;                      // Set redraw on exit
+          pYaIPS_ImageDisp->BigImageUpdate = pYaIPS_ImageDisp->MyWinID; // Update big image
+
+          pYaIPS_ImageDisp->Flags |= YAIPS_IDISP_FLAG_MOUSE_AOI_CHA;    // Set AOI changed flag bit
+
+          break;
+        }
+      }
+
+      // Support for cut out
+      if( pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT &&              // Need an AOI
+          pToolData->Teach_mode != 0) {                                       // and can be changed with the mouse
 
         pAOI_This = &pToolData->CutOut_AOI;
 
@@ -2164,55 +3220,55 @@ static int YaIPS_GUI_MyMouse_cb( Fl_Widget *pW, int event,
           pYaIPS_ImageDisp->AoiDeltaAdd = AoiDeltaAddTest;
           pAOI_Best   = pAOI_This;
         }
-      }
 
-      if( pYaIPS_ImageDisp->mouseleft) {                    // Left mouse button pressed
+        if( pYaIPS_ImageDisp->mouseleft) {                    // Left mouse button pressed
 
-        if( pYaIPS_ImageDisp->AoiDeltaAdd != 0 && pYaIPS_ImageDisp->Latched_AoiDeltaAdd == 0) {   // Latch AOI mouse modification
+          if( pYaIPS_ImageDisp->AoiDeltaAdd != 0 && pYaIPS_ImageDisp->Latched_AoiDeltaAdd == 0) {   // Latch AOI mouse modification
 
-          pYaIPS_ImageDisp->Latched_AoiDeltaAdd = pYaIPS_ImageDisp->AoiDeltaAdd;
-          pYaIPS_ImageDisp->Latched_CursorShape = pYaIPS_ImageDisp->CursorShape;
+            pYaIPS_ImageDisp->Latched_AoiDeltaAdd = pYaIPS_ImageDisp->AoiDeltaAdd;
+            pYaIPS_ImageDisp->Latched_CursorShape = pYaIPS_ImageDisp->CursorShape;
 
-          pPressed_AOI_Best = pAOI_Best;                    // Modify this AOI
-          Pressed_x = Last_x + pYaIPS_ImageDisp->Delta_x;   // Latch position at button press
-          Pressed_y = Last_y + pYaIPS_ImageDisp->Delta_y;
+            pPressed_AOI_Best = pAOI_Best;                    // Modify this AOI
+            Pressed_x = Last_x + pYaIPS_ImageDisp->Delta_x;   // Latch position at button press
+            Pressed_y = Last_y + pYaIPS_ImageDisp->Delta_y;
 
-          memcpy( &Pressed_AOI, pAOI_Best, sizeof( Fl_YaIPS_AOI_t)); // Remember AOI data a button press
+            memcpy( &Pressed_AOI, pAOI_Best, sizeof( Fl_YaIPS_AOI_t)); // Remember AOI data a button press
+          }
+
+          if( pYaIPS_ImageDisp->Latched_AoiDeltaAdd != 0) {        // Have latched AOI mouse modification
+
+            pYaIPS_ImageDisp->AoiDeltaAdd = pYaIPS_ImageDisp->Latched_AoiDeltaAdd;   // Use it
+            pYaIPS_ImageDisp->CursorShape = pYaIPS_ImageDisp->Latched_CursorShape;
+            pAOI_Best   = pPressed_AOI_Best;
+          }
+
+        } else {                                                   // Left mouse button is NOT pressed
+
+          pYaIPS_ImageDisp->Latched_AoiDeltaAdd = 0;               // Reset latched data
+          pYaIPS_ImageDisp->Latched_CursorShape = 0;
         }
 
-        if( pYaIPS_ImageDisp->Latched_AoiDeltaAdd != 0) {        // Have latched AOI mouse modification
+        if( pYaIPS_ImageDisp->mouseleft &&                                        // and left button pressed
+            pYaIPS_ImageDisp->AoiDeltaAdd != 0 &&                                 // and add deltas
+            (pYaIPS_ImageDisp->Delta_x != 0 || pYaIPS_ImageDisp->Delta_y != 0)) { // and mouse has moved
 
-          pYaIPS_ImageDisp->AoiDeltaAdd = pYaIPS_ImageDisp->Latched_AoiDeltaAdd;   // Use it
-          pYaIPS_ImageDisp->CursorShape = pYaIPS_ImageDisp->Latched_CursorShape;
-          pAOI_Best   = pPressed_AOI_Best;
+          memcpy( pAOI_Best, &Pressed_AOI, sizeof( Fl_YaIPS_AOI_t)); // Restore AOI data from button press
+
+          pYaIPS_ImageDisp->Delta_x = dto32( (Last_x - Pressed_x) / pYaIPS_ImageDisp->PixelImageToScreen);
+          pYaIPS_ImageDisp->Delta_y = dto32( (Last_y - Pressed_y) / pYaIPS_ImageDisp->PixelImageToScreen);
+
+          YaIPS_ImageDispAoiRectDeltaAdd( pYaIPS_ImageDisp, pAOI_Best,
+                                          pYaIPS_ImageDisp->AoiDeltaAdd, pYaIPS_ImageDisp->Delta_x, pYaIPS_ImageDisp->Delta_y);
+
+          pToolData->Input1_Change = 0;                                 // Force recalculation output
+
+          pYaIPS_ImageDisp->RedrawOnExit   = true;                      // Set redraw on exit
+          pYaIPS_ImageDisp->BigImageUpdate = pYaIPS_ImageDisp->MyWinID; // Update big image
+
+          pYaIPS_ImageDisp->Flags |= YAIPS_IDISP_FLAG_MOUSE_AOI_CHA;    // Set AOI changed flag bit
+
+          break;
         }
-
-      } else {                                                   // Left mouse button is NOT pressed
-
-        pYaIPS_ImageDisp->Latched_AoiDeltaAdd = 0;               // Reset latched data
-        pYaIPS_ImageDisp->Latched_CursorShape = 0;
-      }
-
-      if( pYaIPS_ImageDisp->mouseleft &&                                        // and left button pressed
-          pYaIPS_ImageDisp->AoiDeltaAdd != 0 &&                                 // and add deltas
-          (pYaIPS_ImageDisp->Delta_x != 0 || pYaIPS_ImageDisp->Delta_y != 0)) { // and mouse has moved
-
-        memcpy( pAOI_Best, &Pressed_AOI, sizeof( Fl_YaIPS_AOI_t)); // Restore AOI data from button press
-
-        pYaIPS_ImageDisp->Delta_x = dto32( (Last_x - Pressed_x) / pYaIPS_ImageDisp->PixelImageToScreen);
-        pYaIPS_ImageDisp->Delta_y = dto32( (Last_y - Pressed_y) / pYaIPS_ImageDisp->PixelImageToScreen);
-
-        YaIPS_ImageDispAoiRectDeltaAdd( pYaIPS_ImageDisp, pAOI_Best,
-                                        pYaIPS_ImageDisp->AoiDeltaAdd, pYaIPS_ImageDisp->Delta_x, pYaIPS_ImageDisp->Delta_y);
-
-        pToolData->Input1_Change = 0;                                 // Force recalculation output
-
-        pYaIPS_ImageDisp->RedrawOnExit   = true;                      // Set redraw on exit
-        pYaIPS_ImageDisp->BigImageUpdate = pYaIPS_ImageDisp->MyWinID; // Update big image
-
-        pYaIPS_ImageDisp->Flags |= YAIPS_IDISP_FLAG_MOUSE_AOI_CHA;    // Set AOI changed flag bit
-
-        break;
       }
     }
 

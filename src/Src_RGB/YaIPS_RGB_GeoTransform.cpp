@@ -1,14 +1,28 @@
 /****************************************************************************
 
-  YaIPS_RGB_Sobel3x3.cpp
+  YaIPS_RGB_GeoTransform.cpp
 
   Fl_RGB_Image image processing.
   Geometric transformations of Images
 
  11.04.2025 RR: First edition of this file.
+ 29.09.2026 RR: * YaIPS_RGB_Geo_Resize2()
+                  New function with separate arguments for X and Y scaling.
+                * YaIPS_RGB_Geo_Transform()
+                  Optimization when resizing images.
+                  Whenever appropriate, the source image is scaled down
+                  by powers of two. As a result, the subsequent
+                  nearest-neighbor resizing produces better results.
+ 05.10.2026 RR: * Finished coding for YaIPS_RGB_Geo_Warp_4_Points().
+                  Perspective transformation with 4 points in source
+                  and 4 points in destination.
+ 07.10.2026 RR: * YaIPS_RGB_Geo_Resize2()
+                  Optimize speed by eliminate inner loop of resize code.
 
 *****************************************************************************
 */
+
+#define USE_GEO_TRANSFORM_SCALE_HACK     1  // Define this to use a hack for better scale results.
 
 #include <windows.h>
 #include <winbase.h>
@@ -66,10 +80,10 @@ static void SetOutsiteColor( uchar *pFillColor,    // pints to 4 bytes
 * YaIPS_RGB_Geo_Resize2
 * Resize by a power of 2.
 *
-* ppDst        Pointer to pointer to RGB image
-* pSrc         Source image
-* SizeShiftArg    Power of 2, < 0 is shrink > 0 is enlarge
-*              0 = 1:1, 1 = * 2, 2 = * 4, -1 = / 2, -2 = / 4, ...
+* ppDst         Pointer to pointer to RGB image
+* pSrc          Source image
+* SizeShiftArg  Power of 2, < 0 is shrink > 0 is enlarge
+*               0 = 1:1, 1 = * 2, 2 = * 4, -1 = / 2, -2 = / 4, ...
 *
 * return     0 OK
 *          < 0 Error
@@ -80,12 +94,44 @@ int YaIPS_RGB_Geo_Resize2( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to R
                            Fl_RGB_Image *pSrc,   // Source image
                            int SizeShiftArg)     // Power of 2, < 0 is shrink > 0 is enlarge
 {
-  int ierr, x, y, sx, sy, d, nByt, SizeFac, SizeShift;
-  int sxx, syy, dxx, dyy, sld, dld, Area2;
+  int ierr;
+
+  // Same size shift for X and Y
+  ierr = YaIPS_RGB_Geo_Resize2( ppDst, pSrc, SizeShiftArg, SizeShiftArg);
+
+  return( ierr);
+}
+
+/***************************************************************************
+* YaIPS_RGB_Geo_Resize2
+* Resize by a power of 2.
+*
+* ppDst          Pointer to pointer to RGB image
+* pSrc           Source image
+* SizeShiftArgX  Power of 2 for X, < 0 is shrink > 0 is enlarge
+* SizeShiftArgY  Power of 2 for Y, < 0 is shrink > 0 is enlarge
+*                0 = 1:1, 1 = * 2, 2 = * 4, -1 = / 2, -2 = / 4, ...
+*
+* return     0 OK
+*          < 0 Error
+****************************************************************************
+*/
+
+int YaIPS_RGB_Geo_Resize2( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to RGB image
+                           Fl_RGB_Image *pSrc,   // Source image
+                           int SizeShiftArgX,    // Power of 2 for X, < 0 is shrink > 0 is enlarge
+                           int SizeShiftArgY)    // Power of 2 for Y, < 0 is shrink > 0 is enlarge
+{
+  int ierr, x, y, sx, sy, d, nByt, SizeFacX, SizeFacY, SizeShiftX, SizeShiftY;
+  int sxx, syy, dxx, dyy, sld, dld, SizeFacX2, SizeOfLine, x2;
+#ifdef use_again
+  int d;    // This variable was used before elimination of inner loop
+#endif
   Fl_RGB_Image *pDst;
   YaIPS_RGB_ImgD_t iDst, iSrc;
   uchar *s80, *d80, *s8, *d8;
   int *pLine = NULL, *pL;                     // Point to line with pixels
+  int Pixel[ 4];                              // Max 4 bytes per pixel
 
   // Check source first
   ierr = YaIPS_RGB_to_ImgD( pSrc, &iSrc);
@@ -93,9 +139,10 @@ int YaIPS_RGB_Geo_Resize2( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to R
     return( ierr);
   }
 
-  //
+  // Check for copy
 
-  if( SizeShiftArg == 0) {                    // no size change
+  if( SizeShiftArgX == 0 &&                  // no size change
+      SizeShiftArgY == 0) {
 
     ierr = YaIPS_RGB_CopyImg( ppDst, pSrc);   // simply copy image
 
@@ -109,26 +156,41 @@ int YaIPS_RGB_Geo_Resize2( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to R
   sld = iSrc.ld;
   nByt = iSrc.d;
 
-  if( SizeShiftArg > 0) {                     // Enlarge
+  if( SizeShiftArgX >= 0) {                   // Enlarge
 
-    SizeShift = SizeShiftArg;
+    SizeShiftX = SizeShiftArgX;
 
-    SizeFac = 1 << SizeShift;                 // Size factor
+    SizeFacX = 1 << SizeShiftX;               // Size factor
 
-    dxx = sxx << SizeShift;
-    dyy = syy << SizeShift;
+    dxx = sxx << SizeShiftX;
 
   } else {                                    // Shrink
 
-    SizeShift = - SizeShiftArg;
+    SizeShiftX = - SizeShiftArgX;
 
-    SizeFac = 1 << SizeShift;                 // Size factor
+    SizeFacX = 1 << SizeShiftX;               // Size factor
 
-    dxx = sxx >> SizeShift;
-    dyy = syy >> SizeShift;
+    dxx = sxx >> SizeShiftX;
   }
 
-  Area2 = (SizeFac * SizeFac) / 2;            // 1/2 area, used for rounding
+  if( SizeShiftArgY >= 0) {                   // Enlarge
+
+    SizeShiftY = SizeShiftArgY;
+
+    SizeFacY = 1 << SizeShiftY;               // Size factor
+
+    dyy = syy << SizeShiftY;
+
+  } else {                                    // Shrink
+
+    SizeShiftY = - SizeShiftArgY;
+
+    SizeFacY = 1 << SizeShiftY;               // Size factor
+
+    dyy = syy >> SizeShiftY;
+  }
+
+  SizeFacX2 = SizeFacX / 2;          // 1/2 area, used for rounding
 
   // Check size
 
@@ -173,11 +235,9 @@ int YaIPS_RGB_Geo_Resize2( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to R
 
   // Resize
 
-  if( SizeShiftArg > 0) {                     // Enlarge
+  SizeOfLine = dxx * nByt;                  // Size of one destination line of data
 
-    int SizeOfLine;
-
-    SizeOfLine = dxx * nByt;                  // Size of one destination line of data
+  if( SizeShiftArgY >= 0) {                    // Enlarge Y
 
     s80 = RGB_pixad( 0, 0, &iSrc);
     d80 = RGB_pixad( 0, 0, &iDst);
@@ -189,16 +249,205 @@ int YaIPS_RGB_Geo_Resize2( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to R
 
       // Enlarge first destination line
 
-      for( x = 0; x < sxx; x++) {
+      if( SizeShiftArgX >= 0) {                // Enlarge X
 
-        for( sx = 0; sx < SizeFac; sx++) {
+#ifdef use_again
+        for( x = 0; x < sxx; x++) {
+
+          for( sx = 0; sx < SizeFacX; sx++) {
+
+            for( d = 0; d < nByt; d++) {
+              *d8++ = s8[ d];
+            }
+          }
+
+          s8 += nByt;
+        }
+#else
+        // Eliminate inner loop. NOTE: nByt is tested before to be in range 1 .. 4
+        switch( nByt) {
+
+        default:
+        case 1:
+
+          for( x = 0; x < sxx; x++) {
+
+            for( sx = 0; sx < SizeFacX; sx++) {
+
+              *d8++ = s8[ 0];
+            }
+            s8 += nByt;
+          }
+          break;
+
+        case 2:
+
+          for( x = 0; x < sxx; x++) {
+
+            for( sx = 0; sx < SizeFacX; sx++) {
+
+              *d8++ = s8[ 0];
+              *d8++ = s8[ 1];
+            }
+            s8 += nByt;
+          }
+          break;
+
+        case 3:
+
+          for( x = 0; x < sxx; x++) {
+
+            for( sx = 0; sx < SizeFacX; sx++) {
+
+              *d8++ = s8[ 0];
+              *d8++ = s8[ 1];
+              *d8++ = s8[ 2];
+            }
+            s8 += nByt;
+          }
+          break;
+
+        case 4:
+
+          for( x = 0; x < sxx; x++) {
+
+            for( sx = 0; sx < SizeFacX; sx++) {
+
+              *d8++ = s8[ 0];
+              *d8++ = s8[ 1];
+              *d8++ = s8[ 2];
+              *d8++ = s8[ 3];
+            }
+            s8 += nByt;
+          }
+          break;
+        }
+#endif
+
+      } else {                                 // Shrink X
+
+#ifdef use_again
+        for( x = 0; x < dxx; x++) {
 
           for( d = 0; d < nByt; d++) {
-            *d8++ = s8[ d];
+            Pixel[ d] = s8[ d];
+          }
+
+          s8 += nByt;
+
+          for( sx = 1; sx < SizeFacX; sx++) {
+
+            for( d = 0; d < nByt; d++) {
+              Pixel[ d] += s8[ d];
+            }
+
+            s8 += nByt;
+          }
+
+          for( d = 0; d < nByt; d++) {
+            *d8++ = (Pixel[ d] + SizeFacX2) >> (SizeShiftX);
           }
         }
+#else
+        // Eliminate inner loop. NOTE: nByt is tested before to be in range 1 .. 4
+        switch( nByt) {
 
-        s8 += nByt;
+        default:
+        case 1:
+
+          for( x = 0; x < dxx; x++) {
+
+            Pixel[ 0] = s8[ 0];
+
+            s8 += nByt;
+
+            for( sx = 1; sx < SizeFacX; sx++) {
+
+              Pixel[ 0] += s8[ 0];
+
+              s8 += nByt;
+            }
+
+            *d8++ = (Pixel[ 0] + SizeFacX2) >> (SizeShiftX);
+          }
+          break;
+
+        case 2:
+
+          for( x = 0; x < dxx; x++) {
+
+            Pixel[ 0] = s8[ 0];
+            Pixel[ 1] = s8[ 1];
+
+            s8 += nByt;
+
+            for( sx = 1; sx < SizeFacX; sx++) {
+
+              Pixel[ 0] += s8[ 0];
+              Pixel[ 1] += s8[ 1];
+
+              s8 += nByt;
+            }
+
+            *d8++ = (Pixel[ 0] + SizeFacX2) >> (SizeShiftX);
+            *d8++ = (Pixel[ 1] + SizeFacX2) >> (SizeShiftX);
+          }
+          break;
+
+        case 3:
+
+          for( x = 0; x < dxx; x++) {
+
+            Pixel[ 0] = s8[ 0];
+            Pixel[ 1] = s8[ 1];
+            Pixel[ 2] = s8[ 2];
+
+            s8 += nByt;
+
+            for( sx = 1; sx < SizeFacX; sx++) {
+
+              Pixel[ 0] += s8[ 0];
+              Pixel[ 1] += s8[ 1];
+              Pixel[ 2] += s8[ 2];
+
+              s8 += nByt;
+            }
+
+            *d8++ = (Pixel[ 0] + SizeFacX2) >> (SizeShiftX);
+            *d8++ = (Pixel[ 1] + SizeFacX2) >> (SizeShiftX);
+            *d8++ = (Pixel[ 2] + SizeFacX2) >> (SizeShiftX);
+          }
+          break;
+
+        case 4:
+
+          for( x = 0; x < dxx; x++) {
+
+            Pixel[ 0] = s8[ 0];
+            Pixel[ 1] = s8[ 1];
+            Pixel[ 2] = s8[ 2];
+            Pixel[ 3] = s8[ 3];
+
+            s8 += nByt;
+
+            for( sx = 1; sx < SizeFacX; sx++) {
+
+              Pixel[ 0] += s8[ 0];
+              Pixel[ 1] += s8[ 1];
+              Pixel[ 2] += s8[ 2];
+              Pixel[ 3] += s8[ 3];
+
+              s8 += nByt;
+            }
+
+            *d8++ = (Pixel[ 0] + SizeFacX2) >> (SizeShiftX);
+            *d8++ = (Pixel[ 1] + SizeFacX2) >> (SizeShiftX);
+            *d8++ = (Pixel[ 2] + SizeFacX2) >> (SizeShiftX);
+            *d8++ = (Pixel[ 3] + SizeFacX2) >> (SizeShiftX);
+          }
+          break;
+        }
+#endif
       }
 
       // Copy other destination lines
@@ -206,7 +455,7 @@ int YaIPS_RGB_Geo_Resize2( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to R
       d8 = d80;            // Begin of first line
       d80 += dld;          // Next line
 
-      for( sy = 1; sy < SizeFac; sy++) {
+      for( sy = 1; sy < SizeFacY; sy++) {
 
         memcpy( d80, d8, SizeOfLine);
 
@@ -218,9 +467,7 @@ int YaIPS_RGB_Geo_Resize2( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to R
 
   } else {                                    // Shrink
 
-    int SizeOfLine;
-
-    SizeOfLine = dxx * nByt;                  // Size of one destination line of data
+    int RoundShift, DivideShift;
 
     // Allocate a line buffer for summation
     pLine = (int *)malloc( SizeOfLine * sizeof( int));
@@ -236,6 +483,16 @@ int YaIPS_RGB_Geo_Resize2( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to R
       goto ErrorExit;
     }
 
+    if( SizeShiftArgX >= 0) {                // Enlarge X
+
+      RoundShift  = SizeShiftY / 2;
+      DivideShift = SizeShiftY;
+    } else {                                 // Shrink X
+
+      RoundShift  = (SizeShiftX + SizeShiftY) / 2;
+      DivideShift = SizeShiftX + SizeShiftY;
+    }
+
     s80 = RGB_pixad( 0, 0, &iSrc);
     d80 = RGB_pixad( 0, 0, &iDst);
 
@@ -247,37 +504,202 @@ int YaIPS_RGB_Geo_Resize2( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to R
 
       memset( pLine, 0, SizeOfLine * sizeof( int));   // Zero sum
 
-      for( sy = 0; sy < SizeFac; sy++) {
+      if( SizeShiftArgX >= 0) {                // Enlarge X
 
-        pL = pLine;
-        s8 = s80;
+        for( sy = 0; sy < SizeFacY; sy++) {
 
-        for( x = 0; x < dxx; x++) {
+          pL = pLine;
+          s8 = s80;
 
-          for( sx = 0; sx < SizeFac; sx++) {
+#ifdef use_again
+          for( x = 0; x < sxx; x++) {
 
-            for( d = 0; d < nByt; d++) {
-              pL[ d] += s8[ d];
+            for( sx = 0; sx < SizeFacX; sx++) {
+
+              for( d = 0; d < nByt; d++) {
+                *pL++ += (int)s8[ d];
+              }
             }
+
             s8 += nByt;
           }
+#else
+          // Eliminate inner loop. NOTE: nByt is tested before to be in range 1 .. 4
+          switch( nByt) {
 
-          pL += nByt;
+          default:
+          case 1:
+
+            for( x = 0; x < sxx; x++) {
+
+              for( sx = 0; sx < SizeFacX; sx++) {
+
+                *pL++ += (int)s8[ 0];
+              }
+
+              s8 += nByt;
+            }
+            break;
+
+          case 2:
+
+            for( x = 0; x < sxx; x++) {
+
+              for( sx = 0; sx < SizeFacX; sx++) {
+
+                *pL++ += (int)s8[ 0];
+                *pL++ += (int)s8[ 1];
+              }
+
+              s8 += nByt;
+            }
+            break;
+
+          case 3:
+
+            for( x = 0; x < sxx; x++) {
+
+              for( sx = 0; sx < SizeFacX; sx++) {
+
+                *pL++ += (int)s8[ 0];
+                *pL++ += (int)s8[ 1];
+                *pL++ += (int)s8[ 2];
+              }
+
+              s8 += nByt;
+            }
+            break;
+
+          case 4:
+
+            for( x = 0; x < sxx; x++) {
+
+              for( sx = 0; sx < SizeFacX; sx++) {
+
+                *pL++ += (int)s8[ 0];
+                *pL++ += (int)s8[ 1];
+                *pL++ += (int)s8[ 2];
+                *pL++ += (int)s8[ 3];
+              }
+
+              s8 += nByt;
+            }
+            break;
+          }
+#endif
+
+          s80 += sld;          // Next source line
         }
 
-        s80 += sld;          // Next source line
+      } else {                                 // Shrink X
+
+        for( sy = 0; sy < SizeFacY; sy++) {
+
+          pL = pLine;
+          s8 = s80;
+
+#ifdef use_again
+          for( x = 0; x < dxx; x++) {
+
+            for( sx = 0; sx < SizeFacX; sx++) {
+
+              for( d = 0; d < nByt; d++) {
+                pL[ d] += s8[ d];
+              }
+              s8 += nByt;
+            }
+
+            pL += nByt;
+          }
+#else
+          // Eliminate inner loop. NOTE: nByt is tested before to be in range 1 .. 4
+          switch( nByt) {
+
+          default:
+          case 1:
+
+            for( x = 0; x < dxx; x++) {
+
+              for( sx = 0; sx < SizeFacX; sx++) {
+
+                pL[ 0] += s8[ 0];
+                s8 += nByt;
+              }
+
+              pL += nByt;
+            }
+            break;
+
+          case 2:
+
+            for( x = 0; x < dxx; x++) {
+
+              for( sx = 0; sx < SizeFacX; sx++) {
+
+                pL[ 0] += s8[ 0];
+                pL[ 1] += s8[ 1];
+                s8 += nByt;
+              }
+
+              pL += nByt;
+            }
+            break;
+
+          case 3:
+
+            for( x = 0; x < dxx; x++) {
+
+              for( sx = 0; sx < SizeFacX; sx++) {
+
+                pL[ 0] += s8[ 0];
+                pL[ 1] += s8[ 1];
+                pL[ 2] += s8[ 2];
+                s8 += nByt;
+              }
+
+              pL += nByt;
+            }
+            break;
+
+          case 4:
+
+            for( x = 0; x < dxx; x++) {
+
+              for( sx = 0; sx < SizeFacX; sx++) {
+
+                pL[ 0] += s8[ 0];
+                pL[ 1] += s8[ 1];
+                pL[ 2] += s8[ 2];
+                pL[ 3] += s8[ 3];
+                s8 += nByt;
+              }
+
+              pL += nByt;
+            }
+            break;
+          }
+#endif
+          s80 += sld;          // Next source line
+        }
       }
 
       pL = pLine;
 
+#ifdef use_again
       for( x = 0; x < dxx; x++) {
 
         for( d = 0; d < nByt; d++) {
 
-          *d8++ = (*pL++ + Area2) >> (SizeShift + SizeShift);
+          *d8++ = (*pL++ + RoundShift) >> (DivideShift);
         }
       }
+#else
+      x2 = dxx * nByt;
+      for( x = 0; x < x2; x++) {
 
+        *d8++ = (*pL++ + RoundShift) >> (DivideShift);
+      }
+#endif
       d80 += dld;           // Next destination line
     }
   }
@@ -1435,9 +1857,9 @@ int YaIPS_RGB_Geo_TransPM( Fl_RGB_Image **ppDst,         // Out: Pointer to poin
 int YaIPS_RGB_Geo_Rotate( Fl_RGB_Image **ppDst,          // Out: Pointer to pointer to RGB image
                           Fl_RGB_Image *pSrc,            // Source image
                           int OutsiteColor,              // Color for the area outside an image
-                          int OutsiteBlend,         // If set, outside area is alpha blended
+                          int OutsiteBlend,              // If set, outside area is alpha blended
                           float Rotation,                // Rotation clockwise [Degree]
-                          int xxDst, int yyDst,          // // Size for destination. Any 0: use size of source. Any < 0: adapt size.
+                          int xxDst, int yyDst,          // Size for destination. Any 0: use size of source. Any < 0: adapt size.
                           float xps, float yps,          // Center of rotation in source image
                           float xpd, float ypd)          // Center of rotations in destination image
 {
@@ -1488,7 +1910,7 @@ int YaIPS_RGB_Geo_Rotate( Fl_RGB_Image **ppDst,          // Out: Pointer to poin
 */
 
 int YaIPS_RGB_Geo_Transform( Fl_RGB_Image **ppDst,        // Out: Pointer to pointer to RGB image
-                            Fl_RGB_Image *pSrc,           // Source image
+                            Fl_RGB_Image *pSrcArg,        // Source image
                             int OutsiteColor,             // Color for the area outside an image
                             int OutsiteBlend,             // If set, outside area is alpha blended
                             float Rotation,               // Rotation clockwise [Degree]
@@ -1499,7 +1921,62 @@ int YaIPS_RGB_Geo_Transform( Fl_RGB_Image **ppDst,        // Out: Pointer to poi
                             float xpd, float ypd)         // Center of rotations in destination image
 {
   Tge_matrix GeMatrix;
+  Fl_RGB_Image *pSrc;           // Source image
   int ierr;
+
+  pSrc = pSrcArg;               // Preset pointer to source image
+
+#ifdef USE_GEO_TRANSFORM_SCALE_HACK // Use a hack for better scale results.
+  YaIPS_RGB_ImgD_t iSrc;
+  Fl_RGB_Image *pTmp = NULL;
+  int SizeShiftX, SizeShiftY, xx2, yy2;
+
+  if( xscal <= 0.5 || yscal <= 0.5) {
+
+    // Check source first
+    ierr = YaIPS_RGB_to_ImgD( pSrc, &iSrc);
+    if( ierr != 0)  {                           // Check for error
+      return( ierr);
+    }
+
+    // Calculate shrink
+
+    SizeShiftX = 0;
+    SizeShiftY = 0;
+
+    while( xscal <= 0.5 && (iSrc.xx >> (0 - SizeShiftX + 1)) >= 16) {
+
+      xscal *= 2.0;
+      SizeShiftX -= 1;
+    }
+
+    while( yscal <= 0.5 && (iSrc.yy >> (0 - SizeShiftY + 1)) >= 16) {
+
+      yscal *= 2.0;
+      SizeShiftY -= 1;
+    }
+
+    ierr = YaIPS_RGB_Geo_Resize2( &pTmp, pSrc, SizeShiftX, SizeShiftY);
+    if( ierr != 0)  {                           // Check for error
+      return( ierr);
+    }
+
+    xx2 = iSrc.xx >> (0 - SizeShiftX);
+    yy2 = iSrc.yy >> (0 - SizeShiftY);
+
+    if( xx2 << (0 - SizeShiftX) != iSrc.xx) {                   // Error
+
+      xscal = xscal * (float)iSrc.xx / (xx2 << (0 - SizeShiftX)); // Correct size
+    }
+
+    if( yy2 << (0 - SizeShiftY) != iSrc.yy) {                   // Error
+
+      yscal = yscal * (float)iSrc.yy / (yy2 << (0 - SizeShiftY)); // Correct size
+    }
+
+    pSrc = pTmp;                              // Use temporary image as source
+  }
+#endif
 
   // Setup transformation
   if( xps < 0 && yps < 0 && xpd < 0 && ypd < 0) {     // Use center of images
@@ -1514,11 +1991,482 @@ int YaIPS_RGB_Geo_Transform( Fl_RGB_Image **ppDst,        // Out: Pointer to poi
   //Make transformation matrix and create destination image.
   ierr = YaIPS_RGB_Geo_TransMM( &GeMatrix, pSrc, xxDst, yyDst,
                                 Rotation, xscal, yscal, xshift, yshift);
+
+  if( ierr != 0)  {                           // Check for error
+
+    goto ExitPoint;
+  }
+
+  ierr = YaIPS_RGB_Geo_TransPM( ppDst, pSrc, &GeMatrix, OutsiteColor, OutsiteBlend);    /* may return pos retval */
+
+ExitPoint:
+
+#ifdef USE_GEO_TRANSFORM_SCALE_HACK // Use a hack for better scale results.
+
+  if( pTmp != NULL) {              // used a temporary image
+
+    pTmp->release();               // Release image data
+  }
+#endif
+
+  return( ierr);
+}
+
+/***************************************************************************
+* YaIPS_RGB_Geo_Warp_4_Points
+*
+* Support code.
+****************************************************************************
+*/
+
+typedef struct
+{
+    double x;
+    double y;
+} Point2d;
+
+// Bilinear interpolation
+
+#ifdef use_again
+static unsigned char Bilinear(
+    const unsigned char* img,
+    int width,
+    int height,
+    double x,
+    double y)
+{
+    int x0 = (int)floor(x);
+    int y0 = (int)floor(y);
+
+    int x1 = x0 + 1;
+    int y1 = y0 + 1;
+
+    if (x0 < 0 || y0 < 0 ||
+        x1 >= width || y1 >= height)
+        return 0;
+
+    double dx = x - x0;
+    double dy = y - y0;
+
+    double p00 = img[y0 * width + x0];
+    double p10 = img[y0 * width + x1];
+    double p01 = img[y1 * width + x0];
+    double p11 = img[y1 * width + x1];
+
+    double p0 = p00 + dx * (p10 - p00);
+    double p1 = p01 + dx * (p11 - p01);
+
+    return (unsigned char)(p0 + dy * (p1 - p0) + 0.5);
+}
+#endif
+
+// Calculate homography
+// The following function solves the 8×8 system of equations using Gaussian elimination.
+// Return:   0  OK
+//         < 0  Error
+
+static int ComputeHomography( const Point2d src[4],
+                              const Point2d dst[4],
+                              double H[3][3])
+{
+    double A[8][9];
+    double pivot, f;
+    int i, c, r, maxRow;
+
+    memset( A, 0, sizeof(A));
+
+    for( i = 0; i < 4; i++) {
+
+      double x = src[i].x;
+      double y = src[i].y;
+
+      double X = dst[i].x;
+      double Y = dst[i].y;
+
+      int r = 2*i;
+
+      A[r][0] = x;
+      A[r][1] = y;
+      A[r][2] = 1;
+      A[r][6] = -x*X;
+      A[r][7] = -y*X;
+      A[r][8] = X;
+
+      A[r+1][3] = x;
+      A[r+1][4] = y;
+      A[r+1][5] = 1;
+      A[r+1][6] = -x*Y;
+      A[r+1][7] = -y*Y;
+      A[r+1][8] = Y;
+    }
+
+    for( i = 0; i < 8; i++) {
+
+        //---------------------------------
+        // Partial Pivoting
+        //---------------------------------
+
+        maxRow = i;
+
+        for( r = i + 1; r < 8; r++) {
+
+            if( fabs( A[r][i]) > fabs( A[maxRow][i]))
+                maxRow = r;
+        }
+
+        if(maxRow != i) {
+
+            for( c = i; c < 9; c++) {
+
+                double tmp = A[i][c];
+                A[i][c] = A[maxRow][c];
+                A[maxRow][c] = tmp;
+            }
+        }
+
+        //---------------------------------
+        // Checking for a singular matrix
+        //---------------------------------
+
+        pivot = A[i][i];
+
+        if( fabs(pivot) < 1e-12)
+        {
+            // Homography is unsolvable
+            return ( -1);
+        }
+
+        //---------------------------------
+        // Normalize pivot row
+        //---------------------------------
+
+        for( c = i; c < 9; c++)
+            A[i][c] /= pivot;
+
+        //---------------------------------
+        // Eliminate
+        //---------------------------------
+
+        for( r = 0; r < 8; r++)
+        {
+            if(r == i)
+                continue;
+
+            f = A[r][i];
+
+            for( c = i; c < 9; c++)
+                A[r][c] -= f * A[i][c];
+        }
+    }
+
+    H[0][0]=A[0][8];
+    H[0][1]=A[1][8];
+    H[0][2]=A[2][8];
+
+    H[1][0]=A[3][8];
+    H[1][1]=A[4][8];
+    H[1][2]=A[5][8];
+
+    H[2][0]=A[6][8];
+    H[2][1]=A[7][8];
+    H[2][2]=1.0;
+
+    return( 0);   // Return OK
+}
+
+// Matrix inversion
+
+static void InvertH(
+    double H[3][3],
+    double Inv[3][3])
+{
+    double det =
+        H[0][0]*(H[1][1]*H[2][2]-H[2][1]*H[1][2])
+      - H[0][1]*(H[1][0]*H[2][2]-H[2][0]*H[1][2])
+      + H[0][2]*(H[1][0]*H[2][1]-H[2][0]*H[1][1]);
+
+    double id = 1.0/det;
+
+    Inv[0][0]= id*(H[1][1]*H[2][2]-H[2][1]*H[1][2]);
+    Inv[0][1]=-id*(H[0][1]*H[2][2]-H[2][1]*H[0][2]);
+    Inv[0][2]= id*(H[0][1]*H[1][2]-H[1][1]*H[0][2]);
+
+    Inv[1][0]=-id*(H[1][0]*H[2][2]-H[2][0]*H[1][2]);
+    Inv[1][1]= id*(H[0][0]*H[2][2]-H[2][0]*H[0][2]);
+    Inv[1][2]=-id*(H[0][0]*H[1][2]-H[1][0]*H[0][2]);
+
+    Inv[2][0]= id*(H[1][0]*H[2][1]-H[2][0]*H[1][1]);
+    Inv[2][1]=-id*(H[0][0]*H[2][1]-H[2][0]*H[0][1]);
+    Inv[2][2]= id*(H[0][0]*H[1][1]-H[1][0]*H[0][1]);
+}
+
+// Transform image
+
+static int WarpPerspective(
+    YaIPS_RGB_ImgD_t *pImgDst,             // Destination image
+    YaIPS_RGB_ImgD_t *pImgSrc,             // Source image
+    const Point2d srcPts[4],
+    const Point2d dstPts[4],
+    int OutsiteColor,         // Color for the area outside an image
+    int OutsiteBlend,         // If set, outside area is alpha blended
+    int AddAlpha)             // If set, source has no alpha but destination needs an alpha
+{
+  double H[3][3];
+  double InvH[3][3];
+  int srcWidth, srcHeight, dstWidth, dstHeight, srcWidth1, srcHeight1;
+  int ierr, x, y, iByte, nByteSrc, nByteDst, xmSrc, x0, y0;
+  int p00, p10, p01, p11;
+  int dx, dy, p0, p1;
+  double w, sx, sy, a00, a01, a02, a10, a11, a12, a20, a21, a22;
+  double wLine, xLine, yLine;
+  uchar *p8d, *p8s1, *p8s2;
+  uchar Outsite_FillColor[ 4];
+
+  ierr = ComputeHomography(srcPts, dstPts, H);
+
+  if( ierr != 0) {   // Homography is unsolvable =
+
+    return( ierr);
+  }
+
+  InvertH(H, InvH);
+
+  dstWidth  = pImgDst->xx;
+  dstHeight = pImgDst->yy;
+
+  srcWidth  = pImgSrc->xx;
+  srcHeight = pImgSrc->yy;
+
+  xmSrc     = pImgSrc->ld;
+
+  nByteDst  = pImgDst->d;              // NOTE: Source and destination must have the same number of bytes per pixel
+  nByteSrc  = pImgSrc->d;
+
+  // ...
+
+  srcWidth1  = srcWidth - 1;
+  srcHeight1 = srcHeight - 1;
+
+  // Prepare outside fill color
+
+  SetOutsiteColor( Outsite_FillColor, nByteSrc, OutsiteColor, OutsiteBlend);
+
+  a00 = InvH[0][0];
+  a01 = InvH[0][1];
+  a02 = InvH[0][2];
+  a10 = InvH[1][0];
+  a11 = InvH[1][1];
+  a12 = InvH[1][2];
+  a20 = InvH[2][0];
+  a21 = InvH[2][1];
+  a22 = InvH[2][2];
+
+  for( y = 0; y < dstHeight; y++) {
+
+    p8d = (uchar *)RGB_pixad( 0, y, pImgDst);
+
+
+    wLine = a21 * y + a22;
+    xLine = a01 * y + a02;
+    yLine = a11 * y + a12;
+
+
+    for( x = 0; x < dstWidth; x++, wLine += a20, xLine += a00, yLine += a10) {
+
+      if( fabs( wLine) < 1e-12) {
+
+        // out of source image, use fill color
+        for( iByte = 0; iByte < nByteDst; iByte++) {
+          p8d[ iByte] = Outsite_FillColor[ iByte];
+        }
+
+        p8d += nByteDst;
+        continue;
+      }
+
+      w = 1.0 / wLine;
+
+      sx = xLine * w;
+      sy = yLine * w;
+
+      // Bilinear interpolation
+
+      x0 = (int)floor( sx);
+      y0 = (int)floor( sy);
+
+      if( x0 < 0 || y0 < 0 ||                     // Outside source image ?
+          x0 >= srcWidth1 || y0 >= srcHeight1) {
+
+        // out of source image, use fill color
+        for( iByte = 0; iByte < nByteDst; iByte++) {
+          p8d[ iByte] = Outsite_FillColor[ iByte];
+        }
+
+        p8d += nByteDst;
+        continue;
+      }
+
+      dx = (int)((sx - x0) * 256.0);        // with afterpoint digits
+      dy = (int)((sy - y0) * 256.0);        // with afterpoint digits
+
+      p8s1 = (uchar *)RGB_pixad( x0, y0, pImgSrc);
+      p8s2 = p8s1 + xmSrc;
+
+      for( iByte = 0; iByte < nByteSrc; iByte++) {
+
+        p00 = p8s1[ 0];
+        p10 = p8s1[ nByteSrc];
+        p01 = p8s2[ 0];
+        p11 = p8s2[ nByteSrc];
+
+        p0 = p00 + ((dx * (p10 - p00)) >> 8);
+        p1 = p01 + ((dx * (p11 - p01)) >> 8);
+
+        p8d[ iByte] = (unsigned char)(p0 + ((dy * (p1 - p0)) >> 8));
+
+        p8s1++;
+        p8s2++;
+      }
+
+      if( AddAlpha) {          // Inside image and need to set alpha
+
+        p8d[ iByte] = 255;
+      }
+
+      p8d += nByteDst;
+    }
+  }
+
+  return( 0);   // Return OK
+}
+
+/***************************************************************************
+* YaIPS_RGB_Geo_Warp_4_Points
+* Warp 4 points in source to 4 points in destination.
+*
+* ppDst            Pointer to pointer to RGB image
+* pSrc             Source image
+* pSrcPoints       Point to 4 source points x + y
+* pDstPoints       Point to 4 destination points x + y
+* dstWidth         Destination with if > 0 else compute from pDstPoints
+* dstHeight        Destination height if > 0 else compute from pDstPoints
+*
+* NOTE: If dstWidth or dstHeight is <= 0 sizes are computed from pDstPoints.
+*       Both 0 --> Use source sizes
+*       Any < 0 --> Use pDstPoints
+*
+* return     0 OK
+*          < 0 Error
+****************************************************************************
+*/
+
+int YaIPS_RGB_Geo_Warp_4_Points( Fl_RGB_Image **ppDst,       // Out: Pointer to pointer to RGB image
+                                 Fl_RGB_Image *pSrc,         // Source image
+                                 int OutsiteColor,           // Color for the area outside an image
+                                 int OutsiteBlend,           // If set, outside area is alpha blended
+                                 YaIPS_XY_float *pSrcPoints, // Point to 4 source points x + y
+                                 YaIPS_XY_float *pDstPoints, // Point to 4 destination points x + y
+                                 int dstWidth,               // Destination with if > 0 else compute from pDstPoints
+                                 int dstHeight)              // Destination height if > 0 else compute from pDstPoints
+{
+  YaIPS_RGB_ImgD_t iDst, iSrc;
+  int ierr, i, nByteSrc;
+  Point2d srcPts[4], dstPts[4];
+
+  // Check source first
+  ierr = YaIPS_RGB_to_ImgD( pSrc, &iSrc);
   if( ierr != 0)  {                           // Check for error
     return( ierr);
   }
 
-  ierr = YaIPS_RGB_Geo_TransPM( ppDst, pSrc, &GeMatrix, OutsiteColor, OutsiteBlend);    /* may return pos retval */
+  // Get image data
+
+  nByteSrc = iSrc.d;
+
+  // Convert points
+
+  for( i = 0; i < 4; i++) {
+
+    srcPts[ i].x = pSrcPoints[ i].x;
+    srcPts[ i].y = pSrcPoints[ i].y;
+
+    dstPts[ i].x = pDstPoints[ i].x;
+    dstPts[ i].y = pDstPoints[ i].y;
+  }
+
+  // Compute destination size
+
+  if( dstWidth == 0 && dstHeight == 0) {           // Use source sizes
+
+    dstWidth  = iSrc.xx;
+    dstHeight = iSrc.yy;
+
+  } else if( dstWidth <= 0 || dstHeight <= 0) {    // Use pDstPoints
+
+    int i;
+    double MinX, MinY, MaxX, MaxY;
+
+    MinX = dstPts[ 0].x;
+    MinY = dstPts[ 0].y;
+    MaxX = dstPts[ 0].x;
+    MaxY = dstPts[ 0].y;
+
+    for( i = 1; i <= 3; i++) {
+
+      if( MinX > dstPts[ i].x) MinX = dstPts[ i].x;
+      if( MaxX < dstPts[ i].x) MaxX = dstPts[ i].x;
+      if( MinY > dstPts[ i].y) MinY = dstPts[ i].y;
+      if( MaxY < dstPts[ i].y) MaxY = dstPts[ i].y;
+    }
+
+    // All points relative to minimum
+
+    for( i = 0; i <= 3; i++) {
+
+      dstPts[ i].x -= MinX;
+      dstPts[ i].y -= MinY;
+    }
+
+    // Size of destination
+
+    dstWidth  = (int)floor( MaxX - MinX + 1);
+    dstHeight = (int)floor( MaxY - MinY + 1);
+  }
+
+  // Manage alpha channel usage
+
+  int AddAlpha, nByteDst;
+
+  AddAlpha = false;                       // Preset no alpha
+
+  if( nByteSrc == 1 || nByteSrc == 3) {   // Source has no alpha
+
+    nByteDst   = nByteSrc;
+
+    if( OutsiteBlend) {                   // Must add alpha
+
+      nByteDst += 1;
+
+      AddAlpha = true;                    // Has to add an alpha channel
+    }
+
+  } else {                                // Source has alpha
+
+    nByteDst   = nByteSrc;
+  }
+
+  // Ensure that pPDst image has the same size and same pixel amount as pSrc
+  ierr = YaIPS_RGB_ImageSetSize( ppDst, dstWidth, dstHeight, nByteDst);
+  if( ierr != 0)  {                           // Check for error
+    return( ierr);
+  }
+
+  ierr = YaIPS_RGB_to_ImgD( *ppDst, &iDst);
+  if( ierr != 0)  {                           // Check for error
+    return( ierr);
+  }
+
+  ierr = WarpPerspective( &iDst, &iSrc, srcPts, dstPts, OutsiteColor, OutsiteBlend, AddAlpha);
 
   return( ierr);
 }

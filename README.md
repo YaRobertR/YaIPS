@@ -62,6 +62,8 @@ The main window is the central element of the user interface. It is divided into
 
 ##### Installation
 
-Windows is the only supported operating system.
+* Windows is the only supported operating system.
 
-The release download is a .zip file. Extract this file to a suitable location. Double-click YaIPS.exe to launch the application.
+* Download the latest release from my [releases page](https://github.com/YaRobertR/YaIPS/releases)
+
+* The release download is a .zip file. Extract this file to a suitable location. Double-click YaIPS.exe to launch the application.

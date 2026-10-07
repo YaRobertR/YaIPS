@@ -2,9 +2,11 @@
 ; YaIPS_GUI_GeoTransform.cpp
 ;-------------------------------------------------------
 ;
-; 51 entries
+; 73 entries
 ;
 GUI_GeoTrans_Title                 "Geometry transformation"
+
+GUI_GeoTrans_TabM1a                "Settings for all others."
 
 GUI_GeoTrans_TabM2                 "Color outside"
 
@@ -20,6 +22,8 @@ GUI_GeoTrans_TabM3h                "Hide outside area.\n"
                                    "Otherwise, the area outside is visible."
 
 GUI_GeoTrans_TabA1                 "Simple"
+
+GUI_GeoTrans_TabA1a                "Simple corrections."
 
 GUI_GeoTrans_TabA2                 "Power of 2"
 
@@ -63,6 +67,8 @@ GUI_GeoTrans_TabA12a               "Size [%]"
 
 GUI_GeoTrans_TabB1                 "Lens"
 
+GUI_GeoTrans_TabB1a                "Lens correction."
+
 GUI_GeoTrans_TabB2                 "Lens correction"
 
 GUI_GeoTrans_TabB2a                "Correction of lens distortion and minor\n"
@@ -78,7 +84,7 @@ GUI_GeoTrans_TabB4a                "Correction of rotational position [°]"
 
 GUI_GeoTrans_TabB5                 "Size"
 
-GUI_GeoTrans_TabB5a                "Size correction [%]]"
+GUI_GeoTrans_TabB5a                "Size correction [%]"
 
 GUI_GeoTrans_TabB6                 "Offset X"
 
@@ -86,9 +92,55 @@ GUI_GeoTrans_TabB6a                "Offset correction [pixels]"
 
 GUI_GeoTrans_TabB7                 "Offset Y"
 
-GUI_GeoTrans_TabB7a                "KOffset correction [pixels]"
+GUI_GeoTrans_TabB7a                "Offset correction [pixels]"
 
-GUI_GeoTrans_TabC1                 "Par. Pro."
+GUI_GeoTrans_TabE1                 "Tra."
+
+GUI_GeoTrans_TabE1a                "Trapezoidal distortion."
+
+GUI_GeoTrans_TabE2                 "Trapezoid distortion"
+
+GUI_GeoTrans_TabE2a                "Trapezoid distortion."
+
+GUI_GeoTrans_TabE3                 "Factor"
+
+GUI_GeoTrans_TabE3a                "Trapezoid distortion factor"
+
+GUI_GeoTrans_TabE4                 "Rotation"
+
+GUI_GeoTrans_TabE4a                "Correction of rotational position [°]"
+
+GUI_GeoTrans_TabE5                 "Size"
+
+GUI_GeoTrans_TabE5a                "Size correction [%]"
+
+GUI_GeoTrans_TabF1                 "Warp"
+
+GUI_GeoTrans_TabF1a                "Applies a perspective transformation to an image."
+
+GUI_GeoTrans_TabF2                 "Perspective Transformation"
+
+GUI_GeoTrans_TabF2a                "Applies a perspective transformation to an image.\n"
+                                   "Edit mode on: Shows input image.\n"
+                                   "move 4 Points to the corners of an object.\n"
+                                   "Edit mode off: Shows output image.\n"
+                                   "arrange the 4 points with perspective\n"
+                                   "correction applied.\n"
+                                   "NOTE: The point order must be clockwise."
+
+GUI_GeoTrans_TabF3a                "Toggle edit mode.\n"
+                                   "On: place points on input image.\n"
+                                   "Off: place points on output image."
+
+GUI_GeoTrans_TabF4                 "Inp."
+
+GUI_GeoTrans_TabF5a                "Reset points"
+
+GUI_GeoTrans_TabF6                 "Out"
+
+GUI_GeoTrans_TabC1                 "ParPro"
+
+GUI_GeoTrans_TabC1a                "Distortions by parallel projection"
 
 GUI_GeoTrans_TabC2                 "Parallel projection"
 

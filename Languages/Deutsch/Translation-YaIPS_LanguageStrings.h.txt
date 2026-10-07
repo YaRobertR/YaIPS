@@ -2,13 +2,15 @@
 ; YaIPS_LanguageStrings.h
 ;-------------------------------------------------------
 ;
-; 119 entries
+; 122 entries
 ;
 Button_Close                       "Schließen"
 
 Button_OK                          "OK"
 
 Button_Reset                       "Reset"
+
+Button_Reset_Short                 "R"
 
 Button_Cancel                      "Abbrechen"
 
@@ -51,6 +53,10 @@ Text_ColorB                        "B"
 Text_ColorA                        "A"
 
 Text_ColorBW                       "SW"
+
+Text_ColorAlpha                    "Alpha"
+
+Text_ColorRedForAll                "Wenn gesetzt, wird der Rotwert\nfür alle drei Farbkanäle verwendet."
 
 Text_PixDepth1txt                  "SW"
 

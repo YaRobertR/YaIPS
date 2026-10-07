@@ -23,8 +23,8 @@
  */
 
 #define WIN_PROG_NAME         "&VersionInfo_PName=YaIPS"
-#define WIN_PROG_VERSION_NR   "V1.01"
-#define WIN_PROG_VERSION_DATE "&VersionInfo_Date=September 16, 2026"  // Date like: April 9  2017
+#define WIN_PROG_VERSION_NR   "V1.02"
+#define WIN_PROG_VERSION_DATE "&VersionInfo_Date=October 7, 2026"  // Date like: April 9  2017
 #define WIN_DEFAULT_TITLE     "&VersionInfo_Title=Yet another Image Processing Software"
 #define WIN_ENGLISH_TITLE     "Yet another Image Processing Software"
 
@@ -622,6 +622,8 @@ char *pYaIPS_PixelDepth_to_string( int PixelDepth);
 // and for additional drawing code.
 // -----------------------------------------------------------
 
+#define YaIPS_MOUSE_CB_FLAG_ALSO_DISABLED     0x0001  // Also call mouse callback function for disabled 'MouseTeachState'.
+
 // Mouse callback function
 typedef int (YaIPS_Fl_Drop_Callback )( Fl_Widget *, void *, void *pImageDispArg, int SubWinIDx);  // Sub-window index. Starts with 0.
 typedef int (YaIPS_Fl_Mouse_Callback )( Fl_Widget *, int, void *, void *);
@@ -637,6 +639,7 @@ public:
   YaIPS_Fl_PasteImgCallback *pPasteImgCallback = NULL; // Call on past of an image
   void *PasteImgCallbackArg1                   = NULL; // Argument for pPasteImgCallback. Must be pointer to Fl_YaIPS_ImageDisp_t.
   YaIPS_Fl_Mouse_Callback *pMouseCallback      = NULL; // Call on mouse events.    NOTE: returns are ignored until now.
+  int MouseCallbackFlag = 0;                           // Additional flags for mouse callback call
   YaIPS_Fl_Mouse_Callback *pKeyboardCallback   = NULL; // Call on keyboard events. NOTE: Return true when handled event else false.
   void *MouseCallbackArg1 = NULL;                 // Argument for pMouseCallback. Must be pointer to Fl_YaIPS_ImageDisp_t.
   void *MouseCallbackArg2 = NULL;                 // Argument for pMouseCallback. Optional, could be pointer to ToolData.
@@ -658,6 +661,7 @@ public:
     pPasteImgCallback    = NULL;
     PasteImgCallbackArg1 = NULL;
     pMouseCallback       = NULL;
+    MouseCallbackFlag    = 0;       // Additional flags for mouse callback call
     pKeyboardCallback    = NULL;
     MouseCallbackArg1    = NULL;
     MouseCallbackArg2    = NULL;
@@ -998,6 +1002,25 @@ int YaIPS_ImageDispAoiRectIGuiUpdate( Fl_YaIPS_AOI_t *pAOI,       // Point to AO
                                       void *pAOI_Y,
                                       void *pAOI_XX,
                                       void *pAOI_YY);
+
+//  * Point clip and check for mouse selection
+int YaIPS_ImageDispAoiPointCC( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp,
+                               int *pX, int *pY,           // In: Pointer to point to coordinates
+                               int Radius,                 // In: Check radius
+                               int CursorSel,              // In: Want this cursor if selected
+                               int *distanceToBeat,        // In Out: Distance to beat
+                               int *pCursor,               // Out: Cursor shape
+                               int *pDeltaAdd);            // Out: Where to add mouse delta
+
+// Point clip to image displayed on the screen
+int YaIPS_ImageDispAoiPointClip( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp,
+                                int *pX, int *pY);          // In: Pointer to point to coordinates
+
+// Add position change to AOI
+int YaIPS_ImageDispAoiPointDeltaAdd( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp,
+                                    int *pX, int *pY,           // In: Pointer to point to coordinates
+                                    int Delta_x,                // Delta in X direction
+                                    int Delta_y);               // Delta in y direction
 
 // Empty 'StrInfo' string
 void YaIPS_ImageDispStrInfo( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp); // Point to image display data

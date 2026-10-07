@@ -2,7 +2,7 @@
 ; YaIPS_GUI_Main.cpp
 ;-------------------------------------------------------
 ;
-; 123 entries
+; 125 entries
 ;
 GUI_Main_Menu_Color_Copy           "Copy color to clipboard"
 
@@ -141,6 +141,8 @@ GUI_Main_Menu3Ip5                  "Image/Inspection/Compare"
 GUI_Main_Menu3Ot1                  "Image/Other/Overlay"
 
 GUI_Main_Menu4a                    "Help/&About YaIPS ..."
+
+GUI_Main_Reseth                    "Reset display settings."
 
 GUI_Main_Size1                     "Magnification"
 

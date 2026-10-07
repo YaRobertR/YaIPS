@@ -33,9 +33,9 @@ GUI_Combine_TabM7                  "Max"
 GUI_Combine_TabM7a                 "Maximaler Alphawert.\n"
                                    "Maximaler Alphawert aus beiden Bildern."
 
-GUI_Combine_TabA1                  "Einfach"
+GUI_Combine_TabA1                  "Bilder"
 
-GUI_Combine_TabA1a                 "Einfache Berechnungen"
+GUI_Combine_TabA1a                 "Zwei Bilder kombinieren"
 
 GUI_Combine_TabA2                  "+"
 
@@ -112,6 +112,33 @@ GUI_Combine_TabA19a                "Verstärkung\nMultiplikator"
 GUI_Combine_TabA20                 "Offs."
 
 GUI_Combine_TabA20a                "Offset\nAddition"
+
+GUI_Combine_TabD1                  "Konst."
+
+GUI_Combine_TabD1a                 "Bild mit Konstanten kombinieren.\n"
+                                   "HINWEIS: Es wird nur das erste Eingabebild benötigt."
+
+GUI_Combine_TabD3                  "I-C"
+
+GUI_Combine_TabD3a                 "Subtraktion\n1. Eingabebild - Konstante"
+
+GUI_Combine_TabD4                  "C-I"
+
+GUI_Combine_TabD4a                 "Subtraktion\nKonstante - 1. Eingabebild"
+
+GUI_Color_TabD30a                  "UVerwenden dies für\n"
+                                   "Berechnungen der Farbkanäle."
+
+GUI_Color_TabD31a                  "Konstante für den roten Farbkanal."
+
+GUI_Color_TabD32a                  "Konstante für den grünen Farbkanal."
+
+GUI_Color_TabD33a                  "Konstante für den blauen Farbkanal."
+
+GUI_Color_TabD35a                  "Verwenden dies für Berechnungen mit dem Alphakanal\n"
+                                   "HINWEIS: Das Eingabebild muss einen Alphakanal haben."
+
+GUI_Color_TabD36a                  "Konstante für den Alpha-Farbkanal."
 
 GUI_Combine_TabB1                  "Mischen"
 

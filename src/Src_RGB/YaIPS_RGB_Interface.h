@@ -51,6 +51,18 @@ typedef struct {
   int yy;         // Height in pixel
 } YaIPS_RGB_ImgD_t;
 
+// Integer 2D coordinates
+typedef struct {
+  int x;          // With in pixels
+  int y;          // Height in pixel
+} YaIPS_XY_int;
+
+// Float 2D coordinates
+typedef struct {
+  float x;        // With in pixels
+  float y;        // Height in pixel
+} YaIPS_XY_float;
+
 //--------------------------------------------------------------------------
 // Macro definition for pixel access to a YaIPS_RGB_ImgD_t image
 //--------------------------------------------------------------------------
@@ -545,10 +557,42 @@ int YaIPS_RGB_Combine( Fl_RGB_Image **ppDst,        // Out: Pointer to pointer t
                        Fl_RGB_Image *pSrc2,         // Source image
                        int Operator,                // Type of operation
                        int Alpha_Op,                // Alpha operator
-                       float ResMultArg,            // Result multiplier
-                       int Offset,                  // Add this offset to the result
-                       float MultArg2 = 0.0,        // Optional: 2. multiplier. Is used my weighted add.
+                       float ResMultArg = 1.0,      // Result multiplier
+                       int Offset  = 0,             // Add this offset to the result
+                       float MultArg2 = 0.0,        // Optional: 2. multiplier. Is used by weighted add.
                        Fl_RGB_Image *pSrc3 = NULL); // Optional: a third source image
+
+// Calculation with constants operators
+#define YAIPS_CALC_CONST_OP_ADD       0   // Addition
+#define YAIPS_CALC_CONST_OP_SUB_I_C   1   // Subtraction source image - constant
+#define YAIPS_CALC_CONST_OP_SUB_C_I   2   // Subtraction constant - source image
+#define YAIPS_CALC_CONST_OP_SUB_ABS   3   // Subtraction with absolute value
+#define YAIPS_CALC_CONST_OP_MULT      4   // Multiplication
+#define YAIPS_CALC_CONST_OP_MIN       5   // Minimum value
+#define YAIPS_CALC_CONST_OP_MAX       6   // Maximum value
+#define YAIPS_CALC_CONST_OP_AVG       7   // Average images
+#define YAIPS_CALC_CONST_OP_AND       8   // AND images
+#define YAIPS_CALC_CONST_OP_OR        9   // OR images
+#define YAIPS_CALC_CONST_OP_XOR      10   // XOR images
+#define YAIPS_CALC_CONST_OP_CMP_EQ   11   // Compare images ==
+#define YAIPS_CALC_CONST_OP_CMP_NE   12   // Compare images !=
+#define YAIPS_CALC_CONST_OP_CMP_GT   13   // Compare images >
+#define YAIPS_CALC_CONST_OP_CMP_LE   14   // Compare images <=
+#define YAIPS_CALC_CONST_OP_CMP_GE   15   // Compare images >=
+#define YAIPS_CALC_CONST_OP_CMP_LT   16   // Compare images <
+
+#define YAIPS_CALC_CONST_FLAGS_COLOR  0x0001 // Flag bit: Process color part
+#define YAIPS_CALC_CONST_FLAGS_ALPHA  0x0002 // Flag bit: Process alpha part
+
+// Simple mathematical calculation of an image and a constant.
+int YaIPS_RGB_CalcConst( Fl_RGB_Image **ppDst,       // Out: Pointer to pointer to RGB image
+                         Fl_RGB_Image *pSrc,         // Source image
+                         int Operator,               // Type of operation
+                         int r, int g, int b, int a, // Constants used for Calculation. Hold RGBA values.
+                         int Alpha_Op,               // Alpha operator
+                         int Flags,                  // Flags
+                         float ResMultArg = 1.0,     // Result multiplier
+                         int Offset = 0);            // Add this offset to the result
 
 //--------------------------------------------------------------------------
 // YaIPS_RGB_FilterNxN.cpp
@@ -675,6 +719,11 @@ int YaIPS_RGB_Geo_Resize2( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to R
                            Fl_RGB_Image *pSrc,   // Source image
                            int SizeShiftArg);    // Power of 2, < 0 is shrink > 0 is enlarge
 
+int YaIPS_RGB_Geo_Resize2( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to RGB image
+                           Fl_RGB_Image *pSrc,   // Source image
+                           int SizeShiftArgX,    // Power of 2 for X, < 0 is shrink > 0 is enlarge
+                           int SizeShiftArgY);   // Power of 2 for Y, < 0 is shrink > 0 is enlarge
+
 // Mirror image in X, Y or X and Y
 int YaIPS_RGB_Geo_Mirror( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to RGB image
                           Fl_RGB_Image *pSrc,   // Source image
@@ -695,6 +744,16 @@ int YaIPS_RGB_Geo_Lens( Fl_RGB_Image **ppDst,     // Out: Pointer to pointer to 
                         float SizeCorrPer,        // Size correction percent [%]
                         int xDelta, int yDelta);  // Position correction [pixel]
 
+// Warp 4 points in source to 4 points in destination.
+int YaIPS_RGB_Geo_Warp_4_Points( Fl_RGB_Image **ppDst,       // Out: Pointer to pointer to RGB image
+                                 Fl_RGB_Image *pSrc,         // Source image
+                                 int OutsiteColor,           // Color for the area outside an image
+                                 int OutsiteBlend,           // If set, outside area is alpha blended
+                                 YaIPS_XY_float *pSrcPoints, // Point to 4 source points x + y
+                                 YaIPS_XY_float *pDstPoints, // Point to 4 destination points x + y
+                                 int dstWidth,               // Destination with if > 0 else compute from pDstPoints
+                                 int dstHeight);             // Destination height if > 0 else compute from pDstPoints
+
 // Geometric transformation setup
 
 // pivot mode
@@ -710,7 +769,7 @@ int YaIPS_RGB_Geo_TransSetup( int pivmod,                        // Pivot mode f
 int YaIPS_RGB_Geo_Rotate( Fl_RGB_Image **ppDst,                // Out: Pointer to pointer to RGB image
                           Fl_RGB_Image *pSrc,                  // Source image
                           int OutsiteColor,                    // Color for the area outside an image
-                          int OutsiteBlend,         // If set, outside area is alpha blended
+                          int OutsiteBlend,                    // If set, outside area is alpha blended
                           float Rotation,                      // Rotation clockwise [Degree]
                           int xxDst = -1, int yyDst = -1,      // Size for destination. Any 0: use size of source. Any < 0: adapt size.
                           float xps = -1.0, float yps = -1.0,  // Center of rotation in source image

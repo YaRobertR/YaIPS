@@ -2,7 +2,7 @@
 ; YaIPS_GUI_Color.cpp
 ;-------------------------------------------------------
 ;
-; 107 entries
+; 105 entries
 ;
 GUI_Color_Title                    "Color"
 
@@ -63,9 +63,6 @@ GUI_Color_TabB7a                   "Brightness for the green color channel."
 
 GUI_Color_TabB8a                   "Brightness for the blue color channel."
 
-GUI_Color_TabB9a                   "If set, the red value is used\n"
-                                   "for all three channels."
-
 GUI_Color_TabB10                   "Offset  R"
 
 GUI_Color_TabB10a                  "Offset for the red color channel."
@@ -87,9 +84,6 @@ GUI_Color_TabB15a                  "Gamma factor for the green color channel."
 
 GUI_Color_TabB16a                  "Gamma factor for the blue color channel."
                                    "No correction is made at 1.0."
-
-GUI_Color_TabB17a                  "If set, the red value is used\n"
-                                   "for all three channels."
 
 GUI_Color_TabM1                    "LUT2"
 

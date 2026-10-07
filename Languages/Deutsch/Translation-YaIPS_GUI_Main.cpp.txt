@@ -2,7 +2,7 @@
 ; YaIPS_GUI_Main.cpp
 ;-------------------------------------------------------
 ;
-; 123 entries
+; 125 entries
 ;
 GUI_Main_Menu_Color_Copy           "Farbe in Zwischenablage kopieren"
 
@@ -141,6 +141,8 @@ GUI_Main_Menu3Ip5                  "Bild/Inspektion/Vergleich"
 GUI_Main_Menu3Ot1                  "Bild/Sonstiges/Überlagerung"
 
 GUI_Main_Menu4a                    "Hilfe/&Über YaIPS ..."
+
+GUI_Main_Reseth                    "Anzeigeeinstellungen zurücksetzen."
 
 GUI_Main_Size1                     "Vergrößerung"
 

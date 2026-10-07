@@ -6,7 +6,7 @@
 ;
 VersionInfo_PName                  "YaIPS"
 
-VersionInfo_Date                   "16. September 2026"
+VersionInfo_Date                   "7. Oktober 2026"
 
 VersionInfo_Title                  "Yet another Image Processing Software"
 

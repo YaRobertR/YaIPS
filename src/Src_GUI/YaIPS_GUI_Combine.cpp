@@ -5,6 +5,7 @@
   Combine two images
 
   25.04.2025 RR: First edition of this file.
+  27.09.2026 RR: Finished coding for calculation with constants.
 
 *****************************************************************************
 */
@@ -95,8 +96,19 @@ typedef struct {
   int Tab_Group_Selected;               // Number of last selected tab group.
   int CombineType;                      // What combine operation to use
   int Alpha_Op;                         // Alpha operator
-  float CombineResMult;                 // Combine: Result multiplier
-  int CombineOffset;                    // Combine: Add Offset to output. Range is -256 ... 256.
+
+  float CombineResMult;                 // Combine images: Result multiplier
+  int CombineOffset;                    // Combine images: Add Offset to output. Range is -256 ... 256.
+
+  float CalcCoResMult;                  // Combine image and constant: Result multiplier
+  int CalcCoOffset;                     // Combine image and constant: Add Offset to output. Range is -256 ... 256.
+  int CalcCoR;                          // Combine image and constant: Red constant
+  int CalcCoG;                          // Combine image and constant: Green constant
+  int CalcCoB;                          // Combine image and constant: Blue constant
+  int CalcCoA;                          // Combine image and constant: Alpha constant
+  int CalcCoCh1FA;                      // Combine image and constant: Use one value for all three channels.
+  int CalcCoFlags;                      // Combine image and constant: Flags
+
   float WAddMult1;                      // Weighted add: 1. multiplier
   float WAddMult2;                      // Weighted add: 2. multiplier
   int  WAddOffset;                      // Weighted add: Add Offset to output. Range is -256 ... 256.
@@ -150,6 +162,14 @@ static T_GUI_PreferenceEntry MyPreferences[] =
   { PREF_T_INT,            "Alpha_Op",     "4", &YaIPS_ToolData_info[0].Alpha_Op},
   { PREF_T_FLOAT,    "CombineResMult",   "1.0", &YaIPS_ToolData_info[0].CombineResMult},
   { PREF_T_INT,       "CombineOffset",     "0", &YaIPS_ToolData_info[0].CombineOffset},
+  { PREF_T_FLOAT,     "CalcCoResMult",   "1.0", &YaIPS_ToolData_info[0].CalcCoResMult},
+  { PREF_T_INT,        "CalcCoOffset",     "0", &YaIPS_ToolData_info[0].CalcCoOffset},
+  { PREF_T_INT,             "CalcCoR",     "0", &YaIPS_ToolData_info[0].CalcCoR},
+  { PREF_T_INT,             "CalcCoG",     "0", &YaIPS_ToolData_info[0].CalcCoG},
+  { PREF_T_INT,             "CalcCoB",     "0", &YaIPS_ToolData_info[0].CalcCoB},
+  { PREF_T_INT,             "CalcCoA",     "0", &YaIPS_ToolData_info[0].CalcCoA},
+  { PREF_T_INT,         "CalcCoCh1FA",     "0", &YaIPS_ToolData_info[0].CalcCoCh1FA},
+  { PREF_T_INT,         "CalcCoFlags",     "1", &YaIPS_ToolData_info[0].CalcCoFlags},
   { PREF_T_FLOAT,         "WAddMult1",   "0.5", &YaIPS_ToolData_info[0].WAddMult1},
   { PREF_T_FLOAT,         "WAddMult2",   "0.5", &YaIPS_ToolData_info[0].WAddMult2},
   { PREF_T_INT,          "WAddOffset",     "0", &YaIPS_ToolData_info[0].WAddOffset},
@@ -174,8 +194,8 @@ static IqeB_PreferencesGroup MyPreferencesAdd( MY_WIN_PREF_NAME, MyPreferences, 
 //-----------------------------------------------------------------------------------
 
 // defines for operators
-// NOTE:  First operators have same values as YaIPS_RGB_Combine()
-//        operator values.
+
+// First operators have same values as YaIPS_RGB_Combine() operator values.
 
 #define YAIPS_COMBINE_GUI_OP_ADD       YAIPS_COMBINE_OP_ADD     // Addition
 #define YAIPS_COMBINE_GUI_OP_W_ADD     YAIPS_COMBINE_OP_W_ADD   // Weighted addition
@@ -199,7 +219,32 @@ static IqeB_PreferencesGroup MyPreferencesAdd( MY_WIN_PREF_NAME, MyPreferences, 
 #define YAIPS_COMBINE_GUI_OP_FADE      YAIPS_COMBINE_OP_FADE    // Fade between two images
 #define YAIPS_COMBINE_GUI_OP_FADEIMG1  YAIPS_COMBINE_OP_FADEIMG1 // Fade between two images by third image. First is overlaid.
 #define YAIPS_COMBINE_GUI_OP_FADEIMG2  YAIPS_COMBINE_OP_FADEIMG2 // Fade between two images by third image. Second is overlaid.
-#define YAIPS_COMBINE_GUI_BUTTON_MAX   (YAIPS_COMBINE_GUI_OP_FADEIMG2 + 1)  // Number of operator radio buttons
+
+// Next operators are based on operator values for YaIPS_RGB_CalcConst().
+
+#define YAIPS_CALC_CONST_GUI_OP_FIRST  (YAIPS_COMBINE_GUI_OP_FADEIMG2 + 1) // // First YaIPS_RGB_CalcConst() operator value
+
+#define YAIPS_CALC_CONST_GUI_OP_ADD       (YAIPS_CALC_CONST_GUI_OP_FIRST + YAIPS_CALC_CONST_OP_ADD)     // Addition
+#define YAIPS_CALC_CONST_GUI_OP_SUB_I_C   (YAIPS_CALC_CONST_GUI_OP_FIRST + YAIPS_CALC_CONST_OP_SUB_I_C) // Subtraction source image - constant
+#define YAIPS_CALC_CONST_GUI_OP_SUB_C_I   (YAIPS_CALC_CONST_GUI_OP_FIRST + YAIPS_CALC_CONST_OP_SUB_C_I) // Subtraction constant - source image
+#define YAIPS_CALC_CONST_GUI_OP_SUB_ABS   (YAIPS_CALC_CONST_GUI_OP_FIRST + YAIPS_CALC_CONST_OP_SUB_ABS) // Subtraction with absolute value
+#define YAIPS_CALC_CONST_GUI_OP_MULT      (YAIPS_CALC_CONST_GUI_OP_FIRST + YAIPS_CALC_CONST_OP_MULT)    // Multiplication
+#define YAIPS_CALC_CONST_GUI_OP_MIN       (YAIPS_CALC_CONST_GUI_OP_FIRST + YAIPS_CALC_CONST_OP_MIN)     // Minimum value
+#define YAIPS_CALC_CONST_GUI_OP_MAX       (YAIPS_CALC_CONST_GUI_OP_FIRST + YAIPS_CALC_CONST_OP_MAX)     // Maximum value
+#define YAIPS_CALC_CONST_GUI_OP_AVG       (YAIPS_CALC_CONST_GUI_OP_FIRST + YAIPS_CALC_CONST_OP_AVG)     // Average images
+#define YAIPS_CALC_CONST_GUI_OP_AND       (YAIPS_CALC_CONST_GUI_OP_FIRST + YAIPS_CALC_CONST_OP_AND)     // AND images
+#define YAIPS_CALC_CONST_GUI_OP_OR        (YAIPS_CALC_CONST_GUI_OP_FIRST + YAIPS_CALC_CONST_OP_OR)      // OR images
+#define YAIPS_CALC_CONST_GUI_OP_XOR       (YAIPS_CALC_CONST_GUI_OP_FIRST + YAIPS_CALC_CONST_OP_XOR)     // XOR images
+#define YAIPS_CALC_CONST_GUI_OP_CMP_EQ    (YAIPS_CALC_CONST_GUI_OP_FIRST + YAIPS_CALC_CONST_OP_CMP_EQ)  // Compare images ==
+#define YAIPS_CALC_CONST_GUI_OP_CMP_NE    (YAIPS_CALC_CONST_GUI_OP_FIRST + YAIPS_CALC_CONST_OP_CMP_NE)  // Compare images !=
+#define YAIPS_CALC_CONST_GUI_OP_CMP_GT    (YAIPS_CALC_CONST_GUI_OP_FIRST + YAIPS_CALC_CONST_OP_CMP_GT)  // Compare images >
+#define YAIPS_CALC_CONST_GUI_OP_CMP_LE    (YAIPS_CALC_CONST_GUI_OP_FIRST + YAIPS_CALC_CONST_OP_CMP_LE)  // Compare images <=
+#define YAIPS_CALC_CONST_GUI_OP_CMP_GE    (YAIPS_CALC_CONST_GUI_OP_FIRST + YAIPS_CALC_CONST_OP_CMP_GE)  // Compare images >=
+#define YAIPS_CALC_CONST_GUI_OP_CMP_LT    (YAIPS_CALC_CONST_GUI_OP_FIRST + YAIPS_CALC_CONST_OP_CMP_LT)  // Compare images <
+
+#define YAIPS_CALC_CONST_GUI_OP_LAST  YAIPS_CALC_CONST_GUI_OP_CMP_LT // Last YaIPS_RGB_CalcConst() operator value
+
+#define YAIPS_COMBINE_GUI_BUTTON_MAX   (YAIPS_CALC_CONST_GUI_OP_CMP_LT + 1)  // Number of operator radio buttons
 
 // ...
 
@@ -212,6 +257,10 @@ static int OperatorType_Last;                // Catch operator change
 
 static Fl_Radio_Round_Button *AlphaButtons[ YAIPS_COMBINE_ALPHA_BUTTON_MAX]; // Table of filter buttons
 static int AlphaType_Last;                // Catch operator change
+
+static IqeFl_Int_Input *pInt_CalcCoR, *pInt_CalcCoG, *pInt_CalcCoB, *pInt_CalcCoA;
+static Fl_Check_Button *pCheck_CalcCoCh1FA;
+static IqeFl_Check_Bit *pCheck_Bit_CalcAlpha;
 
 static Fl_Button *pBut_ShadReset, *pBut_ShadAverage;  // Buttons for shading
 static IqeFl_Int_Input *pInt_ShadAvgCount;            // Shading average count
@@ -334,6 +383,23 @@ static void MyParWinUpdate()
     IqeB_GUI_WidgetActivate( pMergeImg_Box, false); // Set item activated/inactive
     IqeB_GUI_WidgetActivate( pMergeImg_But, false); // Set item activated/inactive
   }
+
+  // Support for calculations with constants
+
+  int nColor, UseColor;
+
+  nColor = pImgIn1 == NULL ? 0 : pImgIn1->d();       // Number of colors for input image
+
+  UseColor = (pToolData->CalcCoFlags & YAIPS_CALC_CONST_FLAGS_COLOR) != 0;
+
+  IqeB_GUI_WidgetActivate( pInt_CalcCoR, nColor > 0 && UseColor);
+  IqeB_GUI_WidgetActivate( pInt_CalcCoG, nColor >= 3 && UseColor && pToolData->CalcCoCh1FA == false);
+  IqeB_GUI_WidgetActivate( pInt_CalcCoB, nColor >= 3 && UseColor && pToolData->CalcCoCh1FA == false);
+  IqeB_GUI_WidgetActivate( pCheck_CalcCoCh1FA, nColor >= 3 && UseColor);
+
+  IqeB_GUI_WidgetActivate( pInt_CalcCoA, nColor == 2 || nColor == 4);    // Has alpha ?
+  IqeB_GUI_WidgetActivate( pCheck_Bit_CalcAlpha, nColor == 2 || nColor == 4);    // Has alpha ?
+
 }
 
 /************************************************************************************
@@ -534,14 +600,33 @@ static void IqeB_GUI_Int_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
     if( WasClipped) {                      // Value was clipped
 
-      pThis->SetValue( Value);            // Update on GUI
+      pThis->SetValue( Value);             // Update on GUI
     }
   }
 
-  *pValue = Value;                        // update the variable
+  // ...
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
+  if( *pValue != Value) {                  // Value is different
+
+    *pValue = Value;                       // update the variable
+
+    pToolData->Input1_Change = 0;          // Force recalculation output
+    pToolData->Input2_Change = 0;          // Force recalculation output
+  }
+
+  // ...
+
+  if( pValue == &pToolData->CalcCoR) {     // Red constant change and 'one for all' checkbox is set
+
+    if( pToolData->CalcCoCh1FA != 0) {
+
+      pToolData->CalcCoG = pToolData->CalcCoR;        // Copy red to green and blue
+      pToolData->CalcCoB = pToolData->CalcCoR;
+      pInt_CalcCoG->SetValue( pToolData->CalcCoR);  // and update GUI
+      pInt_CalcCoB->SetValue( pToolData->CalcCoR);
+    }
+  }
+
 }
 
 /************************************************************************************
@@ -690,12 +775,48 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
     pThis  = (Fl_Check_Button *)w;
     *(int *)pValue = pThis->value();               // update the variable
+
+    if( pValue == &pToolData->CalcCoCh1FA) {       // Gain change 'one for all' checkbox
+
+      if( pToolData->CalcCoCh1FA != 0) {           // and checkbox changed to on
+
+        pToolData->CalcCoG = pToolData->CalcCoR;        // Copy red to green and blue
+        pToolData->CalcCoB = pToolData->CalcCoR;
+        pInt_CalcCoG->SetValue( pToolData->CalcCoR);    // and update GUI
+        pInt_CalcCoB->SetValue( pToolData->CalcCoR);
+      }
+    }
   }
 
-  pToolData->Input1_Change = 0;          // Force recalculation output
+  pToolData->Input1_Change = 0;                    // Force recalculation output
   pToolData->Input2_Change = 0;                    // Force recalculation output
 }
 
+/************************************************************************************
+ * IqeB_GUI_CBox_SetValue_Callback
+ */
+
+static void IqeB_GUI_Check_Bit_Callback( Fl_Widget *w, void *pValueArg)
+{
+  int *pValue;
+  IqeFl_Check_Bit *pThis;
+
+  pThis  = (IqeFl_Check_Bit *)w;
+  pValue = (int *)pValueArg;             // get pointer to associated variable
+
+  if( pThis == NULL ||                   // security test
+      pValue == NULL) {
+
+    return;
+  }
+
+  // Set value
+
+  pThis->GetValue();                     // Update the variable
+
+  pToolData->Input1_Change = 0;          // Force recalculation output
+  pToolData->Input2_Change = 0;          // Force recalculation output
+}
 
 /************************************************************************************
  * YaIPS_GUI_ParameterWin
@@ -744,7 +865,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   int yGroup;
   //x/char TempBuffer[ 256];
 
-  //x/Fl_Check_Button *pCheckTemp;
+  Fl_Check_Button *pCheckTemp;
   Fl_Box          *pTemp_Box;
   IqeFl_Int_Input    *pTemp_Int;
   IqeFl_Float_Input  *pFloatTemp;
@@ -754,6 +875,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   //x/Fl_Choice       *pTemp_Choice;
   Fl_Radio_Round_Button *pRadioButTemp;
   Fl_Hor_Nice_Slider    *pTemp_Slider;
+  IqeFl_Check_Bit *pTemp_Check_Bit;
   //x/char TempString[ 256];
 
   x1  = 4;
@@ -856,14 +978,14 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Group->end();
 
   //
-  // Group 'Combine'
+  // Group 'Combine images'
   //
 
   y = yGroup;
   x1  = 4;
 
-  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LangStringLookup( "&GUI_Combine_TabA1=Simple"));
-  pTemp_Group->tooltip( LangStringLookup( "&GUI_Combine_TabA1a=Simple calculations"));
+  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LangStringLookup( "&GUI_Combine_TabA1=Images"));
+  pTemp_Group->tooltip( LangStringLookup( "&GUI_Combine_TabA1a=Combine two images"));
 
     y += 8;
 
@@ -877,14 +999,14 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     x1 += xx2;
 
     pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabA3=1-2"));
-    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA3a=Subtraktion\n1. input - 2. input"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA3a=Subtraction\n1. input - 2. input"));
     pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_COMBINE_GUI_OP_SUB_1_2);
     OperatorButtons[ YAIPS_COMBINE_GUI_OP_SUB_1_2] = pRadioButTemp;
 
     x1 += xx2;
 
     pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabA4=2-1"));
-    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA4a=Subtraktion\n2. input - 1. input"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA4a=Subtraction\n2. input - 1. input"));
     pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_COMBINE_GUI_OP_SUB_2_1);
     OperatorButtons[ YAIPS_COMBINE_GUI_OP_SUB_2_1] = pRadioButTemp;
 
@@ -1025,6 +1147,274 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Combine_TabA20a=Offset\nAddition"));
     pTemp_Int->SetValue( pToolData->CombineOffset);
     pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CombineOffset);
+    pTemp_Int->SetModifyData( -256, 256, 16, 1);
+
+    x1 += xx2;
+
+    // Finish things for this group
+
+    pTemp_Group->end();
+
+  //
+  // Group 'Combine image with constant'
+  //
+
+  y = yGroup;
+  x1  = 4;
+
+  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LangStringLookup( "&GUI_Combine_TabD1=Const."));
+  pTemp_Group->tooltip( LangStringLookup( "&GUI_Combine_TabD1a="
+                                          "Combine image with constants.\n"
+                                          "NOTE: Only the first input image is required."));
+
+    y += 8;
+
+    xx2 = 48;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabA2=+"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA2a=Addition"));
+    pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_CALC_CONST_GUI_OP_ADD);
+    OperatorButtons[ YAIPS_CALC_CONST_GUI_OP_ADD] = pRadioButTemp;
+
+    x1 += xx2;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabD3=I-C"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabD3a=Subtraction\n1. input - constant"));
+    pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_CALC_CONST_GUI_OP_SUB_I_C);
+    OperatorButtons[ YAIPS_CALC_CONST_GUI_OP_SUB_I_C] = pRadioButTemp;
+
+    x1 += xx2;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabD4=C-I"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabD4a=Subtraction\nConstant - 1. input"));
+    pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_CALC_CONST_GUI_OP_SUB_C_I);
+    OperatorButtons[ YAIPS_CALC_CONST_GUI_OP_SUB_C_I] = pRadioButTemp;
+
+    x1 += xx2;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabA5=|-|"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA5a=Absolute value of subtraction"));
+    pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_CALC_CONST_GUI_OP_SUB_ABS);
+    OperatorButtons[ YAIPS_CALC_CONST_GUI_OP_SUB_ABS] = pRadioButTemp;
+
+    x1 += xx2;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabA6=*"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA6a=Multiplication"));
+    pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_CALC_CONST_GUI_OP_MULT);
+    OperatorButtons[ YAIPS_CALC_CONST_GUI_OP_MULT] = pRadioButTemp;
+
+    x1 += xx2;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabA7=Avg"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA7a=Average of the pixel values"));
+    pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_CALC_CONST_GUI_OP_AVG);
+    OperatorButtons[ YAIPS_CALC_CONST_GUI_OP_AVG] = pRadioButTemp;
+
+    x1 += xx2;
+
+    // Next line
+
+    x1  = 4;
+    y += yy + 4;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabA8=Min"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA8a=Lower value"));
+    pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_CALC_CONST_GUI_OP_MIN);
+    OperatorButtons[ YAIPS_CALC_CONST_GUI_OP_MIN] = pRadioButTemp;
+
+    x1 += xx2;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabA9=Max"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA9a=Greater value"));
+    pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_CALC_CONST_GUI_OP_MAX);
+    OperatorButtons[ YAIPS_CALC_CONST_GUI_OP_MAX] = pRadioButTemp;
+
+    x1 += xx2;
+
+    x1 += xx2;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabA10==="));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA10a=Image compare: equal"));
+    pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_CALC_CONST_GUI_OP_CMP_EQ);
+    OperatorButtons[ YAIPS_CALC_CONST_GUI_OP_CMP_EQ] = pRadioButTemp;
+
+    x1 += xx2;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabA11=>"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA11a=Image compare: larger"));
+    pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_CALC_CONST_GUI_OP_CMP_GT);
+    OperatorButtons[ YAIPS_CALC_CONST_GUI_OP_CMP_GT] = pRadioButTemp;
+
+    x1 += xx2;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabA12=<"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA12a=Image compare: smaller"));
+    pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_CALC_CONST_GUI_OP_CMP_LT);
+    OperatorButtons[ YAIPS_CALC_CONST_GUI_OP_CMP_LT] = pRadioButTemp;
+
+    x1 += xx2;
+
+    // Next line
+
+    x1  = 4;
+    y += yy + 4;
+
+    xx2 = 48;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabA13=AND"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA13a=Bitwise AND"));
+    pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_CALC_CONST_GUI_OP_AND);
+    OperatorButtons[ YAIPS_CALC_CONST_GUI_OP_AND] = pRadioButTemp;
+
+    x1 += xx2;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabA14=OR"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA14a=Bitwise OR"));
+    pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_CALC_CONST_GUI_OP_OR);
+    OperatorButtons[ YAIPS_CALC_CONST_GUI_OP_OR] = pRadioButTemp;
+
+    x1 += xx2;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabA15=XOR"));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA15a=Bitwise XOR"));
+    pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_CALC_CONST_GUI_OP_XOR);
+    OperatorButtons[ YAIPS_CALC_CONST_GUI_OP_XOR] = pRadioButTemp;
+
+    x1 += xx2;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabA16=!="));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA16a=Image compare: unequal"));
+    pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_CALC_CONST_GUI_OP_CMP_NE);
+    OperatorButtons[ YAIPS_CALC_CONST_GUI_OP_CMP_NE] = pRadioButTemp;
+
+    x1 += xx2;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabA17=<="));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA17a=Image compare: less than or equal"));
+    pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_CALC_CONST_GUI_OP_CMP_LE);
+    OperatorButtons[ YAIPS_CALC_CONST_GUI_OP_CMP_LE] = pRadioButTemp;
+
+    x1 += xx2;
+
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabA18=>="));
+    pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA18a=Image compare: greater than or equal"));
+    pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_CALC_CONST_GUI_OP_CMP_GE);
+    OperatorButtons[ YAIPS_CALC_CONST_GUI_OP_CMP_GE] = pRadioButTemp;
+
+    x1 += xx2;
+
+    // Next line
+
+    x1  = 4;
+    y += yy + 4;
+
+    xx2 = 72;
+
+    pTemp_Check_Bit = new IqeFl_Check_Bit( x1, y, xx2, yy,
+                                           &pToolData->CalcCoFlags, YAIPS_CALC_CONST_FLAGS_COLOR,
+                                           LANGDEF_COLOR);
+
+    pTemp_Check_Bit->tooltip( LangStringLookup( "&GUI_Color_TabD30a="
+                              "Use this for calculations\n"
+                              "of the color channels."));
+    pTemp_Check_Bit->callback( IqeB_GUI_Check_Bit_Callback, &pToolData->CalcCoFlags);
+
+    x1 += xx2;
+    x1 += 16;
+
+    xx2 = 40;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_R);
+    pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabD31a=Constant for the red color channel."));
+    pTemp_Int->SetValue( pToolData->CalcCoR);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CalcCoR);
+    pTemp_Int->SetModifyData( 0, 255, 16, 1);
+    pInt_CalcCoR = pTemp_Int;
+
+    x1 += xx2;
+    x1 += 16;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_G);
+    pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabD32a=Constant for the green color channel."));
+    pTemp_Int->SetValue( pToolData->CalcCoG);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CalcCoG);
+    pTemp_Int->SetModifyData( 0, 255, 16, 1);
+    pInt_CalcCoG = pTemp_Int;
+
+    x1 += xx2;
+    x1 += 16;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_B);
+    pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabD33a=Constant for the blue color channel."));
+    pTemp_Int->SetValue( pToolData->CalcCoB);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CalcCoB);
+    pTemp_Int->SetModifyData( 0, 255, 16, 1);
+    pInt_CalcCoB = pTemp_Int;
+
+    x1 += xx2;
+    x1 += 8;
+
+    xx2 = 32;
+
+    pCheckTemp = new Fl_Check_Button( x1, y, xx2, yy, LANGDEF_ACTIVE_SHORT);
+    pCheckTemp->tooltip( LANGDEF_COLOR_RED_FOR_ALL);
+    pCheckTemp->value( pToolData->CalcCoCh1FA);
+    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->CalcCoCh1FA);
+    pCheck_CalcCoCh1FA = pCheckTemp;
+
+    // Next line
+
+    x1  = 4;
+    y += yy + 4;
+
+    xx2 = 72;
+
+    pTemp_Check_Bit = new IqeFl_Check_Bit( x1, y, xx2, yy,
+                                           &pToolData->CalcCoFlags, YAIPS_CALC_CONST_FLAGS_ALPHA,
+                                           LANGDEF_COLOR_ALPHA);
+
+    pTemp_Check_Bit->tooltip( LangStringLookup( "&GUI_Color_TabD35a="
+                              "Use this for alpha channel calculations.\n"
+                              "NOTE: The input image must have an alpha channel."));
+    pTemp_Check_Bit->callback( IqeB_GUI_Check_Bit_Callback, &pToolData->CalcCoFlags);
+    pCheck_Bit_CalcAlpha = pTemp_Check_Bit;
+
+    x1 += xx2;
+    x1 += 16;
+
+    xx2 = 40;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_A);
+    pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabD36a=Constant for the alpha color channel."));
+    pTemp_Int->SetValue( pToolData->CalcCoA);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CalcCoA);
+    pTemp_Int->SetModifyData( 0, 255, 16, 1);
+    pInt_CalcCoA = pTemp_Int;
+
+    // Next line
+
+    x1  = 4;
+    y += yy + 4;
+
+    x1 += 72;
+    xx2 = 40;
+
+    pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Combine_TabA19=Gain"));
+    pFloatTemp->type( FL_FLOAT_INPUT);
+    pFloatTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA19a=Gain\nMultiplier"));
+    pFloatTemp->SetFormat( YAIPS_FILTER_FORMAT_MULT);
+    pFloatTemp->SetValue( pToolData->CalcCoResMult);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->CalcCoResMult);
+    pFloatTemp->SetModifyData( 0.1, 8.0, 0.5, 0.1);
+
+    x1 += xx2;
+    x1 += 48;
+
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Combine_TabA20=Offs."));
+    pTemp_Int->tooltip( LangStringLookup( "&GUI_Combine_TabA20a=Offset\nAddition"));
+    pTemp_Int->SetValue( pToolData->CalcCoOffset);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CalcCoOffset);
     pTemp_Int->SetModifyData( -256, 256, 16, 1);
 
     x1 += xx2;
@@ -1774,8 +2164,20 @@ static void IqeB_GUI_ToolsMyIdleAction( void *)
     Input1_Check = YaIPS_ToolWinInputCheck( MY_WIN_ID + iToolData, pToolData->Input1_WinIdNr,
                                            NULL, &pImgIn1, &Input1_ImageChanged);
 
-    Input2_Check = YaIPS_ToolWinInputCheck( MY_WIN_ID + iToolData, pToolData->Input2_WinIdNr,
-                                           NULL, &pImgIn2, &Input2_ImageChanged);
+    if( pToolData->CombineType >= YAIPS_CALC_CONST_GUI_OP_FIRST &&   // Calculations with constants
+        pToolData->CombineType <= YAIPS_CALC_CONST_GUI_OP_LAST) {
+
+      // Need only first image. Skip test of second image
+
+      Input2_Check = 0;
+      Input2_ImageChanged = pToolData->Input2_Change;
+      pImgIn2 = NULL;
+
+    } else {
+
+      Input2_Check = YaIPS_ToolWinInputCheck( MY_WIN_ID + iToolData, pToolData->Input2_WinIdNr,
+                                              NULL, &pImgIn2, &Input2_ImageChanged);
+    }
 
     if( pToolData->CombineType == YAIPS_COMBINE_GUI_OP_FADEIMG1 ||   // Need fade input image
         pToolData->CombineType == YAIPS_COMBINE_GUI_OP_FADEIMG2) {
@@ -1875,6 +2277,29 @@ static void IqeB_GUI_ToolsMyIdleAction( void *)
                                     pToolData->Alpha_Op, pToolData->Fade, 0, 0.0, pImgIn3);
         }
         break;
+
+      case YAIPS_CALC_CONST_GUI_OP_ADD:     // Addition
+      case YAIPS_CALC_CONST_GUI_OP_SUB_I_C: // Subtraction source image - constant
+      case YAIPS_CALC_CONST_GUI_OP_SUB_C_I: // Subtraction constant - source image
+      case YAIPS_CALC_CONST_GUI_OP_SUB_ABS: // Subtraction with absolute value
+      case YAIPS_CALC_CONST_GUI_OP_MULT:    // Multiplication
+      case YAIPS_CALC_CONST_GUI_OP_MIN:     // Minimum value
+      case YAIPS_CALC_CONST_GUI_OP_MAX:     // Maximum value
+      case YAIPS_CALC_CONST_GUI_OP_AVG:     // Average images
+      case YAIPS_CALC_CONST_GUI_OP_AND:     // AND images
+      case YAIPS_CALC_CONST_GUI_OP_OR:      // OR images
+      case YAIPS_CALC_CONST_GUI_OP_XOR:     // XOR images
+      case YAIPS_CALC_CONST_GUI_OP_CMP_EQ:  // Compare images ==
+      case YAIPS_CALC_CONST_GUI_OP_CMP_NE:  // Compare images !=
+      case YAIPS_CALC_CONST_GUI_OP_CMP_GT:  // Compare images >
+      case YAIPS_CALC_CONST_GUI_OP_CMP_LE:  // Compare images <=
+      case YAIPS_CALC_CONST_GUI_OP_CMP_GE:  // Compare images >=
+      case YAIPS_CALC_CONST_GUI_OP_CMP_LT:  // Compare images <
+
+        ierr = YaIPS_RGB_CalcConst( &pToolData->YaIPS_ImageDisp.pImage_Img, pImgIn1, pToolData->CombineType - YAIPS_CALC_CONST_GUI_OP_FIRST,
+                                    pToolData->CalcCoR, pToolData->CalcCoG, pToolData->CalcCoB, pToolData->CalcCoA,
+                                    pToolData->Alpha_Op, pToolData->CalcCoFlags, pToolData->CalcCoResMult, pToolData->CalcCoOffset);
+
       } // end switch
 
       // Has a valid output image
