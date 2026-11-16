@@ -2,7 +2,7 @@
 ; YaIPS_GUI_GeoTransform.cpp
 ;-------------------------------------------------------
 ;
-; 73 entries
+; 69 entries
 ;
 GUI_GeoTrans_Title                 "Geometry transformation"
 
@@ -78,11 +78,7 @@ GUI_GeoTrans_TabB3                 "Lens factor"
 
 GUI_GeoTrans_TabB3a                "Correction of lens distortion [units of 1.0E-10]"
 
-GUI_GeoTrans_TabB4                 "Rotation"
-
 GUI_GeoTrans_TabB4a                "Correction of rotational position [°]"
-
-GUI_GeoTrans_TabB5                 "Size"
 
 GUI_GeoTrans_TabB5a                "Size correction [%]"
 
@@ -106,11 +102,7 @@ GUI_GeoTrans_TabE3                 "Factor"
 
 GUI_GeoTrans_TabE3a                "Trapezoid distortion factor"
 
-GUI_GeoTrans_TabE4                 "Rotation"
-
 GUI_GeoTrans_TabE4a                "Correction of rotational position [°]"
-
-GUI_GeoTrans_TabE5                 "Size"
 
 GUI_GeoTrans_TabE5a                "Size correction [%]"
 

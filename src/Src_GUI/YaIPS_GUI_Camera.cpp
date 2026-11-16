@@ -47,7 +47,7 @@
 * forwards
 */
 
-static void ShutDown_close( Fl_Widget *w, void *pValueArg);
+static void close_cb( Fl_Widget *w, long int iToolData);
 
 /************************************************************************************
 * Global variables for camera management
@@ -1075,7 +1075,7 @@ static T_GUI_PreferenceEntry MyPreferences[] =
 static IqeB_PreferencesGroup MyPreferencesAdd( MY_WIN_PREF_NAME, MyPreferences, sizeof( MyPreferences) / sizeof( T_GUI_PreferenceEntry),
                                                (void **)(&pMyToolWin), &MyWinPosX, &MyWinPosY,
                                                MY_WIN_ID, MY_WIN_MAX, 0,
-                                               &IsOpen, IqeB_GUI_CameraWin, ShutDown_close,
+                                               &IsOpen, IqeB_GUI_CameraWin, (Fl_Callback *)close_cb,
                                                MY_WIN_GUI_LD_NAME, &YaIPS_ImageDisp);
 
 /************************************************************************************
@@ -1328,6 +1328,7 @@ static void MyWinUpdate( int DoEnable)
                                             Camera_DoGrab2 == false*/);   // and no grab active
 
   IqeB_GUI_WidgetActivate( pGUI_Parameter, DoEnable &&                 // Enable GUI elements
+                                           ! YaIPS_GUI_CamSettings_CheckIsOpen() && // Camera parameter dialog is not open
                                            YaIPS_Camera_n > 0 &&       // Have any camera
                                            Camera_DoGrab2 == false);   // and no grab active
 
@@ -1878,8 +1879,12 @@ static void IqeB_Camera_GUI_Callback( Fl_Widget *w, void *data)
  * pValueArg is a pointer to the widget. Set this pointer to NULL on deletion.
  */
 
-static void close_cb( Fl_Widget *w, void *pValueArg)
+static void close_cb( Fl_Widget *w, long int iToolData)
 {
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckClose( YaIPS_GUI_CamSettings_close_Par_cb, NULL, iToolData);   // Check to close specific associated parameter dialog
+#endif
+
   // Close any open camera
 
   YaIPS_Cameras_Close();
@@ -1898,20 +1903,6 @@ static void close_cb( Fl_Widget *w, void *pValueArg)
   Fl::remove_idle( IqeB_GUI_ToolsMyIdleAction);      // Redraw window during idle
 #endif
   Fl::remove_check( IqeB_GUI_ToolsMyIdleAction);     // Check small image size change
-}
-
-/************************************************************************************
- * ShutDown_close
- *
- * Called on shutdown of application
- *
- * pValueArg is a pointer to the widget. Set this pointer to NULL on deletion.
- */
-
-static void ShutDown_close( Fl_Widget *w, void *pValueArg)
-{
-
-  close_cb( w, pValueArg);
 }
 
 /************************************************************************************
@@ -2711,7 +2702,7 @@ void IqeB_GUI_CameraWin( int xLeft, int xRight, int yTop, int yBotton, int SubWi
 
   //x/IsNotNeeded/pMyToolWin->end();
   pMyToolWin->set_non_modal();
-  pMyToolWin->callback( close_cb, &pMyToolWin);
+  pMyToolWin->callback( close_cb, (long int)0);  // NOTE: Until now we have only one incarnation. Use index 0 for this.
   pMyToolWin->show();
 
   // Hack: Remove minimize and maximize buttons from the window caption

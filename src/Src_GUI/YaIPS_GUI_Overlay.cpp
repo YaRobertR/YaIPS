@@ -13,6 +13,12 @@
                    for last loaded background file.
                  * Reworked clipboard handling
                    Replaced patch './Images/YaIPS' with YaIPS_CLIPBOARD_PATH.
+  18.10.2026 RR: * Reworked behavior of tool window parameter dialogs.
+                   See functions IqeB_GUI_ToolParCheckOpen(),
+                   IqeB_GUI_ToolParCheckReset() and IqeB_GUI_ToolParCheckClose().
+  11.11.2026 RR: * MyWinUpdate()
+                   Parameter dialog button is disabled if the parameter dialog
+                   is open.
 
 *****************************************************************************
 */
@@ -2385,6 +2391,10 @@ static void close_Par_cb( Fl_Widget *w, void *pValueArg)
 {
   YaIPS_ToolData_info_t *pToolData = pToolDataParam;
 
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckReset();   // The one and only open tool window parameter dialog is closed
+#endif
+
   pToolData->MyParPosX = pMyParWin->x();
   pToolData->MyParPosY = pMyParWin->y();
 
@@ -4291,6 +4301,16 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 {
   int xPos, yPos;
   YaIPS_ToolData_info_t *pToolData;
+  Fl_Double_Window *pMyToolWin;
+
+  // Check parameter dialog is allowed to open
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  if( IqeB_GUI_ToolParCheckOpen( close_Par_cb, &pMyParWin, iToolData) < 0) {    // Allowed to open parameter dialog
+
+    return;
+  }
+#endif
 
   // Get pointer to tool data
 
@@ -4311,12 +4331,22 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     yPos = pToolData->MyParPosY;
   }
 
-  pMyParWin = new Fl_Window( xPos, yPos, 424, 432, LANGDEF_SETTINGS);
+  pMyParWin = new Fl_Window( xPos, yPos, 424, 432);
 
   if( pMyParWin == NULL) {  // security test
 
     return;
   }
+
+  // Set window title
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+
+   pMyToolWin = (Fl_Double_Window *)pToolData->pMyToolWin;  // Convert type of pointer
+
+   pMyParWin->copy_label( pMyToolWin->label());
+#else
+   pMyParWin->label( LANGDEF_SETTINGS);
+#endif
 
   //
   //  GUI things
@@ -4553,7 +4583,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   x1 += xx2;
   x1 += 1;
 
-  pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Overlay_4=Rotation"));
+  pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LANGDEF_ROTATION);
   pFloatTemp->type( FL_FLOAT_INPUT);
   pFloatTemp->tooltip( LangStringLookup( "&GUI_Overlay_4a="
                                          "Rotation angle of the overlay [Degree].\n"
@@ -5028,7 +5058,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     xx2 = 40;
 
-    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Overlay_TabC4=Size"));
+    pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_SIZE);
     pTemp_Int->align( FL_ALIGN_TOP_LEFT);     // align for label
     pTemp_Int->labelsize( 10);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Overlay_TabC4a="
@@ -5377,7 +5407,11 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   // finish up
 
   pMyParWin->end();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  pMyParWin->set_non_modal();
+#else
   pMyParWin->set_modal();
+#endif
   pMyParWin->callback( close_Par_cb, &pMyParWin);
   pMyParWin->show();
 
@@ -5629,6 +5663,10 @@ static void close_cb( Fl_Widget *w, long int iToolData)
 
     return;
   }
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckClose( close_Par_cb, &pMyParWin, iToolData);   // Check to close specific associated parameter dialog
+#endif
 
   // Release intermediate images
 
@@ -5920,6 +5958,9 @@ static void MyWinUpdate( int iToolData, int DoEnable)
                              DoEnable &&                                    // Enable GUI elements
                              pToolData->YaIPS_ImageDisp.pImage_Img != NULL); // and have an image loaded
 
+  IqeB_GUI_WidgetActivate( pMyToolWin->pGUI_Parameter,
+                            (pMyParWin == NULL || pToolDataParam->iToolData != iToolData) && // Parameter dialog is closed
+                             DoEnable);                             // Enable GUI elements
 
   // Check input image and visualize state
   YaIPS_ToolWinInputCheck( MY_WIN_ID + iToolData, pToolData->Input1_WinIdNr, pMyToolWin->pBox_Input1);

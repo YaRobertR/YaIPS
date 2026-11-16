@@ -4,10 +4,16 @@
 
   Geometric transformations of Images
 
- 04.06.2025 RR: First edition of this file.
- 05.10.2026 RR: * Finished coding for tools
-                  * Trapezoidal distortion
-                  * Warp, applies a perspective transformation to an image.
+  04.06.2025 RR: First edition of this file.
+  05.10.2026 RR: * Finished coding for tools
+                   * Trapezoidal distortion
+                   * Warp, applies a perspective transformation to an image.
+  18.10.2026 RR: * Reworked behavior of tool window parameter dialogs.
+                   See functions IqeB_GUI_ToolParCheckOpen(),
+                   IqeB_GUI_ToolParCheckReset() and IqeB_GUI_ToolParCheckClose().
+  11.11.2026 RR: * MyWinUpdate()
+                   Parameter dialog button is disabled if the parameter dialog
+                   is open.
 
 *****************************************************************************
 */
@@ -273,7 +279,7 @@ static IqeB_PreferencesGroup MyPreferencesAdd( MY_WIN_PREF_NAME, MyPreferences, 
 // ...
 
 static  Fl_Window *pMyParWin;
-static  YaIPS_ToolData_info_t *pToolData;     // NOTE: Is used by all parameter dialog functions
+static  YaIPS_ToolData_info_t *pToolDataParam;     // NOTE: Is used by all parameter dialog functions
 
 static IqeFl_Tabs      *pTab_Groups;         // Point to tabulator GUI element
 static Fl_Radio_Round_Button *GeoTranButtons[ YAIPS_GEOTRAN_BUTTON_MAX]; // Table of buttons
@@ -356,23 +362,23 @@ static void MyParWinUpdate()
 
   // Get last selected tab group
 
-  pToolData->Tab_Group_Selected = pTab_Groups->GetTabGroup();
+  pToolDataParam->Tab_Group_Selected = pTab_Groups->GetTabGroup();
 
   // Update button
   // Current selection must be set
 
   // Update all buttons
-  if( GeoTranType_Last != pToolData->GeoTranType) {                // Type has change
+  if( GeoTranType_Last != pToolDataParam->GeoTranType) {                // Type has change
 
-    GeoTranType_Last = pToolData->GeoTranType;
+    GeoTranType_Last = pToolDataParam->GeoTranType;
 
     for( i = 0; i < YAIPS_GEOTRAN_BUTTON_MAX; i++) {
 
       ValThis = GeoTranButtons[ i]->value();
 
-      if( ValThis != (i == pToolData->GeoTranType)) {             // Not what we expected
+      if( ValThis != (i == pToolDataParam->GeoTranType)) {             // Not what we expected
 
-        GeoTranButtons[ i]->value( i == pToolData->GeoTranType);   // Set value
+        GeoTranButtons[ i]->value( i == pToolDataParam->GeoTranType);   // Set value
         GeoTranButtons[ i]->redraw();
       }
     }
@@ -380,32 +386,32 @@ static void MyParWinUpdate()
 
   // Teach button color
 
-  TeachColor = pToolData->Teach_mode ? FL_GREEN : YAIPS_BCOL_BUTTON;
+  TeachColor = pToolDataParam->Teach_mode ? FL_GREEN : YAIPS_BCOL_BUTTON;
 
   // Trapezoid 2: Color teach toggle button
 
-  IqeB_GUI_WidgetActivate( pT2_TeachToggle, pToolData->GeoTranType == YAIPS_GEOTRAN_TRAPEZOID_2);// Only usable for brightness correction
+  IqeB_GUI_WidgetActivate( pT2_TeachToggle, pToolDataParam->GeoTranType == YAIPS_GEOTRAN_TRAPEZOID_2);// Only usable for brightness correction
 
-  IqeB_GUI_WidgetLabelColor( pT2_TeachToggle, pToolData->GeoTranType == YAIPS_GEOTRAN_TRAPEZOID_2 ? TeachColor : FL_GRAY);
+  IqeB_GUI_WidgetLabelColor( pT2_TeachToggle, pToolDataParam->GeoTranType == YAIPS_GEOTRAN_TRAPEZOID_2 ? TeachColor : FL_GRAY);
 
   // Cut out: Enable AOI pos/size input buttons
 
-  IqeB_GUI_WidgetActivate( pCO_AOI_X, pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT && pToolData->Teach_mode);
-  IqeB_GUI_WidgetActivate( pCO_AOI_Y, pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT && pToolData->Teach_mode);
-  IqeB_GUI_WidgetActivate( pCO_AOI_XX, pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT && pToolData->Teach_mode);
-  IqeB_GUI_WidgetActivate( pCO_AOI_YY, pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT && pToolData->Teach_mode);
+  IqeB_GUI_WidgetActivate( pCO_AOI_X, pToolDataParam->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT && pToolDataParam->Teach_mode);
+  IqeB_GUI_WidgetActivate( pCO_AOI_Y, pToolDataParam->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT && pToolDataParam->Teach_mode);
+  IqeB_GUI_WidgetActivate( pCO_AOI_XX, pToolDataParam->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT && pToolDataParam->Teach_mode);
+  IqeB_GUI_WidgetActivate( pCO_AOI_YY, pToolDataParam->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT && pToolDataParam->Teach_mode);
 
   // Cut out: Color teach toggle button
 
-  IqeB_GUI_WidgetActivate( pCO_TeachToggle, pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT);// Only usable for brightness correction
+  IqeB_GUI_WidgetActivate( pCO_TeachToggle, pToolDataParam->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT);// Only usable for brightness correction
 
-  IqeB_GUI_WidgetLabelColor( pCO_TeachToggle, pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT ? TeachColor : FL_GRAY);
+  IqeB_GUI_WidgetLabelColor( pCO_TeachToggle, pToolDataParam->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT ? TeachColor : FL_GRAY);
 
   // Check Scene input
 
   pImgIn1 = NULL;       // Will be set if there is a valid scene image
 
-  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolData->iToolData, pToolData->Input1_WinIdNr,
+  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolDataParam->iToolData, pToolDataParam->Input1_WinIdNr,
                            NULL, &pImgIn1, NULL);
 
   if( pImgIn1 != NULL) {
@@ -415,8 +421,8 @@ static void MyParWinUpdate()
 
     // Check points to fit in image
 
-    TrapezoidPointsCheck( pToolData->Trapezoid_SrcPoint, ImgXX, ImgYY);
-    TrapezoidPointsCheck( pToolData->Trapezoid_DstPoint, ImgXX, ImgYY);
+    TrapezoidPointsCheck( pToolDataParam->Trapezoid_SrcPoint, ImgXX, ImgYY);
+    TrapezoidPointsCheck( pToolDataParam->Trapezoid_DstPoint, ImgXX, ImgYY);
 
   } else {
 
@@ -432,7 +438,7 @@ static void MyParWinUpdate()
     YaIPS_XY_int    *pPoint;
 
     pInt_T2 = pInt_T2_SrcX[ i];
-    pPoint  = pToolData->Trapezoid_SrcPoint + i;
+    pPoint  = pToolDataParam->Trapezoid_SrcPoint + i;
 
     if( pInt_T2->Max != ImgXX - 1) {
       pInt_T2->ChangeMinMax( 0, ImgXX - 1);
@@ -451,7 +457,7 @@ static void MyParWinUpdate()
     }
 
     pInt_T2 = pInt_T2_DstX[ i];
-    pPoint  = pToolData->Trapezoid_DstPoint + i;
+    pPoint  = pToolDataParam->Trapezoid_DstPoint + i;
 
     if( pInt_T2->Max != ImgXX - 1) {
       pInt_T2->ChangeMinMax( 0, ImgXX - 1);
@@ -475,7 +481,7 @@ static void MyParWinUpdate()
   if( pCurrFocus != pCO_AOI_X  && pCurrFocus != pCO_AOI_Y &&               // Input element has NO keyboard focus ?
       pCurrFocus != pCO_AOI_XX && pCurrFocus != pCO_AOI_YY) {
 
-    if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolData->CutOut_AOI, ImgXX, ImgYY,
+    if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolDataParam->CutOut_AOI, ImgXX, ImgYY,
                                           pCO_AOI_X, pCO_AOI_Y, pCO_AOI_XX, pCO_AOI_YY) > 0) {
 
       RedrawOnExit = true;                                 // Redraw on exit
@@ -486,13 +492,13 @@ static void MyParWinUpdate()
 
   if( RedrawOnExit) {                                           // Redraw on exit
 
-    if( pToolData->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT) {  // AOI is displayed on image
+    if( pToolDataParam->GeoTranType == YAIPS_GEOTRAN_PAR_CUT_OUT) {  // AOI is displayed on image
 
-      if( pToolData->YaIPS_ImageDisp.pImage_Box != NULL) {
-        pToolData->YaIPS_ImageDisp.pImage_Box->redraw();
+      if( pToolDataParam->YaIPS_ImageDisp.pImage_Box != NULL) {
+        pToolDataParam->YaIPS_ImageDisp.pImage_Box->redraw();
       }
 
-      if( YaIPS_BigImageDisp.ImageSourceID == MY_WIN_ID + pToolData->iToolData) {   // and display this on the big image
+      if( YaIPS_BigImageDisp.ImageSourceID == MY_WIN_ID + pToolDataParam->iToolData) {   // and display this on the big image
 
         if( YaIPS_BigImageDisp.pImage_Box != NULL) {
           YaIPS_BigImageDisp.pImage_Box->redraw();
@@ -551,8 +557,12 @@ static void IqeB_GUI_ParIdleAction( void *)
 static void close_Par_cb( Fl_Widget *w, void *pValueArg)
 {
 
-  pToolData->MyParPosX = pMyParWin->x();
-  pToolData->MyParPosY = pMyParWin->y();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckReset();   // The one and only open tool window parameter dialog is closed
+#endif
+
+  pToolDataParam->MyParPosX = pMyParWin->x();
+  pToolDataParam->MyParPosY = pMyParWin->y();
 
   #ifdef YAIPS_IDLE_CALLBACK_USE  // Use the idle callbacks in tool windows
   Fl::remove_idle( IqeB_GUI_ParIdleAction);      // Redraw window during idle
@@ -576,14 +586,14 @@ static void YaIPS_GeoTran_Callback( Fl_Widget *w, void *data)
 
   Value = (long long)(data);                       // get value to set
 
-  if( pToolData->GeoTranType == Value) {            // Value will not change
+  if( pToolDataParam->GeoTranType == Value) {            // Value will not change
 
     return;                                        // Exit, nothing to do
   }
 
-  pToolData->GeoTranType = Value;                   // Set new value
+  pToolDataParam->GeoTranType = Value;                   // Set new value
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -610,7 +620,7 @@ static void IqeB_GUI_But_Color_Callback( Fl_Widget *w, void *pValueArg)
 
     // Update display
 
-    pToolData->Input1_Change = 0;                    // Force recalculation output
+    pToolDataParam->Input1_Change = 0;                    // Force recalculation output
   }
 }
 
@@ -658,7 +668,7 @@ static void IqeB_GUI_Float_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   *(float *)pValue = Value;
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -707,7 +717,7 @@ static void IqeB_GUI_Int_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   *pValue = Value;         // update the variable
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -730,12 +740,12 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   if( w == pCO_TeachToggle || w == pT2_TeachToggle) {   // Toggle Teach / Inspection button
 
-    pToolData->Teach_mode = ! pToolData->Teach_mode;
+    pToolDataParam->Teach_mode = ! pToolDataParam->Teach_mode;
 
-  } else if( pValueArg == pToolData->Trapezoid_SrcPoint ||      // Reset warp source points
-             pValueArg == pToolData->Trapezoid_SrcPoint + 1 ||
-             pValueArg == pToolData->Trapezoid_DstPoint ||      // Reset warp destination points
-             pValueArg == pToolData->Trapezoid_DstPoint + 1) {
+  } else if( pValueArg == pToolDataParam->Trapezoid_SrcPoint ||      // Reset warp source points
+             pValueArg == pToolDataParam->Trapezoid_SrcPoint + 1 ||
+             pValueArg == pToolDataParam->Trapezoid_DstPoint ||      // Reset warp destination points
+             pValueArg == pToolDataParam->Trapezoid_DstPoint + 1) {
 
     int ImgXX, ImgYY, DeltaX, DeltaY;
     Fl_RGB_Image *pImgIn1;
@@ -744,7 +754,7 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
     pImgIn1 = NULL;       // Will be set if there is a valid scene image
 
-    YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolData->iToolData, pToolData->Input1_WinIdNr,
+    YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolDataParam->iToolData, pToolDataParam->Input1_WinIdNr,
                              NULL, &pImgIn1, NULL);
 
     if( pImgIn1 != NULL) {                  // Have an input image
@@ -752,8 +762,8 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
       ImgXX = pImgIn1->w();
       ImgYY = pImgIn1->h();
 
-      if( pValueArg == pToolData->Trapezoid_SrcPoint ||      // Reset warp source points
-          pValueArg == pToolData->Trapezoid_DstPoint) {
+      if( pValueArg == pToolDataParam->Trapezoid_SrcPoint ||      // Reset warp source points
+          pValueArg == pToolDataParam->Trapezoid_DstPoint) {
 
         DeltaX = 0;
         DeltaY = 0;
@@ -765,15 +775,15 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
       }
 
 
-      if( pValueArg == pToolData->Trapezoid_SrcPoint ||   // Reset warp source points
-          pValueArg == pToolData->Trapezoid_SrcPoint + 1) {
+      if( pValueArg == pToolDataParam->Trapezoid_SrcPoint ||   // Reset warp source points
+          pValueArg == pToolDataParam->Trapezoid_SrcPoint + 1) {
 
 
-        TrapezoidPointsReset( pToolData->Trapezoid_SrcPoint, ImgXX, ImgYY, DeltaX, DeltaY);
+        TrapezoidPointsReset( pToolDataParam->Trapezoid_SrcPoint, ImgXX, ImgYY, DeltaX, DeltaY);
 
       } else {                                            // Reset warp destination points
 
-        TrapezoidPointsReset( pToolData->Trapezoid_DstPoint, ImgXX, ImgYY, DeltaX, DeltaY);
+        TrapezoidPointsReset( pToolDataParam->Trapezoid_DstPoint, ImgXX, ImgYY, DeltaX, DeltaY);
       }
     }
 
@@ -785,7 +795,7 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     *pValue = pThis->value();                // update the variable
   }
 
-  pToolData->Input1_Change = 0;          // Force recalculation output
+  pToolDataParam->Input1_Change = 0;          // Force recalculation output
 }
 
 /************************************************************************************
@@ -810,7 +820,7 @@ static void IqeB_GUI_CBox_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   *pValue = pThis->value();              // update the variable
 
-  pToolData->Input1_Change = 0;          // Force recalculation output
+  pToolDataParam->Input1_Change = 0;          // Force recalculation output
 }
 
 /************************************************************************************
@@ -823,10 +833,20 @@ static void IqeB_GUI_CBox_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 {
   int xPos, yPos;
+  Fl_Double_Window *pMyToolWin;
+
+  // Check parameter dialog is allowed to open
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  if( IqeB_GUI_ToolParCheckOpen( close_Par_cb, &pMyParWin, iToolData) < 0) {    // Allowed to open parameter dialog
+
+    return;
+  }
+#endif
 
   // Get pointer to tool data
 
-  pToolData = YaIPS_ToolData_info + iToolData;             // Point to info data
+  pToolDataParam = YaIPS_ToolData_info + iToolData;             // Point to info data
 
   //
   // creation of window on first call
@@ -835,18 +855,28 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   xPos = xLeft;
   yPos = yTop;
 
-  if( pToolData->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolData->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
+  if( pToolDataParam->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolDataParam->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
 
-    xPos = pToolData->MyParPosX;
-    yPos = pToolData->MyParPosY;
+    xPos = pToolDataParam->MyParPosX;
+    yPos = pToolDataParam->MyParPosY;
   }
 
-  pMyParWin = new Fl_Window( xPos, yPos, 297 /*IQE_GUI_TOOLS_STD_WITDH*/, 166 /* 162 */, LANGDEF_SETTINGS);
+  pMyParWin = new Fl_Window( xPos, yPos, 297 /*IQE_GUI_TOOLS_STD_WITDH*/, 166 /* 162 */);
 
   if( pMyParWin == NULL) {  // security test
 
     return;
   }
+
+  // Set window title
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+
+   pMyToolWin = (Fl_Double_Window *)pToolDataParam->pMyToolWin;  // Convert type of pointer
+
+   pMyParWin->copy_label( pMyToolWin->label());
+#else
+   pMyParWin->label( LANGDEF_SETTINGS);
+#endif
 
   GeoTranType_Last = -1;         // Reset last filter type
 
@@ -910,8 +940,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                            "Rotating an image or performing other transformations\n"
                            "creates areas outside the image. These are colored\n"
                            "accordingly."));
-    pTemp_Button->color( pToolData->Base_OutsiteColor);
-    pTemp_Button->callback( IqeB_GUI_But_Color_Callback, &pToolData->Base_OutsiteColor);
+    pTemp_Button->color( pToolDataParam->Base_OutsiteColor);
+    pTemp_Button->callback( IqeB_GUI_But_Color_Callback, &pToolDataParam->Base_OutsiteColor);
 
     // Next line
 
@@ -925,8 +955,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                          "Hide outside area.\n"
                          "If enabled, the area outside the image is hidden.\n"
                          "Otherwise, the area outside is visible."));
-    pCheckTemp->value( pToolData->Base_OutsiteBlend);
-    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolData->Base_OutsiteBlend);
+    pCheckTemp->value( pToolDataParam->Base_OutsiteBlend);
+    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolDataParam->Base_OutsiteBlend);
 
     // Finish things for this group
 
@@ -962,8 +992,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabA3a=Power of 2"));
-    pTemp_Int->SetValue( pToolData->Resize2SizeShift);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Resize2SizeShift);
+    pTemp_Int->SetValue( pToolDataParam->Resize2SizeShift);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Resize2SizeShift);
     pTemp_Int->SetModifyData( -8, 8, 1);
 
     // Next line
@@ -1028,8 +1058,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy);
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_GeoTrans_TabA10a=Rotation angle [°]"));
-    pFloatTemp->SetValue( pToolData->Base_Rotate);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->Base_Rotate);
+    pFloatTemp->SetValue( pToolDataParam->Base_Rotate);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->Base_Rotate);
     pFloatTemp->SetModifyData( -360.0, 360.0, 5.0, 0.5, true);
 
     x1 += xx2;
@@ -1050,8 +1080,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy);
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_GeoTrans_TabA12a=Size [%]"));
-    pFloatTemp->SetValue( pToolData->Base_ScalePer);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->Base_ScalePer);
+    pFloatTemp->SetValue( pToolDataParam->Base_ScalePer);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->Base_ScalePer);
     pFloatTemp->SetModifyData( 1.0, 1000.0, 10.0, 1.0);
 
     // Finish things for this group
@@ -1089,8 +1119,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_GeoTrans_TabB3=Lens factor"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB3a=Correction of lens distortion [units of 1.0E-10]"));
-    pTemp_Int->SetValue(  pToolData->Lens_CorrFac);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Lens_CorrFac);
+    pTemp_Int->SetValue(  pToolDataParam->Lens_CorrFac);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Lens_CorrFac);
     pTemp_Int->SetModifyData( -50000, 50000, 100, 10);
 
     // Next line
@@ -1100,20 +1130,20 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     x1 += 100;
 
-    pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_GeoTrans_TabB4=Rotation"));
+    pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LANGDEF_ROTATION);
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB4a=Correction of rotational position [°]"));
-    pFloatTemp->SetValue( pToolData->Lens_Rotation);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->Lens_Rotation);
+    pFloatTemp->SetValue( pToolDataParam->Lens_Rotation);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->Lens_Rotation);
     pFloatTemp->SetModifyData( -180.0, 180.0, 1.0, 0.1, true);
 
     x1 += 136;
 
-    pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_GeoTrans_TabB5=Size"));
+    pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LANGDEF_SIZE);
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB5a=Size correction [%]"));
-    pFloatTemp->SetValue( pToolData->Lens_SizeCorrPer);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->Lens_SizeCorrPer);
+    pFloatTemp->SetValue( pToolDataParam->Lens_SizeCorrPer);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->Lens_SizeCorrPer);
     pFloatTemp->SetModifyData( -50.0, 20.0, 0.5, 0.1);
 
     // Next line
@@ -1125,16 +1155,16 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_GeoTrans_TabB6=Offset X"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
-    pTemp_Int->SetValue( pToolData->Lens_xDelta);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Lens_xDelta);
+    pTemp_Int->SetValue( pToolDataParam->Lens_xDelta);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Lens_xDelta);
     pTemp_Int->SetModifyData( -500, 500, 10, 1);
 
     x1 += 136;
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_GeoTrans_TabB7=Offset Y"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB7a=Offset correction [pixels]"));
-    pTemp_Int->SetValue( pToolData->Lens_yDelta);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Lens_yDelta);
+    pTemp_Int->SetValue( pToolDataParam->Lens_yDelta);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Lens_yDelta);
     pTemp_Int->SetModifyData( -500, 500, 10, 1);
 
     // Finish things for this group
@@ -1173,8 +1203,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->SetFormat( "%.3f");
     pFloatTemp->tooltip( LangStringLookup( "&GUI_GeoTrans_TabE3a=Trapezoid distortion factor"));
-    pFloatTemp->SetValue( pToolData->Trapezoid_Fac);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->Trapezoid_Fac);
+    pFloatTemp->SetValue( pToolDataParam->Trapezoid_Fac);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->Trapezoid_Fac);
     pFloatTemp->SetModifyData( -3.0, 3.0, 0.1, 0.01);
 
     // Next line
@@ -1184,20 +1214,20 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     x1 += 100;
 
-    pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_GeoTrans_TabE4=Rotation"));
+    pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LANGDEF_ROTATION);
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_GeoTrans_TabE4a=Correction of rotational position [°]"));
-    pFloatTemp->SetValue( pToolData->Trapezoid_Rotation);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->Trapezoid_Rotation);
+    pFloatTemp->SetValue( pToolDataParam->Trapezoid_Rotation);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->Trapezoid_Rotation);
     pFloatTemp->SetModifyData( -180.0, 180.0, 15.0, 1.0, true);
 
     x1 += 136;
 
-    pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_GeoTrans_TabE5=Size"));
+    pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LANGDEF_SIZE);
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_GeoTrans_TabE5a=Size correction [%]"));
-    pFloatTemp->SetValue( pToolData->Trapezoid_SizeCorrPer);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->Trapezoid_SizeCorrPer);
+    pFloatTemp->SetValue( pToolDataParam->Trapezoid_SizeCorrPer);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->Trapezoid_SizeCorrPer);
     pFloatTemp->SetModifyData( -10.0, 5.0, 1.0, 0.1);
 
     // Next line
@@ -1209,16 +1239,16 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_GeoTrans_TabB6=Offset X"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
-    pTemp_Int->SetValue( pToolData->Trapezoid_xDelta);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_xDelta);
+    pTemp_Int->SetValue( pToolDataParam->Trapezoid_xDelta);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Trapezoid_xDelta);
     pTemp_Int->SetModifyData( -500, 500, 10, 1);
 
     x1 += 136;
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_GeoTrans_TabB7=Offset Y"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB7a=Offset correction [pixels]"));
-    pTemp_Int->SetValue( pToolData->Trapezoid_yDelta);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_yDelta);
+    pTemp_Int->SetValue( pToolDataParam->Trapezoid_yDelta);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Trapezoid_yDelta);
     pTemp_Int->SetModifyData( -500, 500, 10, 1);
 
     // Finish things for this group
@@ -1254,7 +1284,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     x1 = pMyParWin->w() - 7 - yy;
 
     pTemp_Button = new Fl_Button( x1, y, yy, yy, "@-2pencil");
-    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->Teach_mode);
+    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->Teach_mode);
     pTemp_Button->tooltip(  LangStringLookup( "&GUI_GeoTrans_TabF3a="
                                               "Toggle edit mode.\n"
                                               "On: place points on input image.\n"
@@ -1280,8 +1310,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "1");
     //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
-    pTemp_Int->SetValue( pToolData->Trapezoid_SrcPoint[0].x);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_SrcPoint[0].x);
+    pTemp_Int->SetValue( pToolDataParam->Trapezoid_SrcPoint[0].x);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Trapezoid_SrcPoint[0].x);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pInt_T2_SrcX[ 0] = pTemp_Int;
 
@@ -1289,8 +1319,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "/");
     //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
-    pTemp_Int->SetValue( pToolData->Trapezoid_SrcPoint[0].y);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_SrcPoint[0].y);
+    pTemp_Int->SetValue( pToolDataParam->Trapezoid_SrcPoint[0].y);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Trapezoid_SrcPoint[0].y);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pInt_T2_SrcY[ 0] = pTemp_Int;
 
@@ -1298,8 +1328,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "2");
     //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
-    pTemp_Int->SetValue( pToolData->Trapezoid_SrcPoint[1].x);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_SrcPoint[1].x);
+    pTemp_Int->SetValue( pToolDataParam->Trapezoid_SrcPoint[1].x);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Trapezoid_SrcPoint[1].x);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pInt_T2_SrcX[ 1] = pTemp_Int;
 
@@ -1307,8 +1337,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "/");
     //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
-    pTemp_Int->SetValue( pToolData->Trapezoid_SrcPoint[1].y);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_SrcPoint[1].y);
+    pTemp_Int->SetValue( pToolDataParam->Trapezoid_SrcPoint[1].y);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Trapezoid_SrcPoint[1].y);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pInt_T2_SrcY[ 1] = pTemp_Int;
 
@@ -1317,13 +1347,13 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     xx2 = yy - 2;
 
     pTemp_Button = new Fl_Button( x1, y + (yy - xx2) / 2, xx2, xx2, "@-1squaref1");
-    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, pToolData->Trapezoid_SrcPoint);
+    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, pToolDataParam->Trapezoid_SrcPoint);
     pTemp_Button->tooltip( LangStringLookup( "&GUI_GeoTrans_TabF5a=Reset points"));
 
     x1 += xx2 + 2;
 
     pTemp_Button = new Fl_Button( x1, y + (yy - xx2) / 2, xx2, xx2, "@-1squaref2");
-    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, pToolData->Trapezoid_SrcPoint + 1);
+    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, pToolDataParam->Trapezoid_SrcPoint + 1);
     pTemp_Button->tooltip( LangStringLookup( "&GUI_GeoTrans_TabF5a=Reset points"));
 
     // Next line
@@ -1337,8 +1367,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "4");
     //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
-    pTemp_Int->SetValue( pToolData->Trapezoid_SrcPoint[3].x);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_SrcPoint[3].x);
+    pTemp_Int->SetValue( pToolDataParam->Trapezoid_SrcPoint[3].x);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Trapezoid_SrcPoint[3].x);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pInt_T2_SrcX[ 3] = pTemp_Int;
 
@@ -1346,8 +1376,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "/");
     //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
-    pTemp_Int->SetValue( pToolData->Trapezoid_SrcPoint[3].y);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_SrcPoint[3].y);
+    pTemp_Int->SetValue( pToolDataParam->Trapezoid_SrcPoint[3].y);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Trapezoid_SrcPoint[3].y);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pInt_T2_SrcY[ 3] = pTemp_Int;
 
@@ -1355,8 +1385,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "3");
     //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
-    pTemp_Int->SetValue( pToolData->Trapezoid_SrcPoint[2].x);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_SrcPoint[2].x);
+    pTemp_Int->SetValue( pToolDataParam->Trapezoid_SrcPoint[2].x);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Trapezoid_SrcPoint[2].x);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pInt_T2_SrcX[ 2] = pTemp_Int;
 
@@ -1364,8 +1394,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "/");
     //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
-    pTemp_Int->SetValue( pToolData->Trapezoid_SrcPoint[2].y);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_SrcPoint[2].y);
+    pTemp_Int->SetValue( pToolDataParam->Trapezoid_SrcPoint[2].y);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Trapezoid_SrcPoint[2].y);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pInt_T2_SrcY[ 2] = pTemp_Int;
 
@@ -1388,8 +1418,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "1");
     //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
-    pTemp_Int->SetValue( pToolData->Trapezoid_DstPoint[0].x);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_DstPoint[0].x);
+    pTemp_Int->SetValue( pToolDataParam->Trapezoid_DstPoint[0].x);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Trapezoid_DstPoint[0].x);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pInt_T2_DstX[ 0] = pTemp_Int;
 
@@ -1397,8 +1427,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "/");
     //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
-    pTemp_Int->SetValue( pToolData->Trapezoid_DstPoint[0].y);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_DstPoint[0].y);
+    pTemp_Int->SetValue( pToolDataParam->Trapezoid_DstPoint[0].y);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Trapezoid_DstPoint[0].y);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pInt_T2_DstY[ 0] = pTemp_Int;
 
@@ -1406,8 +1436,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "2");
     //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
-    pTemp_Int->SetValue( pToolData->Trapezoid_DstPoint[1].x);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_DstPoint[1].x);
+    pTemp_Int->SetValue( pToolDataParam->Trapezoid_DstPoint[1].x);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Trapezoid_DstPoint[1].x);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pInt_T2_DstX[ 1] = pTemp_Int;
 
@@ -1415,8 +1445,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "/");
     //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
-    pTemp_Int->SetValue( pToolData->Trapezoid_DstPoint[1].y);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_DstPoint[1].y);
+    pTemp_Int->SetValue( pToolDataParam->Trapezoid_DstPoint[1].y);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Trapezoid_DstPoint[1].y);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pInt_T2_DstY[ 1] = pTemp_Int;
 
@@ -1425,13 +1455,13 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     xx2 = yy - 2;
 
     pTemp_Button = new Fl_Button( x1, y + (yy - xx2) / 2, xx2, xx2, "@-1squaref1");
-    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, pToolData->Trapezoid_DstPoint);
+    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, pToolDataParam->Trapezoid_DstPoint);
     pTemp_Button->tooltip( LangStringLookup( "&GUI_GeoTrans_TabF5a=Reset points"));
 
     x1 += xx2 + 2;
 
     pTemp_Button = new Fl_Button( x1, y + (yy - xx2) / 2, xx2, xx2, "@-1squaref2");
-    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, pToolData->Trapezoid_DstPoint + 1);
+    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, pToolDataParam->Trapezoid_DstPoint + 1);
     pTemp_Button->tooltip( LangStringLookup( "&GUI_GeoTrans_TabF5a=Reset points"));
 
     // Next line
@@ -1445,8 +1475,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "4");
     //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
-    pTemp_Int->SetValue( pToolData->Trapezoid_DstPoint[3].x);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_DstPoint[3].x);
+    pTemp_Int->SetValue( pToolDataParam->Trapezoid_DstPoint[3].x);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Trapezoid_DstPoint[3].x);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pInt_T2_DstX[ 3] = pTemp_Int;
 
@@ -1454,8 +1484,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "/");
     //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
-    pTemp_Int->SetValue( pToolData->Trapezoid_DstPoint[3].y);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_DstPoint[3].y);
+    pTemp_Int->SetValue( pToolDataParam->Trapezoid_DstPoint[3].y);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Trapezoid_DstPoint[3].y);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pInt_T2_DstY[ 3] = pTemp_Int;
 
@@ -1463,8 +1493,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "3");
     //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
-    pTemp_Int->SetValue( pToolData->Trapezoid_DstPoint[2].x);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_DstPoint[2].x);
+    pTemp_Int->SetValue( pToolDataParam->Trapezoid_DstPoint[2].x);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Trapezoid_DstPoint[2].x);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pInt_T2_DstX[ 2] = pTemp_Int;
 
@@ -1472,8 +1502,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "/");
     //pTemp_Int->tooltip( LangStringLookup( "&GUI_GeoTrans_TabB6a=Offset correction [pixels]"));
-    pTemp_Int->SetValue( pToolData->Trapezoid_DstPoint[2].y);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Trapezoid_DstPoint[2].y);
+    pTemp_Int->SetValue( pToolDataParam->Trapezoid_DstPoint[2].y);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Trapezoid_DstPoint[2].y);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pInt_T2_DstY[ 2] = pTemp_Int;
 
@@ -1514,8 +1544,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LANGDEF_ROTATION);
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_GeoTrans_TabC3a=Rotation [°]"));
-    pFloatTemp->SetValue( pToolData->ParPro_Rotation);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->ParPro_Rotation);
+    pFloatTemp->SetValue( pToolDataParam->ParPro_Rotation);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->ParPro_Rotation);
     pFloatTemp->SetModifyData( -180.0, 180.0, 5.0, 0.5, true);
 
     // Next line
@@ -1529,8 +1559,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_GeoTrans_TabC4a=Enlargement X"));
     pFloatTemp->SetFormat( (char *)"%.2f");
-    pFloatTemp->SetValue( pToolData->ParPro_xscal);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->ParPro_xscal);
+    pFloatTemp->SetValue( pToolDataParam->ParPro_xscal);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->ParPro_xscal);
     pFloatTemp->SetModifyData( 0.1, 10.0, 0.1, 0.01);
 
     x1 += xx2;
@@ -1541,8 +1571,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_GeoTrans_TabC5a=Enlargement Y"));
     pFloatTemp->SetFormat( (char *)"%.2f");
-    pFloatTemp->SetValue( pToolData->ParPro_yscal);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->ParPro_yscal);
+    pFloatTemp->SetValue( pToolDataParam->ParPro_yscal);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->ParPro_yscal);
     pFloatTemp->SetModifyData( 0.1, 10.0, 0.1, 0.01);
 
     // Next line
@@ -1555,8 +1585,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_GeoTrans_TabC6=Offset X"));
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_GeoTrans_TabC6a=Offset X"));
-    pFloatTemp->SetValue( pToolData->ParPro_xshift);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->ParPro_xshift);
+    pFloatTemp->SetValue( pToolDataParam->ParPro_xshift);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->ParPro_xshift);
     pFloatTemp->SetModifyData( -10000.0, 10000.0, 10.0, 1.0);
 
     x1 += xx2;
@@ -1566,8 +1596,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LANGDEF_Y);
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_GeoTrans_TabC7a=Offset Y"));
-    pFloatTemp->SetValue( pToolData->ParPro_yshift);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->ParPro_yshift);
+    pFloatTemp->SetValue( pToolDataParam->ParPro_yshift);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->ParPro_yshift);
     pFloatTemp->SetModifyData( -10000.0, 10000.0, 10.0, 1.0);
 
     x1 += xx2;
@@ -1609,8 +1639,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_AOI_LEFT);
     pTemp_Int->tooltip( LANGDEF_AOI_LEFT_TOOLTIP);
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->CutOut_AOI.XPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CutOut_AOI.XPos);
+    pTemp_Int->SetValue( pToolDataParam->CutOut_AOI.XPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->CutOut_AOI.XPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pCO_AOI_X = pTemp_Int;
 
@@ -1620,8 +1650,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_AOI_TOP);
     pTemp_Int->tooltip( LANGDEF_AOI_TOP_TOOLTIP);
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->CutOut_AOI.YPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CutOut_AOI.YPos);
+    pTemp_Int->SetValue( pToolDataParam->CutOut_AOI.YPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->CutOut_AOI.YPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pCO_AOI_Y = pTemp_Int;
 
@@ -1629,7 +1659,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     x1 += 8;
 
     pTemp_Button = new Fl_Button( x1, y, 28, 28, "@+1pencil");
-    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->Teach_mode);
+    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->Teach_mode);
     pTemp_Button->tooltip( LANGDEF_AOI_TEACH_TOOLTIP);
     pTemp_Button->labelcolor( YAIPS_BCOL_BUTTON);
     pTemp_Button->shortcut( FL_COMMAND+'t');       // Short cut key
@@ -1647,8 +1677,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_AOI_WIDTH);
     pTemp_Int->tooltip( LANGDEF_AOI_WIDTH_TOOLTIP);
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->CutOut_AOI.XSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CutOut_AOI.XSize);
+    pTemp_Int->SetValue( pToolDataParam->CutOut_AOI.XSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->CutOut_AOI.XSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pCO_AOI_XX = pTemp_Int;
 
@@ -1658,8 +1688,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_AOI_HEIGHT);
     pTemp_Int->tooltip( LANGDEF_AOI_HEIGHT_TOOLTIP);
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->CutOut_AOI.YSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CutOut_AOI.YSize);
+    pTemp_Int->SetValue( pToolDataParam->CutOut_AOI.YSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->CutOut_AOI.YSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pCO_AOI_YY = pTemp_Int;
 
@@ -1671,12 +1701,16 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
   pTemp_Tabs->end();
 
-  pTemp_Tabs->SetTabGroup( pToolData->Tab_Group_Selected);    // Select tab group from last session
+  pTemp_Tabs->SetTabGroup( pToolDataParam->Tab_Group_Selected);    // Select tab group from last session
 
     // finish up
 
   pMyParWin->end();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  pMyParWin->set_non_modal();
+#else
   pMyParWin->set_modal();
+#endif
   pMyParWin->callback( close_Par_cb, &pMyParWin);
   pMyParWin->show();
 
@@ -1900,6 +1934,10 @@ static void close_cb( Fl_Widget *w, long int iToolData)
     return;
   }
 
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckClose( close_Par_cb, &pMyParWin, iToolData);   // Check to close specific associated parameter dialog
+#endif
+
   YaIPS_ImageDispReleaseBeforeClose( &pToolData->YaIPS_ImageDisp);
 
   pToolData->IsOpen = false;               // Flag info data is not in use
@@ -2046,6 +2084,9 @@ static void MyWinUpdate( int iToolData, int DoEnable)
                              DoEnable &&                                    // Enable GUI elements
                              pToolData->YaIPS_ImageDisp.pImage_Img != NULL); // and have an image loaded
 
+  IqeB_GUI_WidgetActivate( pMyToolWin->pGUI_Parameter,
+                            (pMyParWin == NULL || pToolDataParam->iToolData != iToolData) && // Parameter dialog is closed
+                             DoEnable);                             // Enable GUI elements
 
   // Check input image and visualize state
   YaIPS_ToolWinInputCheck( MY_WIN_ID + iToolData, pToolData->Input1_WinIdNr, pMyToolWin->pBox_Input1);

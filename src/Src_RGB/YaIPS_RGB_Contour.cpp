@@ -37,6 +37,7 @@
 * pSrc         Source image
 * PlaneThres   Plane threshold. (|one neighbor - central| > plane threshold) -> contour
 * ContourOp    Type of operation. See YAIPS_RGB_CONTOUR_XXX defines.
+* pAlpha       Optional: Use alpha from this image YAIPS_RGB_CONTOUR_LP_ALPHA
 *
 * return     0 OK
 *          < 0 Error
@@ -46,14 +47,16 @@
 int YaIPS_RGB_Contour( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to RGB image
                        Fl_RGB_Image *pSrc,   // Source image
                        int PlaneThres,       // Plane threshold
-                       int ContourOp)        // Type of operation
+                       int ContourOp,        // Type of operation
+                       Fl_RGB_Image *pAlpha) // Optional: Use alpha from this image YAIPS_RGB_CONTOUR_LP_ALPHA
+
 {
-  int ierr, x, y, nBytesSrc, nBytesDst, iColor, nColors, SrcHasAlpha, DstHasAlpha;
+  int ierr, x, y, nBytesSrc, nBytesDst, nBytesAlpha, iColor, nColors, SrcHasAlpha, DstHasAlpha, HaveAlphaImg;
   int xx, yy, jumpSrc, t1, OutVal, Center;
   Fl_RGB_Image *pDst;
-  YaIPS_RGB_ImgD_t iDst, iSrc;
+  YaIPS_RGB_ImgD_t iDst, iSrc, iAlpha;
   int Off00, Off01, Off02, Off10, Off11, Off12, Off20, Off21, Off22;
-  uchar *s80, *d80, *s8, *d8;
+  uchar *s80, *d80, *a80, *s8, *d8;
 
   // Check source first
   ierr = YaIPS_RGB_to_ImgD( pSrc, &iSrc);
@@ -90,6 +93,28 @@ int YaIPS_RGB_Contour( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to RGB i
     return( ierr);
   }
 
+  // Check for alpha image
+
+  // Will we create a new destination image
+
+  HaveAlphaImg = 0;                     // No Alpha image
+  nBytesAlpha = 0;
+
+  if( pAlpha != NULL &&                 // Have an alpha image
+      xx == pAlpha->data_w() &&         // Has the same size
+      yy == pAlpha->data_h() &&
+      (pAlpha->d() == 2 || pAlpha->d() == 4)) {  // And have an alpha channel
+
+    nBytesAlpha = pAlpha->d();
+
+    HaveAlphaImg = nBytesAlpha - 1;     // Index to alpha channel byte
+
+    ierr = YaIPS_RGB_to_ImgD( pAlpha, &iAlpha);
+    if( ierr != 0)  {                           // Check for error
+      return( ierr);
+    }
+  }
+
   // Prepare ...
 
   Off00 = 0;
@@ -108,6 +133,14 @@ int YaIPS_RGB_Contour( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to RGB i
 
     s80 = RGB_pixad( 0, y - 1, &iSrc);
     d80 = RGB_pixad( 1,     y, &iDst);
+
+    if( HaveAlphaImg > 0) {
+
+      a80 = RGB_pixad( 1,     y, &iAlpha);
+    } else {
+
+      a80 = NULL;
+    }
 
     for( x = 1; x < xx - 1; x++, s80 += nBytesSrc, d80 += nBytesDst) {
 
@@ -223,7 +256,11 @@ plane:                // Got contour
 
          if( ContourOp == YAIPS_RGB_CONTOUR_LP_ALPHA) {    // Destination has alpha
 
-           if( SrcHasAlpha) {                    // Source has alpha
+           if( HaveAlphaImg > 0) {               // Have an alpha image
+
+             t1 = a80[ HaveAlphaImg];            // Get alpha from destination image
+
+           } else if( SrcHasAlpha) {             // Source has alpha
 
              t1 = *s8;                           // Get source alpha
 
@@ -247,6 +284,11 @@ plane:                // Got contour
 
          break;
        }  // End case
+
+      if( HaveAlphaImg > 0) {
+
+        a80 += nBytesAlpha;
+      }
 
     }   // End for( x = 1 ...
   }     // End for( y = 1 ...

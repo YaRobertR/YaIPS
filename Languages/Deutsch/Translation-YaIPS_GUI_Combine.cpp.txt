@@ -2,7 +2,7 @@
 ; YaIPS_GUI_Combine.cpp
 ;-------------------------------------------------------
 ;
-; 83 entries
+; 94 entries
 ;
 GUI_Combine_Title                  "Berechnung"
 
@@ -105,8 +105,6 @@ GUI_Combine_TabA18                 ">="
 
 GUI_Combine_TabA18a                "Bildvergleich: größer gleich"
 
-GUI_Combine_TabA19                 "Vers."
-
 GUI_Combine_TabA19a                "Verstärkung\nMultiplikator"
 
 GUI_Combine_TabA20                 "Offs."
@@ -118,11 +116,11 @@ GUI_Combine_TabD1                  "Konst."
 GUI_Combine_TabD1a                 "Bild mit Konstanten kombinieren.\n"
                                    "HINWEIS: Es wird nur das erste Eingabebild benötigt."
 
-GUI_Combine_TabD3                  "I-C"
+GUI_Combine_TabD3                  "1-C"
 
 GUI_Combine_TabD3a                 "Subtraktion\n1. Eingabebild - Konstante"
 
-GUI_Combine_TabD4                  "C-I"
+GUI_Combine_TabD4                  "C-1"
 
 GUI_Combine_TabD4a                 "Subtraktion\nKonstante - 1. Eingabebild"
 

@@ -6,6 +6,14 @@
 
  22.02.2025 RR: First edition of this file.
 
+ 14.10.2026 RR: * YaIPS_Histo_Measure()
+                * YaIPS_Histo_Measure2()
+                  If the 'YAIPS_HISTO_FLAG_IHS' flag is set,
+                  an IHS histogram is generated instead of an RGB histogram.
+                * YaIPS_Histo_Draw()
+                  Added code to also draw an IHS histogram.
+
+
 *****************************************************************************
 */
 
@@ -81,6 +89,7 @@ static void YaIPS_Histo_SingleCalc( Fl_YaIPS_Histo_t *pHisto)  // Pointer to his
  */
 void YaIPS_Histo_Measure( Fl_RGB_Image *pImage_Img,          // Pointer to image envelop
                           Fl_YaIPS_Histo_RGB_t *pHisto_RGB,  // Pointer to RGB histogram
+                          int Flags,                         // In: Flag bits, see YAIPS_HISTO_FLAG_XXX defines
                           int AoiX, int AoiY,                // AOI rectangle start point
                           int AoiW, int AoiH)                // AOI rectangle size
 {
@@ -90,6 +99,8 @@ void YaIPS_Histo_Measure( Fl_RGB_Image *pImage_Img,          // Pointer to image
   // Reset measured data
 
   memset( pHisto_RGB, 0, sizeof( Fl_YaIPS_Histo_RGB_t));
+
+  pHisto_RGB->Flags = Flags;
 
   // Get image data
 
@@ -161,13 +172,31 @@ void YaIPS_Histo_Measure( Fl_RGB_Image *pImage_Img,          // Pointer to image
 
       pSrcLine2 = pSrcLine;
 
-      for( x = 0; x < AoiW; x++) {
+      if( (pHisto_RGB->Flags & YAIPS_HISTO_FLAG_IHS) == 0) {      // Make RGB histogram
 
-        pHisto_RGB->R.HistoTable[ pSrcLine2[ 0] & 0xff] += 1;
-        pHisto_RGB->G.HistoTable[ pSrcLine2[ 1] & 0xff] += 1;
-        pHisto_RGB->B.HistoTable[ pSrcLine2[ 2] & 0xff] += 1;
+        for( x = 0; x < AoiW; x++) {
 
-        pSrcLine2 += d;
+          pHisto_RGB->R.HistoTable[ pSrcLine2[ 0]] += 1;
+          pHisto_RGB->G.HistoTable[ pSrcLine2[ 1]] += 1;
+          pHisto_RGB->B.HistoTable[ pSrcLine2[ 2]] += 1;
+
+          pSrcLine2 += d;
+        }
+
+      } else {                                                   // Make IHS histogram
+
+        uchar IHS[ 3];
+
+        for( x = 0; x < AoiW; x++) {
+
+          YaIPS_RGB_Color_RGB2IHS( IHS, pSrcLine2);
+
+          pHisto_RGB->R.HistoTable[ IHS[ 0]] += 1;
+          pHisto_RGB->G.HistoTable[ IHS[ 1]] += 1;
+          pHisto_RGB->B.HistoTable[ IHS[ 2]] += 1;
+
+          pSrcLine2 += d;
+        }
       }
 
       pSrcLine += line_d;
@@ -183,7 +212,7 @@ void YaIPS_Histo_Measure( Fl_RGB_Image *pImage_Img,          // Pointer to image
 
       for( x = 0; x < AoiW; x++) {
 
-        pHisto_RGB->R.HistoTable[ pSrcLine2[ 0] & 0xff] += 1;
+        pHisto_RGB->R.HistoTable[ pSrcLine2[ 0]] += 1;
 
         pSrcLine2 += d;
       }
@@ -214,6 +243,7 @@ void YaIPS_Histo_Measure( Fl_RGB_Image *pImage_Img,          // Pointer to image
  */
 void YaIPS_Histo_Measure2( Fl_RGB_Image *pImage_Img,          // Pointer to image envelop
                            Fl_YaIPS_Histo_RGB_t *pHisto_RGB,  // Pointer to RGB histogram
+                           int Flags,                         // In: Flag bits, see YAIPS_HISTO_FLAG_XXX defines
                            int ColorSpace,                    // In: Color space for color images NORMAL, BW, R, G or B
                            int StepFast,                      // In: If > 1 speed up measurement by using less pixels
                            int AoiX, int AoiY,                // AOI rectangle start point
@@ -237,6 +267,8 @@ void YaIPS_Histo_Measure2( Fl_RGB_Image *pImage_Img,          // Pointer to imag
   // Reset measured data
 
   memset( pHisto_RGB, 0, sizeof( Fl_YaIPS_Histo_RGB_t));
+
+  pHisto_RGB->Flags = Flags;
 
   // Get image data
 
@@ -318,13 +350,31 @@ void YaIPS_Histo_Measure2( Fl_RGB_Image *pImage_Img,          // Pointer to imag
 
         pSrcLine2 = pSrcLine;
 
-        for( x = 0; x < AoiW; x++) {
+        if( (pHisto_RGB->Flags & YAIPS_HISTO_FLAG_IHS) == 0) {      // Make RGB histogram
 
-          pHisto_RGB->R.HistoTable[ pSrcLine2[ 0] & 0xff] += 1;
-          pHisto_RGB->G.HistoTable[ pSrcLine2[ 1] & 0xff] += 1;
-          pHisto_RGB->B.HistoTable[ pSrcLine2[ 2] & 0xff] += 1;
+          for( x = 0; x < AoiW; x++) {
 
-          pSrcLine2 += d;
+            pHisto_RGB->R.HistoTable[ pSrcLine2[ 0]] += 1;
+            pHisto_RGB->G.HistoTable[ pSrcLine2[ 1]] += 1;
+            pHisto_RGB->B.HistoTable[ pSrcLine2[ 2]] += 1;
+
+            pSrcLine2 += d;
+          }
+
+        } else {                                                   // Make IHS histogram
+
+          uchar IHS[ 3];
+
+          for( x = 0; x < AoiW; x++) {
+
+            YaIPS_RGB_Color_RGB2IHS( IHS, pSrcLine2);
+
+            pHisto_RGB->R.HistoTable[ IHS[ 0]] += 1;
+            pHisto_RGB->G.HistoTable[ IHS[ 1]] += 1;
+            pHisto_RGB->B.HistoTable[ IHS[ 2]] += 1;
+
+            pSrcLine2 += d;
+          }
         }
 
         pSrcLine += line_d;
@@ -343,7 +393,7 @@ void YaIPS_Histo_Measure2( Fl_RGB_Image *pImage_Img,          // Pointer to imag
 
         for( x = 0; x < AoiW; x++) {
 
-          PixVal = ((pSrcLine2[ 0] & 0xff) * 76 + (pSrcLine2[ 1] & 0xff) * 150 + (pSrcLine2[ 2] & 0xff) * 30) >> 8;
+          PixVal = ((pSrcLine2[ 0]) * 76 + (pSrcLine2[ 1]) * 150 + (pSrcLine2[ 2]) * 30) >> 8;
 
           pHisto_RGB->R.HistoTable[ PixVal] += 1;
 
@@ -364,7 +414,7 @@ void YaIPS_Histo_Measure2( Fl_RGB_Image *pImage_Img,          // Pointer to imag
 
         for( x = 0; x < AoiW; x++) {
 
-          pHisto_RGB->R.HistoTable[ pSrcLine2[ 0] & 0xff] += 1;
+          pHisto_RGB->R.HistoTable[ pSrcLine2[ 0]] += 1;
 
           pSrcLine2 += d;
         }
@@ -383,7 +433,7 @@ void YaIPS_Histo_Measure2( Fl_RGB_Image *pImage_Img,          // Pointer to imag
 
         for( x = 0; x < AoiW; x++) {
 
-          pHisto_RGB->R.HistoTable[ pSrcLine2[ 1] & 0xff] += 1;
+          pHisto_RGB->R.HistoTable[ pSrcLine2[ 1]] += 1;
 
           pSrcLine2 += d;
         }
@@ -402,7 +452,7 @@ void YaIPS_Histo_Measure2( Fl_RGB_Image *pImage_Img,          // Pointer to imag
 
         for( x = 0; x < AoiW; x++) {
 
-          pHisto_RGB->R.HistoTable[ pSrcLine2[ 2] & 0xff] += 1;
+          pHisto_RGB->R.HistoTable[ pSrcLine2[ 2]] += 1;
 
           pSrcLine2 += d;
         }
@@ -423,7 +473,7 @@ void YaIPS_Histo_Measure2( Fl_RGB_Image *pImage_Img,          // Pointer to imag
 
       for( x = 0; x < AoiW; x++) {
 
-        pHisto_RGB->R.HistoTable[ pSrcLine2[ 0] & 0xff] += 1;
+        pHisto_RGB->R.HistoTable[ pSrcLine2[ 0]] += 1;
 
         pSrcLine2 += d;
       }
@@ -615,9 +665,20 @@ void YaIPS_Histo_Draw( YaIPS_Fl_Box *pYaIPS_Box,         // Draw into this box w
   // Draw a RGB Histogram
 
   //x/Fl_Color ColLine = FL_BLACK, ColText = FL_BLACK, ColR = FL_RED, ColG = FL_GREEN - 2, ColB = FL_BLUE + 2, ColBW = FL_DARK3;
-  Fl_Color ColLine = FL_DARK1 + 1, ColText = FL_WHITE, ColBW = FL_WHITE;
-  Fl_Color ColR = fl_rgb_color( 255, 0, 0), ColG = fl_rgb_color( 0, 255, 0), ColB = fl_rgb_color( 0, 188, 255);
+  Fl_Color ColLine = FL_DARK1 + 1, ColText = FL_WHITE, ColBW = YAIPS_COLOR_CURVE_BW;
+  Fl_Color ColR, ColG, ColB;
   static char MyLineDashes[] = { 4, 4, 0};
+
+  if( pHisto_RGB->nHistos >= 3 &&
+     (pHisto_RGB->Flags & YAIPS_HISTO_FLAG_IHS) != 0) {     // IHS histogram
+
+
+    ColR = YAIPS_COLOR_CURVE_I, ColG = YAIPS_COLOR_CURVE_H, ColB = YAIPS_COLOR_CURVE_S;
+
+  } else {                                                   // RGB histogram
+
+    ColR = YAIPS_COLOR_CURVE_R, ColG = YAIPS_COLOR_CURVE_G, ColB = YAIPS_COLOR_CURVE_B;
+  }
 
   // Color overwrites
 
@@ -644,8 +705,50 @@ void YaIPS_Histo_Draw( YaIPS_Fl_Box *pYaIPS_Box,         // Draw into this box w
   AvTextX = pYaIPS_Box->x() + 4;
   AvTextY = y1 - 8;
 
-  fl_color( ColLine);
+  // Color line for IHS
+  if( pHisto_RGB->nHistos >= 3 &&
+      (pHisto_RGB->Flags & YAIPS_HISTO_FLAG_IHS) != 0) {     // IHS histogram
 
+    uchar IHS[ 3], RGB[ 3], max;
+    static Fl_Color IHS_Table[256];    // For calculate IHS table once
+    static int IHS_Table_OK = false;
+
+    if( ! IHS_Table_OK) {
+
+      IHS_Table_OK = true;
+
+      for( i = 0; i < 255; i++) {
+
+        IHS[ 0] = 120;
+        IHS[ 1] = i;
+        IHS[ 2] = 255;
+
+        YaIPS_RGB_Color_IHS2RGB( RGB, IHS);
+
+        max = RGB[ 0];
+        if( max < RGB[ 1]) max = RGB[ 1];
+        if( max < RGB[ 2]) max = RGB[ 2];
+        if( max > 0 && max < 254) {
+          RGB[ 0] = (RGB[ 0] * 255) / max;
+          RGB[ 1] = (RGB[ 1] * 255) / max;
+          RGB[ 2] = (RGB[ 2] * 255) / max;
+        }
+
+        IHS_Table[ i] = fl_rgb_color( RGB[ 0], RGB[ 1], RGB[ 2]);
+      }
+    }
+
+    for( i = 0; i < 255; i++) {
+
+      fl_color( IHS_Table[ i]);
+
+      fl_line( x1 + i, y2 + 5, x1 + i, y2 + 16);
+    }
+  }
+
+  // Axis
+
+  fl_color( ColLine);
   fl_line_style( 0, 0);
 
   // Horizontal axis
@@ -666,6 +769,26 @@ void YaIPS_Histo_Draw( YaIPS_Fl_Box *pYaIPS_Box,         // Draw into this box w
   // Text
 
   fl_color( ColText);
+
+  // Draw header for average value
+
+  if( pHisto_RGB->nHistos >= 3) {
+
+    if( (pHisto_RGB->Flags & YAIPS_HISTO_FLAG_IHS) != 0) {     // IHS histogram
+
+      strcpy( TempString, LANGDEF_COLOR_IHS);
+    } else {
+
+      strcpy( TempString, LANGDEF_COLOR_RGB);
+    }
+
+    strcat( TempString, ":");
+
+    mw = mh = 0;
+    fl_measure( TempString, mw, mh);
+    fl_draw( TempString, AvTextX, AvTextY);
+    AvTextX += mw + 2;
+  }
 
   x3 = x1;
   fl_draw( "0", x3 + -1, y2 + 16);
@@ -756,7 +879,7 @@ void YaIPS_Histo_Draw( YaIPS_Fl_Box *pYaIPS_Box,         // Draw into this box w
     mw = mh = 0;
     fl_measure( TempString, mw, mh);
     fl_draw( TempString, AvTextX, AvTextY);
-    AvTextX += mw + 16;
+    AvTextX += mw + 6;
   }
 
   if( pHisto_RGB->nHistos >= 2) {
@@ -782,7 +905,7 @@ void YaIPS_Histo_Draw( YaIPS_Fl_Box *pYaIPS_Box,         // Draw into this box w
     mw = mh = 0;
     fl_measure( TempString, mw, mh);
     fl_draw( TempString, AvTextX, AvTextY);
-    AvTextX += mw + 16;
+    AvTextX += mw + 6;
   }
 
   if( pHisto_RGB->nHistos >= 3) {
@@ -808,7 +931,7 @@ void YaIPS_Histo_Draw( YaIPS_Fl_Box *pYaIPS_Box,         // Draw into this box w
     mw = mh = 0;
     fl_measure( TempString, mw, mh);
     fl_draw( TempString, AvTextX, AvTextY);
-    AvTextX += mw + 16;
+    AvTextX += mw + 6;
   }
 
   // Optional header text

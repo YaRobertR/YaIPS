@@ -2,7 +2,7 @@
 ; YaIPS_GUI_GeoTransform.cpp
 ;-------------------------------------------------------
 ;
-; 73 entries
+; 69 entries
 ;
 GUI_GeoTrans_Title                 "Geometry Transformation"
 
@@ -78,11 +78,7 @@ GUI_GeoTrans_TabB3                 "Linsenfaktor"
 
 GUI_GeoTrans_TabB3a                "Korrektur der Linsenverzerrung [Einheiten von 1.0E-10]"
 
-GUI_GeoTrans_TabB4                 "Drehlage"
-
 GUI_GeoTrans_TabB4a                "Korrektur der Drehlagen [Grad]"
-
-GUI_GeoTrans_TabB5                 "Größe"
 
 GUI_GeoTrans_TabB5a                "Korrektur der Größe [%]"
 
@@ -106,11 +102,7 @@ GUI_GeoTrans_TabE3                 "Faktor"
 
 GUI_GeoTrans_TabE3a                "Trapezverzerrungsfaktor"
 
-GUI_GeoTrans_TabE4                 "Drehung"
-
 GUI_GeoTrans_TabE4a                "Korrektur der Drehlagen [Grad]"
-
-GUI_GeoTrans_TabE5                 "Größe"
 
 GUI_GeoTrans_TabE5a                "Korrektur der Größe [%]"
 

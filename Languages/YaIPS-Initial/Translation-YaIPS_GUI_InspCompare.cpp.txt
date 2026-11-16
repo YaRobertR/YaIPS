@@ -2,7 +2,7 @@
 ; YaIPS_GUI_InspCompare.cpp
 ;-------------------------------------------------------
 ;
-; 22 entries
+; 27 entries
 ;
 GUI_InspCompare_Title              "Compare"
 
@@ -59,6 +59,22 @@ GUI_InspCompare_GroupC2            "Area"
 
 GUI_InspCompare_GroupC2a           "If set, show area\n"
                                    "of small and large blobs."
+
+GUI_InspCompare_GroupD1            "Check mask"
+
+GUI_InspCompare_GroupD2            "Mask"
+
+GUI_InspCompare_GroupD2a           "A mask limits the comparison to specific\n"
+                                   "regions.\n"
+                                   "See inspection reference image tool window for\n"
+                                   "further details."
+
+GUI_InspCompare_GroupD3            "Not"
+
+GUI_InspCompare_GroupD3a           "This setting limits the comparison to unmasked\n"
+                                   "regions.\n"
+                                   "See inspection reference image tool window for\n"
+                                   "further details."
 
 ;
 ;

@@ -5,6 +5,12 @@
   Runlength coding of images and object processing.
 
   06.04.2025 RR: First edition of this file.
+  18.10.2026 RR: * Reworked behavior of tool window parameter dialogs.
+                   See functions IqeB_GUI_ToolParCheckOpen(),
+                   IqeB_GUI_ToolParCheckReset() and IqeB_GUI_ToolParCheckClose().
+  11.11.2026 RR: * MyWinUpdate()
+                   Parameter dialog button is disabled if the parameter dialog
+                   is open.
 
 *****************************************************************************
 */
@@ -83,6 +89,7 @@ typedef struct {
 typedef struct {
 
   // Parameters
+  int iToolData;                        // Sub window number
   int IsOpen;                           // True if this window is open.
   void *pMyToolWin;                     // Pointer to window data ( is pointer to CLASS_WIN_TOOL)
 
@@ -225,7 +232,7 @@ static IqeB_PreferencesGroup MyPreferencesAdd( MY_WIN_PREF_NAME, MyPreferences, 
 //-----------------------------------------------------------------------------------
 
 static  Fl_Window *pMyParWin;
-static  YaIPS_ToolData_info_t *pToolData;     // NOTE: Is used by all parameter dialog functions
+static  YaIPS_ToolData_info_t *pToolDataParam;     // NOTE: Is used by all parameter dialog functions
 
 static IqeFl_Tabs      *pTab_Groups;          // Point to tabulator GUI element
 static IqeFl_Int_Input *pInt_Obj_BinThres1;   // Pointer to GUI input element
@@ -261,13 +268,13 @@ static void MyParWinUpdate()
 
   // Get last selected tab group
 
-  pToolData->Tab_Group_Selected = pTab_Groups->GetTabGroup();
+  pToolDataParam->Tab_Group_Selected = pTab_Groups->GetTabGroup();
 
   // Enables for binarization
 
   EnableThres1 = EnableThres2 = EnableThresPc = EnableChroma = false;   // Preset all disabled
 
-  switch( pToolData->Obj_BinMode) {
+  switch( pToolDataParam->Obj_BinMode) {
   case YAIPS_RLC_BINMODE_GE_T1:          // >= BinThres1
   case YAIPS_RLC_BINMODE_L_T1:           // < BinThres1
     EnableThres1 = true;   // Set to enable
@@ -345,8 +352,12 @@ static void IqeB_GUI_ParIdleAction( void *)
 static void close_Par_cb( Fl_Widget *w, void *pValueArg)
 {
 
-  pToolData->MyParPosX = pMyParWin->x();
-  pToolData->MyParPosY = pMyParWin->y();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckReset();   // The one and only open tool window parameter dialog is closed
+#endif
+
+  pToolDataParam->MyParPosX = pMyParWin->x();
+  pToolDataParam->MyParPosY = pMyParWin->y();
 
   #ifdef YAIPS_IDLE_CALLBACK_USE  // Use the idle callbacks in tool windows
   Fl::remove_idle( IqeB_GUI_ParIdleAction);      // Redraw window during idle
@@ -370,14 +381,14 @@ static void YaIPS_ColorChannel_Callback( Fl_Widget *w, void *data)
 
   Value = (long long)(data);                     // get value to set
 
-  if( pToolData->Obj_ColorSpace == Value) {      // Value will not change
+  if( pToolDataParam->Obj_ColorSpace == Value) {      // Value will not change
 
     return;                                      // Exit, nothing to do
   }
 
-  pToolData->Obj_ColorSpace = Value;             // Set new value
+  pToolDataParam->Obj_ColorSpace = Value;             // Set new value
 
-  pToolData->Input1_Change = 0;                  // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                  // Force recalculation output
 }
 
 /************************************************************************************
@@ -394,16 +405,16 @@ static void YaIPS_BinMode_Callback( Fl_Widget *w, void *data)
 
   Value = (long long)(data);                     // get value to set
 
-  if( pToolData->Obj_BinMode == Value) {         // Value will not change
+  if( pToolDataParam->Obj_BinMode == Value) {         // Value will not change
 
     return;                                      // Exit, nothing to do
   }
 
-  pToolData->Obj_BinMode = Value;                // Set new value
+  pToolDataParam->Obj_BinMode = Value;                // Set new value
 
   // Force recalculation of processing
 
-  pToolData->Input1_Change = 0;                // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                // Force recalculation output
 }
 
 /************************************************************************************
@@ -420,16 +431,16 @@ static void YaIPS_ShowText_Callback( Fl_Widget *w, void *data)
 
   Value = (long long)(data);                     // get value to set
 
-  if( pToolData->Obj_ShowText == Value) {         // Value will not change
+  if( pToolDataParam->Obj_ShowText == Value) {         // Value will not change
 
     return;                                      // Exit, nothing to do
   }
 
-  pToolData->Obj_ShowText = Value;                // Set new value
+  pToolDataParam->Obj_ShowText = Value;                // Set new value
 
   // Force recalculation of processing
 
-  pToolData->Input1_Change = 0;                // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                // Force recalculation output
 }
 
 /************************************************************************************
@@ -448,7 +459,7 @@ static void IqeB_GUI_But_Color_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   if( pThis == pBut_Obj_ChromaKey) {  // Chroma key color button
 
-    ColorBefore = fl_rgb_color( pToolData->Obj_ChromaR, pToolData->Obj_ChromaG, pToolData->Obj_ChromaB);
+    ColorBefore = fl_rgb_color( pToolDataParam->Obj_ChromaR, pToolDataParam->Obj_ChromaG, pToolDataParam->Obj_ChromaB);
 
     ColorAfter = IqeB_GUI_ColorChooser( ColorBefore);
 
@@ -456,14 +467,14 @@ static void IqeB_GUI_But_Color_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
       Fl::get_color( ColorAfter, r, g, b);
 
-      pToolData->Obj_ChromaR = r;
-      pToolData->Obj_ChromaG = g;
-      pToolData->Obj_ChromaB = b;
+      pToolDataParam->Obj_ChromaR = r;
+      pToolDataParam->Obj_ChromaG = g;
+      pToolDataParam->Obj_ChromaB = b;
 
       pThis->color( ColorAfter);
       pThis->parent()->redraw();
 
-      pToolData->Input1_Change = 0;                    // Force recalculation output
+      pToolDataParam->Input1_Change = 0;                    // Force recalculation output
     }
   }
 }
@@ -520,7 +531,7 @@ static void IqeB_GUI_Float_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   *(float *)pValue = Value;
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
 }
 #endif
 
@@ -572,7 +583,7 @@ static void IqeB_GUI_Int_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   *pValue = Value;         // update the variable
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -597,7 +608,7 @@ static void IqeB_GUI_CBox_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   *pValue = pThis->value();              // update the variable
 
-  pToolData->Input1_Change = 0;          // Force recalculation output
+  pToolDataParam->Input1_Change = 0;          // Force recalculation output
 }
 
 /************************************************************************************
@@ -621,7 +632,7 @@ static void YaIPS_PostOp_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   *pValue = pThis->value();               // Set new value
 
-  pToolData->Input1_Change = 0;           // Force recalculation output
+  pToolDataParam->Input1_Change = 0;           // Force recalculation output
 }
 
 /************************************************************************************
@@ -634,10 +645,20 @@ static void YaIPS_PostOp_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 {
   int xPos, yPos;
+  Fl_Double_Window *pMyToolWin;
+
+  // Check parameter dialog is allowed to open
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  if( IqeB_GUI_ToolParCheckOpen( close_Par_cb, &pMyParWin, iToolData) < 0) {    // Allowed to open parameter dialog
+
+    return;
+  }
+#endif
 
   // Get pointer to tool data
 
-  pToolData = YaIPS_ToolData_info + iToolData;             // Point to info data
+  pToolDataParam = YaIPS_ToolData_info + iToolData;             // Point to info data
 
   //
   // creation of window on first call
@@ -646,18 +667,28 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   xPos = xLeft;
   yPos = yTop;
 
-  if( pToolData->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolData->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
+  if( pToolDataParam->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolDataParam->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
 
-    xPos = pToolData->MyParPosX;
-    yPos = pToolData->MyParPosY;
+    xPos = pToolDataParam->MyParPosX;
+    yPos = pToolDataParam->MyParPosY;
   }
 
-  pMyParWin = new Fl_Window( xPos, yPos, 297 /*IQE_GUI_TOOLS_STD_WITDH*/, 162 + 24, LANGDEF_SETTINGS);
+  pMyParWin = new Fl_Window( xPos, yPos, 297 /*IQE_GUI_TOOLS_STD_WITDH*/, 162 + 24);
 
   if( pMyParWin == NULL) {  // security test
 
     return;
   }
+
+  // Set window title
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+
+   pMyToolWin = (Fl_Double_Window *)pToolDataParam->pMyToolWin;  // Convert type of pointer
+
+   pMyParWin->copy_label( pMyToolWin->label());
+#else
+   pMyParWin->label( LANGDEF_SETTINGS);
+#endif
 
   //
   //  GUI things
@@ -730,7 +761,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_Objects_TabA3a="
                             "The intensity is used for a color image"));
     pRadioButTemp->callback( YaIPS_ColorChannel_Callback, (void *)YAIPS_DISP_COLMOD_BW);
-    pRadioButTemp->value( pToolData->Obj_ColorSpace == YAIPS_DISP_COLMOD_BW);   // Set value
+    pRadioButTemp->value( pToolDataParam->Obj_ColorSpace == YAIPS_DISP_COLMOD_BW);   // Set value
 
     x1 += xx1;
     x1 += 2;
@@ -741,7 +772,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_Objects_TabA4a="
                             "The red color component is used for a color image"));
     pRadioButTemp->callback( YaIPS_ColorChannel_Callback, (void *)YAIPS_DISP_COLMOD_R);
-    pRadioButTemp->value( pToolData->Obj_ColorSpace == YAIPS_DISP_COLMOD_R);   // Set value
+    pRadioButTemp->value( pToolDataParam->Obj_ColorSpace == YAIPS_DISP_COLMOD_R);   // Set value
 
     x1 += xx1;
     x1 += 2;
@@ -750,7 +781,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_Objects_TabA5a="
                             "The green color component is used for a color image"));
     pRadioButTemp->callback( YaIPS_ColorChannel_Callback, (void *)YAIPS_DISP_COLMOD_G);
-    pRadioButTemp->value( pToolData->Obj_ColorSpace == YAIPS_DISP_COLMOD_G);   // Set value
+    pRadioButTemp->value( pToolDataParam->Obj_ColorSpace == YAIPS_DISP_COLMOD_G);   // Set value
 
     x1 += xx1;
     x1 += 2;
@@ -759,7 +790,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_Objects_TabA6a="
                             "The blue color component is used for a color image"));
     pRadioButTemp->callback( YaIPS_ColorChannel_Callback, (void *)YAIPS_DISP_COLMOD_B);
-    pRadioButTemp->value( pToolData->Obj_ColorSpace == YAIPS_DISP_COLMOD_B);   // Set value
+    pRadioButTemp->value( pToolDataParam->Obj_ColorSpace == YAIPS_DISP_COLMOD_B);   // Set value
 
     pTemp_Group2->end();
 
@@ -782,7 +813,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx1 - 2, yy, LangStringLookup( "&GUI_Objects_TabA8=>= T1"));
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_Objects_TabA8a=Objects are brighter than the 1. threshold."));
     pRadioButTemp->callback( YaIPS_BinMode_Callback, (void *)YAIPS_RLC_BINMODE_GE_T1);
-    pRadioButTemp->value( pToolData->Obj_BinMode == YAIPS_RLC_BINMODE_GE_T1);   // Set value
+    pRadioButTemp->value( pToolDataParam->Obj_BinMode == YAIPS_RLC_BINMODE_GE_T1);   // Set value
 
     x1 += xx1;
     x1 += 2;
@@ -794,7 +825,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                             "Objects are brighter than the 1. threshold.\n"
                             "and darker than the 2. threshold."));
     pRadioButTemp->callback( YaIPS_BinMode_Callback, (void *)YAIPS_RLC_BINMODE_GE_T1_AND_L_T2);
-    pRadioButTemp->value( pToolData->Obj_BinMode == YAIPS_RLC_BINMODE_GE_T1_AND_L_T2);   // Set value
+    pRadioButTemp->value( pToolDataParam->Obj_BinMode == YAIPS_RLC_BINMODE_GE_T1_AND_L_T2);   // Set value
 
     x1 += xx1;
     x1 += 2;
@@ -809,8 +840,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pCheckTemp = new Fl_Check_Button( x1 + 4, y, xx1, yy, LANGDEF_INVERTED);
     pCheckTemp->tooltip( LangStringLookup( "&GUI_Objects_TabA20a=Inverts the binarization."));
-    pCheckTemp->value( pToolData->Obj_ThresInvert);
-    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolData->Obj_ThresInvert);
+    pCheckTemp->value( pToolDataParam->Obj_ThresInvert);
+    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolDataParam->Obj_ThresInvert);
 
     x1 += xx1;
     x1 += 2;
@@ -823,7 +854,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                             "In a color image, the color\n"
                             "value is used for binarization."));
     pRadioButTemp->callback( YaIPS_BinMode_Callback, (void *)YAIPS_RLC_BINMODE_L_CHROMA);
-    pRadioButTemp->value( pToolData->Obj_BinMode == YAIPS_RLC_BINMODE_L_CHROMA);   // Set value
+    pRadioButTemp->value( pToolDataParam->Obj_BinMode == YAIPS_RLC_BINMODE_L_CHROMA);   // Set value
 
     x1 += xx1;
     x1 += 2;
@@ -837,7 +868,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                             "the image must contain two distinct maxima. The\n"
                             "threshold is a % value between these maxima."));
     pRadioButTemp->callback( YaIPS_BinMode_Callback, (void *)YAIPS_RLC_BINMODE_GE_BM_AUTO);
-    pRadioButTemp->value( pToolData->Obj_BinMode == YAIPS_RLC_BINMODE_GE_BM_AUTO);   // Set value
+    pRadioButTemp->value( pToolDataParam->Obj_BinMode == YAIPS_RLC_BINMODE_GE_BM_AUTO);   // Set value
 
     x1 += xx1;
     x1 += 2;
@@ -857,9 +888,9 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                         "1. Brightness threshold for binarization.\n"
                         "Separates objects from the background."));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    sprintf( TempBuffer, "%d", pToolData->Obj_BinThres1);
+    sprintf( TempBuffer, "%d", pToolDataParam->Obj_BinThres1);
     pTemp_Int->value( TempBuffer);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Obj_BinThres1);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Obj_BinThres1);
     pTemp_Int->SetModifyData( 0, 255, 10, 1);
     pInt_Obj_BinThres1 = pTemp_Int;
 
@@ -870,9 +901,9 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                         "2. Brightness threshold for binarization.\n"
                         "Separates objects from the background."));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    sprintf( TempBuffer, "%d", pToolData->Obj_BinThres2);
+    sprintf( TempBuffer, "%d", pToolDataParam->Obj_BinThres2);
     pTemp_Int->value( TempBuffer);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Obj_BinThres2);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Obj_BinThres2);
     pTemp_Int->SetModifyData( 0, 255, 10, 1);
     pInt_Obj_BinThres2 = pTemp_Int;
 
@@ -895,7 +926,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Button->tooltip( LangStringLookup( "&GUI_Objects_TabA24a="
                                              "Press to change the color"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Button->color( fl_rgb_color( pToolData->Obj_ChromaR, pToolData->Obj_ChromaG, pToolData->Obj_ChromaB));
+    pTemp_Button->color( fl_rgb_color( pToolDataParam->Obj_ChromaR, pToolDataParam->Obj_ChromaG, pToolDataParam->Obj_ChromaB));
     pTemp_Button->callback( IqeB_GUI_But_Color_SetValue_Callback, NULL);
 
     pBut_Obj_ChromaKey = pTemp_Button;
@@ -906,9 +937,9 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx1, yy, LangStringLookup( "&GUI_Objects_TabA25=Threshold"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Objects_TabA25a=Chroma key threshold color difference"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    sprintf( TempBuffer, "%d", pToolData->Obj_ChromaThres);
+    sprintf( TempBuffer, "%d", pToolDataParam->Obj_ChromaThres);
     pTemp_Int->value( TempBuffer);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Obj_ChromaThres);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Obj_ChromaThres);
     pTemp_Int->SetModifyData( 0, 100, 10, 1);
     pInt_Obj_ChromaThres= pTemp_Int;
 
@@ -925,9 +956,9 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                         "Percent threshold for binarization.\n"
                         "% value between maxima of a bimodal histogram."));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    sprintf( TempBuffer, "%d", pToolData->Obj_BinThresPc);
+    sprintf( TempBuffer, "%d", pToolDataParam->Obj_BinThresPc);
     pTemp_Int->value( TempBuffer);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Obj_BinThresPc);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Obj_BinThresPc);
     pTemp_Int->SetModifyData( 0, 100, 10, 1);
     pInt_Obj_BinThresPc = pTemp_Int;
 
@@ -974,7 +1005,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
       pTempChoice = new Fl_Choice( x1, y, xx1, yy);
       pTempChoice->tooltip( LangStringLookup( "&GUI_Objects_TabB3a=Auswahl einer Aktion"));
-      pTempChoice->callback( YaIPS_PostOp_SetValue_Callback, &pToolData->PostAction[ i].Post_Operator);
+      pTempChoice->callback( YaIPS_PostOp_SetValue_Callback, &pToolDataParam->PostAction[ i].Post_Operator);
       pTempChoice->add( LangStringLookup( "&GUI_Objects_PostOp1=---"),                       0, NULL, (void *)YAIPS_OBJ_POSTOP_NONE);
       pTempChoice->add( LangStringLookup( "&GUI_Objects_PostOp2=Erosion"),                   0, NULL, (void *)YAIPS_OBJ_POSTOP_EROSION);
       pTempChoice->add( LangStringLookup( "&GUI_Objects_PostOp2b=Erosion-2"),                0, NULL, (void *)YAIPS_OBJ_POSTOP_EROSION_2);
@@ -990,14 +1021,14 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
       pTempChoice->add( LangStringLookup( "&GUI_Objects_PostOp9=Remove size threshold"),     0, NULL, (void *)YAIPS_OBJ_POSTOP_REMOVE_SIZE_THRES);
 
       pTempChoice->selection_color( Fl::get_color( FL_SELECTION_COLOR));
-      pTempChoice->value( pToolData->PostAction[ i].Post_Operator);
+      pTempChoice->value( pToolDataParam->PostAction[ i].Post_Operator);
 
       pTemp_Int = new IqeFl_Int_Input( x2, y, xx2, yy);
       pTemp_Int->tooltip( LangStringLookup( "&GUI_Objects_TabB4a=Argument for selected action"));
       pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-      sprintf( TempBuffer, "%d", pToolData->PostAction[ i].Post_Arg);
+      sprintf( TempBuffer, "%d", pToolDataParam->PostAction[ i].Post_Arg);
       pTemp_Int->value( TempBuffer);
-      pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->PostAction[ i].Post_Arg);
+      pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->PostAction[ i].Post_Arg);
       pTemp_Int->SetModifyData( 0, 8, 1);
 
       y += yy + 2;
@@ -1029,8 +1060,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pCheckTemp = new Fl_Check_Button( x1 + 4, y, xx1, yy, LangStringLookup( "&GUI_Objects_TabC2=Label and display objects"));
     pCheckTemp->tooltip( LangStringLookup( "&GUI_Objects_TabC2a=Identification (labeling) of connected image parts"));
-    pCheckTemp->value( pToolData->Obj_Label);
-    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolData->Obj_Label);
+    pCheckTemp->value( pToolDataParam->Obj_Label);
+    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolDataParam->Obj_Label);
 
     // Next line
 
@@ -1054,9 +1085,9 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                         "The area of the square is the minimum\n"
                         "area of an object to be processed."));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    sprintf( TempBuffer, "%d", pToolData->Obj_AreaMinSide);
+    sprintf( TempBuffer, "%d", pToolDataParam->Obj_AreaMinSide);
     pTemp_Int->value( TempBuffer);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Obj_AreaMinSide);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Obj_AreaMinSide);
     pTemp_Int->SetModifyData( 0, 200, 10, 1);
 
     x1 = 274 - xx1 - 8;
@@ -1068,9 +1099,9 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                         "area of an object to be processed.\n"
                         "NOTE: must be greater than 'T small'."));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    sprintf( TempBuffer, "%d", pToolData->Obj_AreaMaxSide);
+    sprintf( TempBuffer, "%d", pToolDataParam->Obj_AreaMaxSide);
     pTemp_Int->value( TempBuffer);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Obj_AreaMaxSide);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Obj_AreaMaxSide);
     pTemp_Int->SetModifyData( 0, 500, 10, 1);
 
     pTemp_Group2->end();
@@ -1096,7 +1127,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx1 - 2, yy, LangStringLookup( "&GUI_Objects_TabC7=Nr"));
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_Objects_Tab7a=Label with consecutive numbering."));
     pRadioButTemp->callback( YaIPS_ShowText_Callback, (void *)0);
-    pRadioButTemp->value( pToolData->Obj_ShowText == 0);   // Set value
+    pRadioButTemp->value( pToolDataParam->Obj_ShowText == 0);   // Set value
 
     x1 += xx1;
     x1 += 2;
@@ -1106,7 +1137,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx1 - 2, yy, LangStringLookup( "&GUI_Objects_TabC8=Si. Pix"));
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_Objects_TabC8a=Label with size in pixels."));
     pRadioButTemp->callback( YaIPS_ShowText_Callback, (void *)1);
-    pRadioButTemp->value( pToolData->Obj_ShowText == 1);   // Set value
+    pRadioButTemp->value( pToolDataParam->Obj_ShowText == 1);   // Set value
 
     x1 += xx1;
     x1 += 2;
@@ -1116,7 +1147,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx1 - 2, yy, LangStringLookup( "&GUI_Objects_TabC9=Si. mm"));
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_Objects_TabC9a=Label with size in mm."));
     pRadioButTemp->callback( YaIPS_ShowText_Callback, (void *)2);
-    pRadioButTemp->value( pToolData->Obj_ShowText == 2);   // Set value
+    pRadioButTemp->value( pToolDataParam->Obj_ShowText == 2);   // Set value
 
     // Next line
 
@@ -1133,7 +1164,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx1 - 2, yy, LangStringLookup( "&GUI_Objects_TabC10=Ar. Pix²"));
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_Objects_TabC10a=Label with area in pixels²."));
     pRadioButTemp->callback( YaIPS_ShowText_Callback, (void *)3);
-    pRadioButTemp->value( pToolData->Obj_ShowText == 3);   // Set value
+    pRadioButTemp->value( pToolDataParam->Obj_ShowText == 3);   // Set value
 
     x1 += xx1;
     x1 += 2;
@@ -1143,7 +1174,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx1 - 2, yy, LangStringLookup( "&GUI_Objects_TabC11=Ar. mm²"));
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_Objects_TabC11a=BLabel with area in mm²."));
     pRadioButTemp->callback( YaIPS_ShowText_Callback, (void *)4);
-    pRadioButTemp->value( pToolData->Obj_ShowText == 4);   // Set value
+    pRadioButTemp->value( pToolDataParam->Obj_ShowText == 4);   // Set value
 
     x1 += xx1;
     x1 += 2;
@@ -1155,7 +1186,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                             "Marks the center of gravity\n"
                             "of the binarized area."));
     pRadioButTemp->callback( YaIPS_ShowText_Callback, (void *)5);
-    pRadioButTemp->value( pToolData->Obj_ShowText == 5);   // Set value
+    pRadioButTemp->value( pToolDataParam->Obj_ShowText == 5);   // Set value
     x1 += xx1;
     x1 += 2;
 
@@ -1165,7 +1196,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_Objects_TabC13a="
                             "Labeling with average brightness/color."));
     pRadioButTemp->callback( YaIPS_ShowText_Callback, (void *)6);
-    pRadioButTemp->value( pToolData->Obj_ShowText == 6);   // Set value
+    pRadioButTemp->value( pToolDataParam->Obj_ShowText == 6);   // Set value
 
     pTemp_Group2->end();
 
@@ -1180,12 +1211,16 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
   pTemp_Tabs->end();
 
-  pTemp_Tabs->SetTabGroup( pToolData->Tab_Group_Selected);    // Select tab group from last session
+  pTemp_Tabs->SetTabGroup( pToolDataParam->Tab_Group_Selected);    // Select tab group from last session
 
   // finish up
 
   pMyParWin->end();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  pMyParWin->set_non_modal();
+#else
   pMyParWin->set_modal();
+#endif
   pMyParWin->callback( close_Par_cb, &pMyParWin);
   pMyParWin->show();
 
@@ -1391,6 +1426,10 @@ static void close_cb( Fl_Widget *w, long int iToolData)
     return;
   }
 
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckClose( close_Par_cb, &pMyParWin, iToolData);   // Check to close specific associated parameter dialog
+#endif
+
   YaIPS_ImageDispReleaseBeforeClose( &pToolData->YaIPS_ImageDisp);
 
   if( pToolData->pObjects != NULL) {       // Object vector was used
@@ -1544,6 +1583,9 @@ static void MyWinUpdate( int iToolData, int DoEnable)
                              DoEnable &&                                    // Enable GUI elements
                              pToolData->YaIPS_ImageDisp.pImage_Img != NULL); // and have an image loaded
 
+  IqeB_GUI_WidgetActivate( pMyToolWin->pGUI_Parameter,
+                            (pMyParWin == NULL || pToolDataParam->iToolData != iToolData) && // Parameter dialog is closed
+                             DoEnable);                             // Enable GUI elements
 
   // Check input image and visualize state
   YaIPS_ToolWinInputCheck( MY_WIN_ID + iToolData, pToolData->Input1_WinIdNr, pMyToolWin->pBox_Input1);
@@ -2161,6 +2203,8 @@ static void IqeB_GUI_ObjectsWinIntern( int xLeft, int xRight, int yTop, int yBot
   //
   // Prepare info data element
   //
+
+  pToolData->iToolData = iToolData;                        // Set sub window number
 
   pToolData->pObjects = NULL;                              // Have no object vector
 

@@ -2,13 +2,17 @@
 ; YaIPS_GUI_InspRefImage.cpp
 ;-------------------------------------------------------
 ;
-; 5 entries
+; 46 entries
 ;
 GUI_InspRefImg_Title               "Referenzbild"
 
-GUI_InspRefImg_GroupA1             "Ebenen-Schwelle"
+GUI_InspRefImg_TabA1a              "Kantenmaske.\n"
+                                   "Wird zum Markieren von Kanten verwendet. Diese\n"
+                                   "werden beim Bildvergleich anders verarbeitet."
 
-GUI_InspRefImg_GroupA1a            "Ebenen-Schwelle.\n"
+GUI_InspRefImg_TabA2               "Ebenen-Schwelle"
+
+GUI_InspRefImg_TabA2a              "Ebenen-Schwelle.\n"
                                    "Wird zur Vorbereitung des Referenzbildes verwendet.\n"
                                    "Pixelwerte unterhalb dieses Schwellenwerts werden\n"
                                    "tiefpassgefiltert. Die Konturpixel werden nicht\n"
@@ -16,6 +20,103 @@ GUI_InspRefImg_GroupA1a            "Ebenen-Schwelle.\n"
                                    "Konturbit im Alpha-Teil des Referenzbildes.\n"
                                    "Dieses Konturbit wird vom Bildvergleichswerkzeug\n"
                                    "verwendet."
+
+GUI_InspRefImg_TabB1               "Maske"
+
+GUI_InspRefImg_TabB1a              "Editor zum Erstellen von Prüfmasken."
+
+GUI_InspRefImg_TabB2               "Werkzeuge"
+
+GUI_InspRefImg_TabB10              "Verschieb."
+
+GUI_InspRefImg_TabB10a             "Bild mit der Maus verschieben.\n"
+                                   "Linke Maustaste gedrückt: Bild verschieben
+
+GUI_InspRefImg_TabB12              "Rechteck"
+
+GUI_InspRefImg_TabB12a             "Zeichne ein Rechteck.\n"
+                                   "Linke Maustaste gedrückt: Größe ändern\n"
+                                   "Linke und rechte Maustaste gedrückt: Verschieben\n"
+                                   "Rechte Maustaste gedrückt: Bild verschieben"
+
+GUI_InspRefImg_TabB13              "Ellipse"
+
+GUI_InspRefImg_TabB13a             "Zeichne eine Ellipse.\n"
+                                   "Linke Maustaste gedrückt: Größe ändern\n"
+                                   "Linke und rechte Maustaste gedrückt: Verschieben\n"
+                                   "Rechte Maustaste gedrückt: Bild verschieben"
+
+GUI_InspRefImg_TabB14              "Polygon"
+
+GUI_InspRefImg_TabB14a             "Zeichne ein Polygon.\n"
+                                   "Klick mit linker Maustaste: Punkte setzen\n"
+                                   "Klick rechter Maustaste: Abbrechen\n"
+                                   "Rechte Maustaste gedrückt: Bild verschieben"
+
+GUI_InspRefImg_TabB15              "Füllen"
+
+GUI_InspRefImg_TabB15a             "Fläche ausfüllen.\n"
+                                   "Klick mit linker Maustaste in den auszufüllenden Bereich.\n"
+                                   "Right mouse button pressed: Move image"
+
+GUI_InspRefImg_TabB3               "Pinsel"
+
+GUI_InspRefImg_TabB11              "Freihand"
+
+GUI_InspRefImg_TabB11a             "Freihand zeichnen."
+
+GUI_InspRefImg_TabB20a             "Breite des Freihandpinsels"
+
+GUI_InspRefImg_TabB4               "Maske"
+
+GUI_InspRefImg_TabB30              "Zeichnen"
+
+GUI_InspRefImg_TabB30a             "Maskenbits setzen"
+
+GUI_InspRefImg_TabB31              "Löschen"
+
+GUI_InspRefImg_TabB31a             "Maskenbits zurücksetzen"
+
+GUI_InspRefImg_TabB5               "Mehr"
+
+GUI_InspRefImg_TabB40a             "Vorherige Zeichnung rückgängig machen."
+
+GUI_InspRefImg_TabB41a             "Die vorherige Zeichnung wiederherstellen."
+
+GUI_InspRefImg_TabB42              "Lösch"
+
+GUI_InspRefImg_TabB42a             "Löscht die Maske."
+
+GUI_InspRefImg_TabB43              "Dilat."
+
+GUI_InspRefImg_TabB43a             "Die Maske vergrößert sich in alle Richtungen um 1 Pixel."
+
+GUI_InspRefImg_TabB44              "Eros."
+
+GUI_InspRefImg_TabB44a             "Die Maske wird in alle Richtungen um 1 Pixel verkleinert."
+
+GUI_InspRefImg_TabB6               "Bin."
+
+GUI_InspRefImg_TabB6a              "Bild zu Maske binarisieren."
+
+GUI_InspRefImg_TabB50              "Schw."
+
+GUI_InspRefImg_TabB50a             "Helligkeitsschwelle.\n"
+                                   "Bild zu Maske binarisieren.\n"
+                                   "Wenn 'Hell' ausgewählt ist, werden alle Pixel, die heller\n"
+                                   "als der Schwellenwert sind, als Maskenpixel gesetzt.\n"
+                                   "Wenn 'Dunkel' ausgewählt ist, werden entsprechend\n"
+                                   "alle Pixel gesetzt, die unter dem Schwellenwert liegen.\n"
+
+GUI_InspRefImg_TabB51a             "Auswahl des Binarisierungsmodus."
+
+GUI_InspRefImg_TabB51b             "Hell"
+
+GUI_InspRefImg_TabB51C             "Dunkel"
+
+GUI_InspRefImg_TabB52              "Anw."
+
+GUI_InspRefImg_TabB52a             "Binarisierung anwenden."
 
 GUI_InspRefImg_Tools2a             "Referenzbild von Eingang übernehmen.\n"
                                    "Shortcut: Strg+A"

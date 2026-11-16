@@ -2,7 +2,7 @@
 ; YaIPS_GUI_VideoRead.cpp
 ;-------------------------------------------------------
 ;
-; 15 entries
+; 14 entries
 ;
 GUI_VideoR_Title                   "Video-Player"
 
@@ -16,8 +16,6 @@ GUI_VideoR_Par_VideoBufOn          "Videopuffer"
 GUI_VideoR_Par_VideoBufOna         "Bei Aktivierung wird ein Rücklaufpuffer verwendet.\n"
                                    "Bei der Wiedergabe werden Videobilder gepuffert.\n"
                                    "In der Pause können diese Bilder angesehen werden."
-
-GUI_VideoR_Par_VideoBufSize        "Größe"
 
 GUI_VideoR_Par_VideoBufSizea       "Größe des Rücklaufpuffers.\n"
                                    "Bereich: 50 bis 500 Megabyte.\n"

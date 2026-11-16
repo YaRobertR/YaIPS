@@ -2,7 +2,7 @@
 ; YaIPS_GUI_Color.cpp
 ;-------------------------------------------------------
 ;
-; 105 entries
+; 104 entries
 ;
 GUI_Color_Title                    "Color"
 
@@ -236,8 +236,6 @@ GUI_Color_TabF2a                   "Mixing color channels to create a new image.
                                    "  Output image has an alpha channel.\n"
                                    "  If available, the alpha channel is used.\n"
                                    "  Otherwise, alpha must be a black/white image.\n"
-
-GUI_Color_TabF3                    "Alpha"
 
 GUI_Color_TabF3a                   "Select image for alpha channel"
 

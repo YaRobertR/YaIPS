@@ -5,6 +5,12 @@
   Filter an image.
 
   06.04.2025 RR: First edition of this file.
+  18.10.2026 RR: * Reworked behavior of tool window parameter dialogs.
+                   See functions IqeB_GUI_ToolParCheckOpen(),
+                   IqeB_GUI_ToolParCheckReset() and IqeB_GUI_ToolParCheckClose().
+  11.11.2026 RR: * MyWinUpdate()
+                   Parameter dialog button is disabled if the parameter dialog
+                   is open.
 
 *****************************************************************************
 */
@@ -61,6 +67,7 @@ static void IqeB_GUI_ToolsMyIdleAction( void *);
 typedef struct {
 
   // Parameters
+  int iToolData;                        // Sub window number
   int IsOpen;                           // True if this window is open.
   void *pMyToolWin;                     // Pointer to window data ( is pointer to CLASS_WIN_TOOL)
 
@@ -197,7 +204,7 @@ static IqeB_PreferencesGroup MyPreferencesAdd( MY_WIN_PREF_NAME, MyPreferences, 
 // ...
 
 static  Fl_Window *pMyParWin;
-static  YaIPS_ToolData_info_t *pToolData;     // NOTE: Is used by all parameter dialog functions
+static  YaIPS_ToolData_info_t *pToolDataParam;     // NOTE: Is used by all parameter dialog functions
 
 static IqeFl_Tabs      *pTab_Groups;         // Point to tabulator GUI element
 static Fl_Radio_Round_Button *FilterButtons[ YAIPS_FILTER_BUTTON_MAX]; // Table of filter buttons
@@ -214,23 +221,23 @@ static void MyParWinUpdate()
 
   // Get last selected tab group
 
-  pToolData->Tab_Group_Selected = pTab_Groups->GetTabGroup();
+  pToolDataParam->Tab_Group_Selected = pTab_Groups->GetTabGroup();
 
   // Update filter button
   // Current selection must be set
 
   // Update all buttons
-  if( FilterType_Last != pToolData->FilterType) {                // Filter type has change
+  if( FilterType_Last != pToolDataParam->FilterType) {                // Filter type has change
 
-    FilterType_Last = pToolData->FilterType;
+    FilterType_Last = pToolDataParam->FilterType;
 
     for( i = 0; i < YAIPS_FILTER_BUTTON_MAX; i++) {
 
       ValThis = FilterButtons[ i]->value();
 
-      if( ValThis != (i == pToolData->FilterType)) {             // Not what we expected
+      if( ValThis != (i == pToolDataParam->FilterType)) {             // Not what we expected
 
-        FilterButtons[ i]->value( i == pToolData->FilterType);   // Set value
+        FilterButtons[ i]->value( i == pToolDataParam->FilterType);   // Set value
         FilterButtons[ i]->redraw();
       }
     }
@@ -286,8 +293,12 @@ static void IqeB_GUI_ParIdleAction( void *)
 static void close_Par_cb( Fl_Widget *w, void *pValueArg)
 {
 
-  pToolData->MyParPosX = pMyParWin->x();
-  pToolData->MyParPosY = pMyParWin->y();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckReset();   // The one and only open tool window parameter dialog is closed
+#endif
+
+  pToolDataParam->MyParPosX = pMyParWin->x();
+  pToolDataParam->MyParPosY = pMyParWin->y();
 
   #ifdef YAIPS_IDLE_CALLBACK_USE  // Use the idle callbacks in tool windows
   Fl::remove_idle( IqeB_GUI_ParIdleAction);      // Redraw window during idle
@@ -311,14 +322,14 @@ static void YaIPS_Filter_Callback( Fl_Widget *w, void *data)
 
   Value = (long long)(data);                       // get value to set
 
-  if( pToolData->FilterType == Value) {            // Value will not change
+  if( pToolDataParam->FilterType == Value) {            // Value will not change
 
     return;                                        // Exit, nothing to do
   }
 
-  pToolData->FilterType = Value;                   // Set new value
+  pToolDataParam->FilterType = Value;                   // Set new value
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -365,7 +376,7 @@ static void IqeB_GUI_Float_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   *(float *)pValue = Value;
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -414,7 +425,7 @@ static void IqeB_GUI_Int_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   *pValue = Value;         // update the variable
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -439,7 +450,7 @@ static void IqeB_GUI_CBox_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   *pValue = pThis->value();              // update the variable
 
-  pToolData->Input1_Change = 0;          // Force recalculation output
+  pToolDataParam->Input1_Change = 0;          // Force recalculation output
 }
 
 /************************************************************************************
@@ -452,10 +463,20 @@ static void IqeB_GUI_CBox_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 {
   int xPos, yPos;
+  Fl_Double_Window *pMyToolWin;
+
+  // Check parameter dialog is allowed to open
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  if( IqeB_GUI_ToolParCheckOpen( close_Par_cb, &pMyParWin, iToolData) < 0) {    // Allowed to open parameter dialog
+
+    return;
+  }
+#endif
 
   // Get pointer to tool data
 
-  pToolData = YaIPS_ToolData_info + iToolData;             // Point to info data
+  pToolDataParam = YaIPS_ToolData_info + iToolData;             // Point to info data
 
   //
   // creation of window on first call
@@ -464,18 +485,28 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   xPos = xLeft;
   yPos = yTop;
 
-  if( pToolData->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolData->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
+  if( pToolDataParam->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolDataParam->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
 
-    xPos = pToolData->MyParPosX;
-    yPos = pToolData->MyParPosY;
+    xPos = pToolDataParam->MyParPosX;
+    yPos = pToolDataParam->MyParPosY;
   }
 
-  pMyParWin = new Fl_Window( xPos, yPos, 297 /*IQE_GUI_TOOLS_STD_WITDH*/, 142 /* 162 */, LANGDEF_SETTINGS);
+  pMyParWin = new Fl_Window( xPos, yPos, 297 /*IQE_GUI_TOOLS_STD_WITDH*/, 142 /* 162 */);
 
   if( pMyParWin == NULL) {  // security test
 
     return;
   }
+
+  // Set window title
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+
+   pMyToolWin = (Fl_Double_Window *)pToolDataParam->pMyToolWin;  // Convert type of pointer
+
+   pMyParWin->copy_label( pMyToolWin->label());
+#else
+   pMyParWin->label( LANGDEF_SETTINGS);
+#endif
 
   FilterType_Last = -1;         // Reset last filter type
 
@@ -611,8 +642,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Filter_TabA8=Filter size"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Filter_TabA8a=Filter size must be odd and >= 3."));
-    pTemp_Int->SetValue( pToolData->LowpassKSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->LowpassKSize);
+    pTemp_Int->SetValue( pToolDataParam->LowpassKSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->LowpassKSize);
     pTemp_Int->SetModifyData( 3, 511, 2, 10);
 
     // Finish things for this group
@@ -626,7 +657,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   y = yGroup;
   x1  = 4;
 
-  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LangStringLookup( "&GUI_Filter_TabB1=Edges"));
+  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LANGDEF_EDGES);
 
     y += 8;
 
@@ -709,11 +740,11 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     x1 += 48;
     xx2 = 40;
 
-    pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Filter_TabB8=Gain"));
+    pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LANGDEF_GAIN);
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_Filter_TabB8a=Gain\nMultiplier of the filter result"));
-    pFloatTemp->SetValue( pToolData->EdgeResMult);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->EdgeResMult);
+    pFloatTemp->SetValue( pToolDataParam->EdgeResMult);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->EdgeResMult);
     pFloatTemp->SetModifyData( 0.5, 8.0, 0.5, 0.1);
 
     x1 += xx2;
@@ -721,8 +752,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Filter_TabB9=Offs."));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Filter_TabB9a=Offset\nAdd to the filter result"));
-    pTemp_Int->SetValue( pToolData->EdgeOffset);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->EdgeOffset);
+    pTemp_Int->SetValue( pToolDataParam->EdgeOffset);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->EdgeOffset);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
 
     x1 += xx2;
@@ -732,8 +763,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pCheckTemp->tooltip( LangStringLookup( "&GUI_Filter_TabB10a="
                          "When set, the edge filter\n"
                          "has an absolute result."));
-    pCheckTemp->value( pToolData->EdgeAbsRes);
-    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolData->EdgeAbsRes);
+    pCheckTemp->value( pToolDataParam->EdgeAbsRes);
+    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolDataParam->EdgeAbsRes);
 
     // Next line
 
@@ -759,11 +790,11 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     x1 += 40;
     xx2 = 40;
 
-    pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Filter_TabB12=Gain"));
+    pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LANGDEF_GAIN);
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_Filter_TabB12a=Gain\nMultiplier of the filter result"));
-    pFloatTemp->SetValue( pToolData->CannyResMult);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->CannyResMult);
+    pFloatTemp->SetValue( pToolDataParam->CannyResMult);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->CannyResMult);
     pFloatTemp->SetModifyData( 0.5, 16.0, 0.5, 0.1);
 
     x1 += xx2;
@@ -772,8 +803,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Filter_TabB13=Sig."));
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_Filter_TabB13a=Sigma for gaussian filter\nRange 0.0 ... 8.0, 0 is off"));
-    pFloatTemp->SetValue( pToolData->CannySigma);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->CannySigma);
+    pFloatTemp->SetValue( pToolDataParam->CannySigma);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->CannySigma);
     pFloatTemp->SetModifyData( 0.0, 8.0, 0.5, 0.1);
 
     x1 += xx2;
@@ -787,8 +818,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                         "0 = Slope/inclination of the edges\n"
                         "1 = 0 and clean up maxima\n"
                         "2 = Direction of the edges\n"));
-    pTemp_Int->SetValue( pToolData->CannyMode);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CannyMode);
+    pTemp_Int->SetValue( pToolDataParam->CannyMode);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->CannyMode);
     pTemp_Int->SetModifyData( 0, 2, 1);
 
     // Finish things for this group
@@ -889,8 +920,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                         "Number of filter passes.\n"
                         "If 0, no filtering is performed."));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->MorphRuns);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->MorphRuns);
+    pTemp_Int->SetValue( pToolDataParam->MorphRuns);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->MorphRuns);
     pTemp_Int->SetModifyData( 0, 8, 1);
 
     // Finish things for this group
@@ -950,8 +981,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                         "Plane threshold.\n"
                         "Separates contours from plane."));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->ContourPlaneThres);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->ContourPlaneThres);
+    pTemp_Int->SetValue( pToolDataParam->ContourPlaneThres);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->ContourPlaneThres);
     pTemp_Int->SetModifyData( 8, 255, 8, 1);
 
     // Finish things for this group
@@ -992,8 +1023,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Filter_TabE3a="
                         "The number of pixels that are taken\n"
                         "into account around each edge."));
-    pTemp_Int->SetValue( pToolData->SharpnessRadius);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->SharpnessRadius);
+    pTemp_Int->SetValue( pToolDataParam->SharpnessRadius);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->SharpnessRadius);
     pTemp_Int->SetModifyData( 1, 15, 1, 1);
 
     // Next line
@@ -1004,8 +1035,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Filter_TabE4a="
                         "The amount by which the contrast of the\n"
                         "pixels in the image is increased [%]."));
-    pTemp_Int->SetValue( pToolData->SharpnessStrengthPercent);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->SharpnessStrengthPercent);
+    pTemp_Int->SetValue( pToolDataParam->SharpnessStrengthPercent);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->SharpnessStrengthPercent);
     pTemp_Int->SetModifyData( 0, 300, 10, 1);
 
     // Next line
@@ -1016,8 +1047,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Filter_TabE5a="
                         "The brightness difference between neighboring\n"
                         "pixels so that they are adjusted."));
-    pTemp_Int->SetValue( pToolData->SharpnessDifference);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->SharpnessDifference);
+    pTemp_Int->SetValue( pToolDataParam->SharpnessDifference);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->SharpnessDifference);
     pTemp_Int->SetModifyData( 0, 250, 10, 1);
 
     // Finish things for this group
@@ -1028,12 +1059,16 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
   pTemp_Tabs->end();
 
-  pTemp_Tabs->SetTabGroup( pToolData->Tab_Group_Selected);    // Select tab group from last session
+  pTemp_Tabs->SetTabGroup( pToolDataParam->Tab_Group_Selected);    // Select tab group from last session
 
     // finish up
 
   pMyParWin->end();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  pMyParWin->set_non_modal();
+#else
   pMyParWin->set_modal();
+#endif
   pMyParWin->callback( close_Par_cb, &pMyParWin);
   pMyParWin->show();
 
@@ -1239,6 +1274,10 @@ static void close_cb( Fl_Widget *w, long int iToolData)
     return;
   }
 
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckClose( close_Par_cb, &pMyParWin, iToolData);   // Check to close specific associated parameter dialog
+#endif
+
   YaIPS_ImageDispReleaseBeforeClose( &pToolData->YaIPS_ImageDisp);
 
   pToolData->IsOpen = false;               // Flag info data is not in use
@@ -1375,6 +1414,9 @@ static void MyWinUpdate( int iToolData, int DoEnable)
                              DoEnable &&                                    // Enable GUI elements
                              pToolData->YaIPS_ImageDisp.pImage_Img != NULL); // and have an image loaded
 
+  IqeB_GUI_WidgetActivate( pMyToolWin->pGUI_Parameter,
+                            (pMyParWin == NULL || pToolDataParam->iToolData != iToolData) && // Parameter dialog is closed
+                             DoEnable);                             // Enable GUI elements
 
   // Check input image and visualize state
   YaIPS_ToolWinInputCheck( MY_WIN_ID + iToolData, pToolData->Input1_WinIdNr, pMyToolWin->pBox_Input1);
@@ -1682,6 +1724,8 @@ static void IqeB_GUI_FilterWinIntern( int xLeft, int xRight, int yTop, int yBott
   //
   // Prepare info data element
   //
+
+  pToolData->iToolData = iToolData;                        // Set sub window number
 
   pToolData->IsOpen = true;           // Flag image as open
 

@@ -2,7 +2,7 @@
 ; YaIPS_GUI_Other.cpp
 ;-------------------------------------------------------
 ;
-; 79 entries
+; 71 entries
 ;
 GUI_Other_Title                    "Sonstige"
 
@@ -24,16 +24,12 @@ GUI_Other_TabB1a                   "Chroma-Key Verarbeitung\n"
                                    "Erstelle eine Alphamaske durch Vergleich\n"
                                    "mit einer bestimmten Farbe."
 
-GUI_Other_TabB3                    "Farbe"
-
 GUI_Other_TabB4a                   "Drücke, um die Farbe zu ändern"
 
 GUI_Other_TabB5                    "Farbe S"
 
 GUI_Other_TabB5a                   "Schwelle Farbton\n"
                                    "Standard = 30."
-
-GUI_Other_TabB6                    "A"
 
 GUI_Other_TabB6a                   "Ausblendbereich Farbton\n"
                                    "0 = aus. Standard = 10."
@@ -43,8 +39,6 @@ GUI_Other_TabB7                    "Sät S"
 GUI_Other_TabB7a                   "Schwelle Sättigung.\n"
                                    "0 = aus. Standard = 20."
 
-GUI_Other_TabB8                    "A"
-
 GUI_Other_TabB8a                   "Ausblendbereich Sättigung.\n"
                                    "0 = aus. Standard = 10."
 
@@ -52,8 +46,6 @@ GUI_Other_TabB9                    "HUn S"
 
 GUI_Other_TabB9a                   "Untere Schwelle Helligkeit.\n"
                                    "0 = aus. Standard = 20."
-
-GUI_Other_TabB10                   "A"
 
 GUI_Other_TabB10a                  "Ausblendbereich untere Schwelle Helligkeit.\n"
                                    "0 = aus. Standard = 10."
@@ -63,8 +55,6 @@ GUI_Other_TabB11                   "HOb S"
 GUI_Other_TabB11a                  "Oberere Schwelle Intensität.\n"
                                    "0 = aus. Standard = 10."
 
-GUI_Other_TabB12                   "A"
-
 GUI_Other_TabB12a                  "Ausblendbereich obere Schwelle Helligkeit.\n"
                                    "0 = aus. Standard = 10."
 
@@ -72,8 +62,6 @@ GUI_Other_TabB21                   "Ein+A"
 
 GUI_Other_TabB21a                  "Das Ausgabebild ist das verarbeitete\n"
                                    "Eingabebild plus Alphamaske."
-
-GUI_Other_TabB22                   "Alpha"
 
 GUI_Other_TabB22a                  "Das Ausgabebild ist die Alphamaske."
 
@@ -87,8 +75,6 @@ GUI_Other_TabB24                   "Ein-A"
 
 GUI_Other_TabB24a                  "Das Ausgabebild ist das verarbeitete\n"
                                    "Eingabebild (ohne Alpha-Kanal)."
-
-GUI_Other_TabB25                   "Farbe"
 
 GUI_Other_TabB25a                  "Das Ausgabebild ist das verarbeitete\n"
                                    "Eingabebild gemischt mit einer Farabe."
@@ -167,8 +153,6 @@ GUI_Other_TabA10a                  "Anzahl der Wiederholungen.\n"
                                    "Ein höherer Wert verbessert das Ergebnis,\n"
                                    "erfordert jedoch mehr Rechenzeit.\n"
                                    "Bereich: 2 .. 20"
-
-GUI_Other_TabC11                   "Kanten"
 
 GUI_Other_TabC11a                  "Falls aktiviert, werden Kanten zum posterisierten Bild\n"
                                    "hinzugefügt. Hierfür wird der Canny-Filter verwendet.\n"

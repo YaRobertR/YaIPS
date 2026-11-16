@@ -9,6 +9,12 @@
                    'YaIPS_WorkingDirectory' by '.'.
                  * Reworked clipboard handling
                    Replaced patch './Images/YaIPS' with YaIPS_CLIPBOARD_PATH.
+  18.10.2026 RR: * Reworked behavior of tool window parameter dialogs.
+                   See functions IqeB_GUI_ToolParCheckOpen(),
+                   IqeB_GUI_ToolParCheckReset() and IqeB_GUI_ToolParCheckClose().
+  11.11.2026 RR: * MyWinUpdate()
+                   Parameter dialog button is disabled if the parameter dialog
+                   is open.
 
 *****************************************************************************
 */
@@ -62,6 +68,7 @@ static void IqeB_GUI_ToolsMyIdleAction( void *);
 typedef struct {
 
   // Parameters
+  int iToolData;                        // Sub window number
   int IsOpen;                           // True if this window is open.
   void *pMyToolWin;                     // Pointer to window data ( is pointer to CLASS_WIN_TOOL)
 
@@ -216,7 +223,7 @@ static IqeB_PreferencesGroup MyPreferencesAdd( MY_WIN_PREF_NAME, MyPreferences, 
 // ...
 
 static  Fl_Window *pMyParWin;
-static  YaIPS_ToolData_info_t *pToolData;     // NOTE: Is used by all parameter dialog functions
+static  YaIPS_ToolData_info_t *pToolDataParam;     // NOTE: Is used by all parameter dialog functions
 
 static IqeFl_Tabs      *pTab_Groups;          // Point to tabulator GUI element
 
@@ -264,17 +271,17 @@ static void MyParWin_NewSizes_SetCurrentSize()
   int g;
   char TempString[ 256], *pPixelDepth;
 
-  pPixelDepth = pYaIPS_PixelDepth_to_string( pToolData->PixelDepth);
+  pPixelDepth = pYaIPS_PixelDepth_to_string( pToolDataParam->PixelDepth);
 
-  g = GreatestcommonDivisor( pToolData->ImgWidth, pToolData->ImgHeight);
+  g = GreatestcommonDivisor( pToolDataParam->ImgWidth, pToolDataParam->ImgHeight);
 
-  if( g > 1 && pToolData->ImgWidth / g <= 24 && pToolData->ImgWidth / g <= 24) {
+  if( g > 1 && pToolDataParam->ImgWidth / g <= 24 && pToolDataParam->ImgWidth / g <= 24) {
 
-    sprintf( TempString, "%d x %d  (%d : %d), %s", pToolData->ImgWidth, pToolData->ImgHeight,
-                         pToolData->ImgWidth / g, pToolData->ImgHeight / g, pPixelDepth);
+    sprintf( TempString, "%d x %d  (%d : %d), %s", pToolDataParam->ImgWidth, pToolDataParam->ImgHeight,
+                         pToolDataParam->ImgWidth / g, pToolDataParam->ImgHeight / g, pPixelDepth);
   } else {
 
-    sprintf( TempString, "%d x %d, %s", pToolData->ImgWidth, pToolData->ImgHeight, pPixelDepth);
+    sprintf( TempString, "%d x %d, %s", pToolDataParam->ImgWidth, pToolDataParam->ImgHeight, pPixelDepth);
   }
 
   if( strcmp( pShowCurrSize->value(), TempString) != 0) {   // New string is different
@@ -297,8 +304,8 @@ static void MyParWin_NewSizes_SetResultingSize( int *pXX,  int *pYY)
 
   // New size settings
 
-  NewWidthPix  = round( pToolData->NewWidth / YaIPS_Calib_UPP_X);
-  NewHeightPix = round( pToolData->NewHeight / YaIPS_Calib_UPP_Y);
+  NewWidthPix  = round( pToolDataParam->NewWidth / YaIPS_Calib_UPP_X);
+  NewHeightPix = round( pToolDataParam->NewHeight / YaIPS_Calib_UPP_Y);
 
   g = GreatestcommonDivisor( NewWidthPix, NewHeightPix);
 
@@ -339,10 +346,10 @@ static void MyParWinUpdate()
 
   // Get last selected tab group
 
-  pToolData->Tab_Group_Selected = pTab_Groups->GetTabGroup();
+  pToolDataParam->Tab_Group_Selected = pTab_Groups->GetTabGroup();
 
   // Check for change of global unit to last used unit
-  if( pToolData->NewUnit != YaIPS_Calib_Unit) {
+  if( pToolDataParam->NewUnit != YaIPS_Calib_Unit) {
 
     // Set modify data for with, height
 
@@ -356,19 +363,19 @@ static void MyParWinUpdate()
 
     // Modify float values by change of the unit
 
-    YaIPS_Calib_Change_Unit( &pToolData->NewWidth, &pToolData->NewHeight, pToolData->NewUnit, YaIPS_Calib_Unit);
+    YaIPS_Calib_Change_Unit( &pToolDataParam->NewWidth, &pToolDataParam->NewHeight, pToolDataParam->NewUnit, YaIPS_Calib_Unit);
 
-    pToolData->NewUnit = YaIPS_Calib_Unit;
+    pToolDataParam->NewUnit = YaIPS_Calib_Unit;
 
     // Set modify data and values for with, height
     YaIPS_Calib_SetModifyDataAndValue( pFloatNewWidth, pFloatNewHeight,              // GUI input elements for X and y value
-                                       pToolData->NewWidth, pToolData->NewHeight,    // Set this X and Y values to the X GUI elements
+                                       pToolDataParam->NewWidth, pToolDataParam->NewHeight,    // Set this X and Y values to the X GUI elements
                                        false);                                       // Have size values
 
-    if( pToolData->NewSRatioLocked) {   // Switch lock is on
+    if( pToolDataParam->NewSRatioLocked) {   // Switch lock is on
 
       // Latch size in pixel
-      MyParWin_NewSizes_SetResultingSize( &pToolData->NewWidthLocked, &pToolData->NewHeightLocked);
+      MyParWin_NewSizes_SetResultingSize( &pToolDataParam->NewWidthLocked, &pToolDataParam->NewHeightLocked);
     }
   }
 
@@ -383,56 +390,56 @@ static void MyParWinUpdate()
   switch( YaIPS_Calib_Unit) {
   default:
   case YAIPS_CALIB_UNIT_PIXEL:         // Pixel
-    IqeB_GUI_WidgetActivate( pButNewSizeMul2, pToolData->NewWidth *   2 <= YAIPS_CALIB_MAX_VAL_PIXEL && pToolData->NewHeight   * 2 <= YAIPS_CALIB_MAX_VAL_PIXEL);
-    IqeB_GUI_WidgetActivate( pButNewSizeDiv2, pToolData->NewWidth * 0.5 >= YAIPS_CALIB_MIN_VAL_PIXEL && pToolData->NewHeight * 0.5 >= YAIPS_CALIB_MIN_VAL_PIXEL);
+    IqeB_GUI_WidgetActivate( pButNewSizeMul2, pToolDataParam->NewWidth *   2 <= YAIPS_CALIB_MAX_VAL_PIXEL && pToolDataParam->NewHeight   * 2 <= YAIPS_CALIB_MAX_VAL_PIXEL);
+    IqeB_GUI_WidgetActivate( pButNewSizeDiv2, pToolDataParam->NewWidth * 0.5 >= YAIPS_CALIB_MIN_VAL_PIXEL && pToolDataParam->NewHeight * 0.5 >= YAIPS_CALIB_MIN_VAL_PIXEL);
     break;
   case YAIPS_CALIB_UNIT_MM:            // mm
-    IqeB_GUI_WidgetActivate( pButNewSizeMul2, pToolData->NewWidth *   2 <= YAIPS_CALIB_MAX_VAL_MM && pToolData->NewHeight   * 2 <= YAIPS_CALIB_MAX_VAL_MM);
-    IqeB_GUI_WidgetActivate( pButNewSizeDiv2, pToolData->NewWidth * 0.5 >= YAIPS_CALIB_MIN_VAL_MM && pToolData->NewHeight * 0.5 >= YAIPS_CALIB_MIN_VAL_MM);
+    IqeB_GUI_WidgetActivate( pButNewSizeMul2, pToolDataParam->NewWidth *   2 <= YAIPS_CALIB_MAX_VAL_MM && pToolDataParam->NewHeight   * 2 <= YAIPS_CALIB_MAX_VAL_MM);
+    IqeB_GUI_WidgetActivate( pButNewSizeDiv2, pToolDataParam->NewWidth * 0.5 >= YAIPS_CALIB_MIN_VAL_MM && pToolDataParam->NewHeight * 0.5 >= YAIPS_CALIB_MIN_VAL_MM);
     break;
   case YAIPS_CALIB_UNIT_CM:            // cm
-    IqeB_GUI_WidgetActivate( pButNewSizeMul2, pToolData->NewWidth *   2 <= YAIPS_CALIB_MAX_VAL_CM && pToolData->NewHeight   * 2 <= YAIPS_CALIB_MAX_VAL_CM);
-    IqeB_GUI_WidgetActivate( pButNewSizeDiv2, pToolData->NewWidth * 0.5 >= YAIPS_CALIB_MIN_VAL_CM && pToolData->NewHeight * 0.5 >= YAIPS_CALIB_MIN_VAL_CM);
+    IqeB_GUI_WidgetActivate( pButNewSizeMul2, pToolDataParam->NewWidth *   2 <= YAIPS_CALIB_MAX_VAL_CM && pToolDataParam->NewHeight   * 2 <= YAIPS_CALIB_MAX_VAL_CM);
+    IqeB_GUI_WidgetActivate( pButNewSizeDiv2, pToolDataParam->NewWidth * 0.5 >= YAIPS_CALIB_MIN_VAL_CM && pToolDataParam->NewHeight * 0.5 >= YAIPS_CALIB_MIN_VAL_CM);
     break;
   case YAIPS_CALIB_UNIT_INCH:          // inch
-    IqeB_GUI_WidgetActivate( pButNewSizeMul2, pToolData->NewWidth *   2 <= YAIPS_CALIB_MAX_VAL_INCH && pToolData->NewHeight   * 2 <= YAIPS_CALIB_MAX_VAL_INCH);
-    IqeB_GUI_WidgetActivate( pButNewSizeDiv2, pToolData->NewWidth * 0.5 >= YAIPS_CALIB_MIN_VAL_INCH && pToolData->NewHeight * 0.5 >= YAIPS_CALIB_MIN_VAL_INCH);
+    IqeB_GUI_WidgetActivate( pButNewSizeMul2, pToolDataParam->NewWidth *   2 <= YAIPS_CALIB_MAX_VAL_INCH && pToolDataParam->NewHeight   * 2 <= YAIPS_CALIB_MAX_VAL_INCH);
+    IqeB_GUI_WidgetActivate( pButNewSizeDiv2, pToolDataParam->NewWidth * 0.5 >= YAIPS_CALIB_MIN_VAL_INCH && pToolDataParam->NewHeight * 0.5 >= YAIPS_CALIB_MIN_VAL_INCH);
     break;
   }
 
   // Update size ratio
 
-  if( strcmp( pNew_SizeRatio->label(), pToolData->NewSRatioLocked ? "@+1PadlockC" : "@+1PadlockO") != 0) {
-    pNew_SizeRatio->label( pToolData->NewSRatioLocked ? "@+1PadlockC" : "@+1PadlockO");
+  if( strcmp( pNew_SizeRatio->label(), pToolDataParam->NewSRatioLocked ? "@+1PadlockC" : "@+1PadlockO") != 0) {
+    pNew_SizeRatio->label( pToolDataParam->NewSRatioLocked ? "@+1PadlockC" : "@+1PadlockO");
     pNew_SizeRatio->redraw();
   }
 
   // Update apply button
 
-  TempEnable = pToolData->ImgWidth  != CurrWidth ||                // NOT equal realized size and pixel depth
-               pToolData->ImgHeight != CurrHeight ||
-               pToolData->PixelDepth != pToolData->NewPixelDepth;
+  TempEnable = pToolDataParam->ImgWidth  != CurrWidth ||                // NOT equal realized size and pixel depth
+               pToolDataParam->ImgHeight != CurrHeight ||
+               pToolDataParam->PixelDepth != pToolDataParam->NewPixelDepth;
 
   IqeB_GUI_WidgetActivate( pButNewApply, TempEnable);
 
   // Color of color buttons
 
-  TempColor = pToolData->PixelDepth >= 3 ? pToolData->BGND_LT_Color : fl_rgb_color( uchar( pToolData->BGND_LT_Color >> 24));
+  TempColor = pToolDataParam->PixelDepth >= 3 ? pToolDataParam->BGND_LT_Color : fl_rgb_color( uchar( pToolDataParam->BGND_LT_Color >> 24));
   if( pButCol_LT->color() != TempColor) {
     pButCol_LT->color( TempColor);
     pButCol_LT->redraw();
   }
-  TempColor = pToolData->PixelDepth >= 3 ? pToolData->BGND_RT_Color : fl_rgb_color( uchar( pToolData->BGND_RT_Color >> 24));
+  TempColor = pToolDataParam->PixelDepth >= 3 ? pToolDataParam->BGND_RT_Color : fl_rgb_color( uchar( pToolDataParam->BGND_RT_Color >> 24));
   if( pButCol_RT->color() != TempColor) {
     pButCol_RT->color( TempColor);
     pButCol_RT->redraw();
   }
-  TempColor = pToolData->PixelDepth >= 3 ? pToolData->BGND_LB_Color : fl_rgb_color( uchar( pToolData->BGND_LB_Color >> 24));
+  TempColor = pToolDataParam->PixelDepth >= 3 ? pToolDataParam->BGND_LB_Color : fl_rgb_color( uchar( pToolDataParam->BGND_LB_Color >> 24));
   if( pButCol_LB->color() != TempColor) {
     pButCol_LB->color( TempColor);
     pButCol_LB->redraw();
   }
-  TempColor = pToolData->PixelDepth >= 3 ? pToolData->BGND_RB_Color : fl_rgb_color( uchar( pToolData->BGND_RB_Color >> 24));
+  TempColor = pToolDataParam->PixelDepth >= 3 ? pToolDataParam->BGND_RB_Color : fl_rgb_color( uchar( pToolDataParam->BGND_RB_Color >> 24));
   if( pButCol_RB->color() != TempColor) {
     pButCol_RB->color( TempColor);
     pButCol_RB->redraw();
@@ -440,51 +447,51 @@ static void MyParWinUpdate()
 
   // Enables for color widgets
 
-  TempEnable = pToolData->BGndType == YAIPS_SHAPE_GEN_BGND_COLOR;
+  TempEnable = pToolDataParam->BGndType == YAIPS_SHAPE_GEN_BGND_COLOR;
 
   IqeB_GUI_WidgetActivate( pCheckBut_LT, TempEnable);
   IqeB_GUI_WidgetActivate( pCheckBut_RT, TempEnable);
   IqeB_GUI_WidgetActivate( pCheckBut_LB, TempEnable);
   IqeB_GUI_WidgetActivate( pCheckBut_RB, TempEnable);
 
-  TempEnable = pToolData->BGndType == YAIPS_SHAPE_GEN_BGND_COLOR && pToolData->BGND_LT_Col_A;
+  TempEnable = pToolDataParam->BGndType == YAIPS_SHAPE_GEN_BGND_COLOR && pToolDataParam->BGND_LT_Col_A;
 
   IqeB_GUI_WidgetActivate( pButCol_LT, TempEnable);
   IqeB_GUI_WidgetActivate( pIntColR_LT, TempEnable);
-  IqeB_GUI_WidgetActivate( pIntColG_LT, TempEnable && pToolData->PixelDepth >= 3);
-  IqeB_GUI_WidgetActivate( pIntColB_LT, TempEnable && pToolData->PixelDepth >= 3);
+  IqeB_GUI_WidgetActivate( pIntColG_LT, TempEnable && pToolDataParam->PixelDepth >= 3);
+  IqeB_GUI_WidgetActivate( pIntColB_LT, TempEnable && pToolDataParam->PixelDepth >= 3);
 
-  TempEnable = pToolData->BGndType == YAIPS_SHAPE_GEN_BGND_COLOR && pToolData->BGND_RT_Col_A;
+  TempEnable = pToolDataParam->BGndType == YAIPS_SHAPE_GEN_BGND_COLOR && pToolDataParam->BGND_RT_Col_A;
 
   IqeB_GUI_WidgetActivate( pButCol_RT, TempEnable);
   IqeB_GUI_WidgetActivate( pIntColR_RT, TempEnable);
-  IqeB_GUI_WidgetActivate( pIntColG_RT, TempEnable && pToolData->PixelDepth >= 3);
-  IqeB_GUI_WidgetActivate( pIntColB_RT, TempEnable && pToolData->PixelDepth >= 3);
+  IqeB_GUI_WidgetActivate( pIntColG_RT, TempEnable && pToolDataParam->PixelDepth >= 3);
+  IqeB_GUI_WidgetActivate( pIntColB_RT, TempEnable && pToolDataParam->PixelDepth >= 3);
 
-  TempEnable = pToolData->BGndType == YAIPS_SHAPE_GEN_BGND_COLOR && pToolData->BGND_LB_Col_A;
+  TempEnable = pToolDataParam->BGndType == YAIPS_SHAPE_GEN_BGND_COLOR && pToolDataParam->BGND_LB_Col_A;
 
   IqeB_GUI_WidgetActivate( pButCol_LB, TempEnable);
   IqeB_GUI_WidgetActivate( pIntColR_LB, TempEnable);
-  IqeB_GUI_WidgetActivate( pIntColG_LB, TempEnable && pToolData->PixelDepth >= 3);
-  IqeB_GUI_WidgetActivate( pIntColB_LB, TempEnable && pToolData->PixelDepth >= 3);
+  IqeB_GUI_WidgetActivate( pIntColG_LB, TempEnable && pToolDataParam->PixelDepth >= 3);
+  IqeB_GUI_WidgetActivate( pIntColB_LB, TempEnable && pToolDataParam->PixelDepth >= 3);
 
-  TempEnable = pToolData->BGndType == YAIPS_SHAPE_GEN_BGND_COLOR && pToolData->BGND_RB_Col_A;
+  TempEnable = pToolDataParam->BGndType == YAIPS_SHAPE_GEN_BGND_COLOR && pToolDataParam->BGND_RB_Col_A;
 
   IqeB_GUI_WidgetActivate( pButCol_RB, TempEnable);
   IqeB_GUI_WidgetActivate( pIntColR_RB, TempEnable);
-  IqeB_GUI_WidgetActivate( pIntColG_RB, TempEnable && pToolData->PixelDepth >= 3);
-  IqeB_GUI_WidgetActivate( pIntColB_RB, TempEnable && pToolData->PixelDepth >= 3);
+  IqeB_GUI_WidgetActivate( pIntColG_RB, TempEnable && pToolDataParam->PixelDepth >= 3);
+  IqeB_GUI_WidgetActivate( pIntColB_RB, TempEnable && pToolDataParam->PixelDepth >= 3);
 
-  TempEnable = pToolData->BGndType == YAIPS_SHAPE_GEN_BGND_IMAGE;
+  TempEnable = pToolDataParam->BGndType == YAIPS_SHAPE_GEN_BGND_IMAGE;
 
   IqeB_GUI_WidgetActivate( pBGndFileName, TempEnable);
   IqeB_GUI_WidgetActivate( pBGndFileLoad, TempEnable);
 
   // Background image
-  IqeB_FileGetFileName( pToolData->BGndFileName, TempString1, sizeof( TempString1));   // Get filename without path
-  if( pToolData->pBGndFile != NULL) {                      // Have the file loaded
-    sprintf( TempString2, " %d x %d, %s", pToolData->pBGndFile->data_w(), pToolData->pBGndFile->data_h(),
-                                          pYaIPS_PixelDepth_to_string( pToolData->pBGndFile->d()));
+  IqeB_FileGetFileName( pToolDataParam->BGndFileName, TempString1, sizeof( TempString1));   // Get filename without path
+  if( pToolDataParam->pBGndFile != NULL) {                      // Have the file loaded
+    sprintf( TempString2, " %d x %d, %s", pToolDataParam->pBGndFile->data_w(), pToolDataParam->pBGndFile->data_h(),
+                                          pYaIPS_PixelDepth_to_string( pToolDataParam->pBGndFile->d()));
     strcat( TempString1, TempString2);
   }
   if( strcmp( TempString1, pBGndFileName->value()) != 0) { // Is different form displayed file name
@@ -494,9 +501,9 @@ static void MyParWinUpdate()
 
   // Enables for alpha
 
-  HaveAlpha = pToolData->PixelDepth == 2 || pToolData->PixelDepth == 4;
+  HaveAlpha = pToolDataParam->PixelDepth == 2 || pToolDataParam->PixelDepth == 4;
 
-  IqeB_GUI_WidgetActivate( pSliderAlphaMult, HaveAlpha && pToolData->ShapeType != YAIPS_SHAPE_GEN_TYPE_NONE); // Set item activated/inactive
+  IqeB_GUI_WidgetActivate( pSliderAlphaMult, HaveAlpha && pToolDataParam->ShapeType != YAIPS_SHAPE_GEN_TYPE_NONE); // Set item activated/inactive
 
   // Update shape generation ...
 
@@ -506,7 +513,7 @@ static void MyParWinUpdate()
 
   const Fl_Menu_Item *m;
 
-  m = pChoiceShape->find_item_with_argument( pToolData->ShapeType);
+  m = pChoiceShape->find_item_with_argument( pToolDataParam->ShapeType);
 
   if( m != NULL) {                                 // Found it
 
@@ -514,12 +521,12 @@ static void MyParWinUpdate()
 
   } else {                                         // NOT found
 
-    pToolData->ShapeType = 0;                      // Invalidate shape type
+    pToolDataParam->ShapeType = 0;                      // Invalidate shape type
   }
 
   pChoiceShape->value( iCurrShape);
 
-  TempEnable = HaveAlpha && pToolData->ShapeType != YAIPS_SHAPE_GEN_TYPE_NONE;   // Generate shape
+  TempEnable = HaveAlpha && pToolDataParam->ShapeType != YAIPS_SHAPE_GEN_TYPE_NONE;   // Generate shape
 
   // Locate shape generation data
 
@@ -529,7 +536,7 @@ static void MyParWinUpdate()
 
   for( int i = 0; i < nShapeGen_List; i++) {
 
-    if( pToolData->ShapeType == ShapeGen_List[ i].Type) {
+    if( pToolDataParam->ShapeType == ShapeGen_List[ i].Type) {
 
       iShapeGen_List = i;
       break;
@@ -546,17 +553,17 @@ static void MyParWinUpdate()
 
     pSlider_3D_ShapeArg->bounds( ShapeGen_List[ iShapeGen_List].ShapeArgMin, ShapeGen_List[ iShapeGen_List].ShapeArgMax);
 
-    if( pToolData->ShapeArg < ShapeGen_List[ iShapeGen_List].ShapeArgMin) {    // Clip minimum
+    if( pToolDataParam->ShapeArg < ShapeGen_List[ iShapeGen_List].ShapeArgMin) {    // Clip minimum
 
-      pToolData->ShapeArg = ShapeGen_List[ iShapeGen_List].ShapeArgMin;
+      pToolDataParam->ShapeArg = ShapeGen_List[ iShapeGen_List].ShapeArgMin;
     }
 
-    if( pToolData->ShapeArg > ShapeGen_List[ iShapeGen_List].ShapeArgMax) {    // Clip maximum
+    if( pToolDataParam->ShapeArg > ShapeGen_List[ iShapeGen_List].ShapeArgMax) {    // Clip maximum
 
-      pToolData->ShapeArg = ShapeGen_List[ iShapeGen_List].ShapeArgMax;
+      pToolDataParam->ShapeArg = ShapeGen_List[ iShapeGen_List].ShapeArgMax;
     }
 
-    pSlider_3D_ShapeArg->value( pToolData->ShapeArg);
+    pSlider_3D_ShapeArg->value( pToolDataParam->ShapeArg);
   }
 
 }
@@ -610,8 +617,12 @@ static void IqeB_GUI_ParIdleAction( void *)
 static void close_Par_cb( Fl_Widget *w, void *pValueArg)
 {
 
-  pToolData->MyParPosX = pMyParWin->x();
-  pToolData->MyParPosY = pMyParWin->y();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckReset();   // The one and only open tool window parameter dialog is closed
+#endif
+
+  pToolDataParam->MyParPosX = pMyParWin->x();
+  pToolDataParam->MyParPosY = pMyParWin->y();
 
 #ifdef YAIPS_IDLE_CALLBACK_USE  // Use the idle callbacks in tool windows
   Fl::remove_idle( IqeB_GUI_ParIdleAction);      // Redraw window during idle
@@ -637,11 +648,11 @@ static void YaIPS_BGndType_Callback( Fl_Widget *w, void *data)
 
   Value = (long long)(data);             // get value to set
 
-  pToolData->BGndType = Value;           // Set new value
+  pToolDataParam->BGndType = Value;           // Set new value
 
   MyParWinUpdate();                      // update all enables
 
-  pToolData->Settings_Changed = 1;       // Force recalculation output
+  pToolDataParam->Settings_Changed = 1;       // Force recalculation output
 }
 
 /************************************************************************************
@@ -693,24 +704,24 @@ static void IqeB_GUI_BGndFileLoad_Callback( Fl_Widget *w)
     IqeB_FileNormPathCharsAndCWD( YaIPS_BrowserDirectory);  // Ensure normalized path characters and working directory
 
     // Remember last loaded file name
-    memset( pToolData->BGndFileName, 0, sizeof( pToolData->BGndFileName));
-    strncpy( pToolData->BGndFileName, pFileName, sizeof( pToolData->BGndFileName) - 1);
+    memset( pToolDataParam->BGndFileName, 0, sizeof( pToolDataParam->BGndFileName));
+    strncpy( pToolDataParam->BGndFileName, pFileName, sizeof( pToolDataParam->BGndFileName) - 1);
 
-    IqeB_FileNormPathCharsAndCWD( pToolData->BGndFileName);  // Ensure normalized path characters and working directory
+    IqeB_FileNormPathCharsAndCWD( pToolDataParam->BGndFileName);  // Ensure normalized path characters and working directory
 
     // Set new loaded file
 
-    if( pToolData->pBGndFile != NULL) {   // Was a file loaded before ?
+    if( pToolDataParam->pBGndFile != NULL) {   // Was a file loaded before ?
 
-      pToolData->pBGndFile->release();    // Release data of this file
+      pToolDataParam->pBGndFile->release();    // Release data of this file
 
-      pToolData->pBGndFile = NULL;
+      pToolDataParam->pBGndFile = NULL;
     }
 
-    pToolData->pBGndFile = pTempImage;    // Set loaded file
+    pToolDataParam->pBGndFile = pTempImage;    // Set loaded file
   }
 
-  pToolData->Settings_Changed = 1;       // Force recalculation output
+  pToolDataParam->Settings_Changed = 1;       // Force recalculation output
 }
 
 /************************************************************************************
@@ -756,19 +767,19 @@ static void IqeB_Sizes_PresetButton_Callback( Fl_Widget *w)
     // Modify float values by change of the unit
     YaIPS_Calib_Change_Unit( &NewWidth, &NewHeight, unit, YaIPS_Calib_Unit);
 
-    pToolData->NewWidth  = NewWidth;
-    pToolData->NewHeight = NewHeight;
+    pToolDataParam->NewWidth  = NewWidth;
+    pToolDataParam->NewHeight = NewHeight;
 
-    pFloatNewWidth->SetValue( pToolData->NewWidth);
-    pFloatNewHeight->SetValue( pToolData->NewHeight);
+    pFloatNewWidth->SetValue( pToolDataParam->NewWidth);
+    pFloatNewHeight->SetValue( pToolDataParam->NewHeight);
 
     // Update resulting new size in pixel
     MyParWin_NewSizes_SetResultingSize( NULL, NULL);
 
-    if( pToolData->NewSRatioLocked) {   // Switch lock is on
+    if( pToolDataParam->NewSRatioLocked) {   // Switch lock is on
 
       // Latch size in pixel
-      MyParWin_NewSizes_SetResultingSize( &pToolData->NewWidthLocked, &pToolData->NewHeightLocked);
+      MyParWin_NewSizes_SetResultingSize( &pToolDataParam->NewWidthLocked, &pToolDataParam->NewHeightLocked);
     }
   }
 }
@@ -787,10 +798,10 @@ static void IqeB_NewSizes_Buttons_Callback( Fl_Widget *w)
 
   pButton = (Fl_Button *)w;
 
-  OldWidth  = pToolData->NewWidth;
-  NewWidth  = pToolData->NewWidth;
-  OldHeight = pToolData->NewHeight;
-  NewHeight = pToolData->NewHeight;
+  OldWidth  = pToolDataParam->NewWidth;
+  NewWidth  = pToolDataParam->NewWidth;
+  OldHeight = pToolDataParam->NewHeight;
+  NewHeight = pToolDataParam->NewHeight;
 
   if( pButton == pButNewSizeMul2)  {         // Double image sizes
 
@@ -871,25 +882,25 @@ static void IqeB_NewSizes_Buttons_Callback( Fl_Widget *w)
 
     MyParWin_NewSizes_SetResultingSize( &xx, &yy);
 
-    pToolData->ImgWidth  = xx;
-    pToolData->ImgHeight = yy;
+    pToolDataParam->ImgWidth  = xx;
+    pToolDataParam->ImgHeight = yy;
 
-    pToolData->PixelDepth = pToolData->NewPixelDepth;
+    pToolDataParam->PixelDepth = pToolDataParam->NewPixelDepth;
 
-    pToolData->Settings_Changed = 1;     // Force recalculation output
+    pToolDataParam->Settings_Changed = 1;     // Force recalculation output
   }
 
   // Update size changes
 
   if( NewWidth != OldWidth) {
 
-    pToolData->NewWidth = NewWidth;
+    pToolDataParam->NewWidth = NewWidth;
     pFloatNewWidth->SetValue( NewWidth);
   }
 
   if( NewHeight != OldHeight) {
 
-    pToolData->NewHeight = NewHeight;
+    pToolDataParam->NewHeight = NewHeight;
     pFloatNewHeight->SetValue( NewHeight);
   }
 }
@@ -940,7 +951,7 @@ static void IqeB_GUI_Float_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   // Check for locked ratio
 
-  if( pToolData->NewSRatioLocked) {        // Size ratio is locked
+  if( pToolDataParam->NewSRatioLocked) {        // Size ratio is locked
 
     int CurrWidthPix, CurrHeightPix;
     float CurrWidthFloat, CurrHeightFloat;
@@ -948,10 +959,10 @@ static void IqeB_GUI_Float_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     // Get sizes in pixel
     MyParWin_NewSizes_SetResultingSize( &CurrWidthPix, &CurrHeightPix);
 
-    if( pValue == &pToolData->NewWidth) {          // Changed X Size
+    if( pValue == &pToolDataParam->NewWidth) {          // Changed X Size
 
       // update Y Size depending from radio
-      CurrHeightPix = (CurrWidthPix * pToolData->NewHeightLocked + pToolData->NewWidthLocked / 2) / pToolData->NewWidthLocked;
+      CurrHeightPix = (CurrWidthPix * pToolDataParam->NewHeightLocked + pToolDataParam->NewWidthLocked / 2) / pToolDataParam->NewWidthLocked;
 
       switch( YaIPS_Calib_Unit) {
       default:
@@ -978,12 +989,12 @@ static void IqeB_GUI_Float_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
       pFloatNewHeight->SetValue( CurrHeightFloat);
 
-      pToolData->NewHeight = CurrHeightFloat;
+      pToolDataParam->NewHeight = CurrHeightFloat;
 
-    } else if( pValue == &pToolData->NewHeight) {   // Changed Y Size
+    } else if( pValue == &pToolDataParam->NewHeight) {   // Changed Y Size
 
       // update X Size depending from radio
-      CurrWidthPix = (CurrHeightPix * pToolData->NewWidthLocked + pToolData->NewHeightLocked / 2) / pToolData->NewHeightLocked;
+      CurrWidthPix = (CurrHeightPix * pToolDataParam->NewWidthLocked + pToolDataParam->NewHeightLocked / 2) / pToolDataParam->NewHeightLocked;
 
       switch( YaIPS_Calib_Unit) {
       default:
@@ -1010,12 +1021,12 @@ static void IqeB_GUI_Float_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
       pFloatNewWidth->SetValue( CurrWidthFloat);
 
-      pToolData->NewWidth = CurrWidthFloat;
+      pToolDataParam->NewWidth = CurrWidthFloat;
 
     }
   }
 
-  //x/pToolData->Settings_Changed = 1;                    // Force recalculation output
+  //x/pToolDataParam->Settings_Changed = 1;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -1066,7 +1077,7 @@ static void IqeB_GUI_Int_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
     *pValue = Value;                       // update the variable
 
-    pToolData->Settings_Changed = 1;     // Force recalculation output
+    pToolDataParam->Settings_Changed = 1;     // Force recalculation output
   }
 }
 
@@ -1106,7 +1117,7 @@ static void IqeB_GUI_Int_SetValue_ColR_Callback( Fl_Widget *w, void *pValueArg)
 
     *pValue = fl_rgb_color( r, g, b);
 
-    pToolData->Settings_Changed = 1;                    // Force recalculation output
+    pToolDataParam->Settings_Changed = 1;                    // Force recalculation output
   }
 }
 
@@ -1146,7 +1157,7 @@ static void IqeB_GUI_Int_SetValue_ColG_Callback( Fl_Widget *w, void *pValueArg)
 
     *pValue = fl_rgb_color( r, g, b);
 
-    pToolData->Settings_Changed = 1;                    // Force recalculation output
+    pToolDataParam->Settings_Changed = 1;                    // Force recalculation output
   }
 }
 
@@ -1186,7 +1197,7 @@ static void IqeB_GUI_Int_SetValue_ColB_Callback( Fl_Widget *w, void *pValueArg)
 
     *pValue = fl_rgb_color( r, g, b);
 
-    pToolData->Settings_Changed = 1;                // Force recalculation output
+    pToolDataParam->Settings_Changed = 1;                // Force recalculation output
   }
 }
 
@@ -1212,7 +1223,7 @@ static void IqeB_GUI_CBox_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   *pValue = pThis->value();              // update the variable
 
-  pToolData->Settings_Changed = 1;          // Force recalculation output
+  pToolDataParam->Settings_Changed = 1;          // Force recalculation output
 }
 
 /************************************************************************************
@@ -1227,7 +1238,7 @@ static void IqeB_GUI_But_Color_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   // Allow chooser only for color images
 
-  if( pToolData->PixelDepth < 3) {       // No color image
+  if( pToolDataParam->PixelDepth < 3) {       // No color image
 
     return;
   }
@@ -1248,25 +1259,25 @@ static void IqeB_GUI_But_Color_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     // Update color RGB components
     Fl::get_color( *pColor, r, g, b);
 
-    if( pColor == &pToolData->BGND_LT_Color) {
+    if( pColor == &pToolDataParam->BGND_LT_Color) {
       pIntColR_LT->SetValue( r);
       pIntColG_LT->SetValue( g);
       pIntColB_LT->SetValue( b);
-    } else if( pColor == &pToolData->BGND_RT_Color) {
+    } else if( pColor == &pToolDataParam->BGND_RT_Color) {
       pIntColR_RT->SetValue( r);
       pIntColG_RT->SetValue( g);
       pIntColB_RT->SetValue( b);
-    } else if( pColor == &pToolData->BGND_LB_Color) {
+    } else if( pColor == &pToolDataParam->BGND_LB_Color) {
       pIntColR_LB->SetValue( r);
       pIntColG_LB->SetValue( g);
       pIntColB_LB->SetValue( b);
-    } else if( pColor == &pToolData->BGND_RB_Color) {
+    } else if( pColor == &pToolDataParam->BGND_RB_Color) {
       pIntColR_RB->SetValue( r);
       pIntColG_RB->SetValue( g);
       pIntColB_RB->SetValue( b);
     }
 
-    pToolData->Settings_Changed = 1;          // Force recalculation output
+    pToolDataParam->Settings_Changed = 1;          // Force recalculation output
   }
 }
 
@@ -1303,32 +1314,32 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
       *pValue = NewValue;                  // Update the variable
       if( *pValue >= 0 && *pValue < nShapeGen_List) { // Security test
 
-        pToolData->ShapeType = ShapeGen_List[ NewValue].Type;
+        pToolDataParam->ShapeType = ShapeGen_List[ NewValue].Type;
 
         // On change of shape change default argument
-        pToolData->ShapeArg = ShapeGen_List[ NewValue].ShapeArgDef;
+        pToolDataParam->ShapeArg = ShapeGen_List[ NewValue].ShapeArgDef;
       }
 
       m = pThis->mvalue();
       if( m != NULL) {
 
-        pToolData->ShapeType = (int)m->argument();
+        pToolDataParam->ShapeType = (int)m->argument();
       }
     }
 
-  } else if( pValueArg == &pToolData->NewSRatioLocked) {    // Changed size ratio
+  } else if( pValueArg == &pToolDataParam->NewSRatioLocked) {    // Changed size ratio
 
-    pToolData->NewSRatioLocked = ! pToolData->NewSRatioLocked;   // Toggle flag
+    pToolDataParam->NewSRatioLocked = ! pToolDataParam->NewSRatioLocked;   // Toggle flag
 
-    pNew_SizeRatio->label( pToolData->NewSRatioLocked ? "@+1PadlockC" : "@+1PadlockO");
+    pNew_SizeRatio->label( pToolDataParam->NewSRatioLocked ? "@+1PadlockC" : "@+1PadlockO");
     pNew_SizeRatio->redraw();
 
-    if( pToolData->NewSRatioLocked) {   // Switch lock to on
+    if( pToolDataParam->NewSRatioLocked) {   // Switch lock to on
 
       // Latch size in pixel if just switched to on
-      MyParWin_NewSizes_SetResultingSize( &pToolData->NewWidthLocked, &pToolData->NewHeightLocked);
+      MyParWin_NewSizes_SetResultingSize( &pToolDataParam->NewWidthLocked, &pToolDataParam->NewHeightLocked);
     }
-  } else if( pValueArg == &pToolData->NewPixelDepth) {    // Changed pixel depth
+  } else if( pValueArg == &pToolDataParam->NewPixelDepth) {    // Changed pixel depth
 
     // Fl_Choice
 
@@ -1373,7 +1384,7 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     pThis  = (Fl_Valuator *)w;
     *pValue = pThis->value();               // update the variable
 
-  } else if( pValueArg == (void *)&pToolData->AlphaMult) {
+  } else if( pValueArg == (void *)&pToolDataParam->AlphaMult) {
 
     // Fl_Valuator, Fl_Slider or Fl_Value_Slider
 
@@ -1383,7 +1394,7 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     *(float *)pValueArg = pThis->value();               // update the variable
   }
 
-  pToolData->Settings_Changed = 1;          // Force recalculation output
+  pToolDataParam->Settings_Changed = 1;          // Force recalculation output
 }
 
 /************************************************************************************
@@ -1396,10 +1407,20 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 {
   int xPos, yPos;
+  Fl_Double_Window *pMyToolWin;
+
+  // Check parameter dialog is allowed to open
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  if( IqeB_GUI_ToolParCheckOpen( close_Par_cb, &pMyParWin, iToolData) < 0) {    // Allowed to open parameter dialog
+
+    return;
+  }
+#endif
 
   // Get pointer to tool data
 
-  pToolData = YaIPS_ToolData_info + iToolData;             // Point to info data
+  pToolDataParam = YaIPS_ToolData_info + iToolData;             // Point to info data
 
   //
   // creation of window on first call
@@ -1408,18 +1429,28 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   xPos = xLeft;
   yPos = yTop;
 
-  if( pToolData->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolData->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
+  if( pToolDataParam->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolDataParam->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
 
-    xPos = pToolData->MyParPosX;
-    yPos = pToolData->MyParPosY;
+    xPos = pToolDataParam->MyParPosX;
+    yPos = pToolDataParam->MyParPosY;
   }
 
-  pMyParWin = new Fl_Window( xPos, yPos, 340 /*IQE_GUI_TOOLS_STD_WITDH*/, 221, LANGDEF_SETTINGS);
+  pMyParWin = new Fl_Window( xPos, yPos, 340 /*IQE_GUI_TOOLS_STD_WITDH*/, 221);
 
   if( pMyParWin == NULL) {  // security test
 
     return;
   }
+
+  // Set window title
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+
+   pMyToolWin = (Fl_Double_Window *)pToolDataParam->pMyToolWin;  // Convert type of pointer
+
+   pMyParWin->copy_label( pMyToolWin->label());
+#else
+   pMyParWin->label( LANGDEF_SETTINGS);
+#endif
 
   //
   //  GUI things
@@ -1468,7 +1499,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   yGroup = y;
   x1 = 4;
 
-  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LangStringLookup( "&GUI_GenImage_TabA1=Size"));
+  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LANGDEF_SIZE);
   pTemp_Group->tooltip( LangStringLookup( "&GUI_GenImage_TabA1a=Image size"));
 
     y += 22;
@@ -1507,7 +1538,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->align( FL_ALIGN_TOP_LEFT);     // align for label
     pFloatTemp->labelsize( 10);
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->NewWidth);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->NewWidth);
     pFloatTemp->SetModifyData( 1, 1234.0, 10.0, 1.0);  // Is modified later form MyParWinUpdateNewSizes()
     pFloatNewWidth = pFloatTemp;
 
@@ -1519,7 +1550,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                                              "Lock size ratio."));
     pTemp_Button->labelcolor( FL_BLUE);
     pTemp_Button->box( FL_NO_BOX);
-    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->NewSRatioLocked);
+    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->NewSRatioLocked);
     pNew_SizeRatio = pTemp_Button;
 
     x1 += yy - 6;
@@ -1531,15 +1562,15 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->align( FL_ALIGN_TOP_LEFT);     // align for label
     pFloatTemp->labelsize( 10);
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->NewHeight);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->NewHeight);
     pFloatTemp->SetModifyData( 1, 1234.0, 10.0, 1.0);  // Is modified later form MyParWinUpdateNewSizes()
     pFloatNewHeight = pFloatTemp;
 
     // Set modify data and values for with, height
     YaIPS_Calib_SetModifyDataAndValue( pFloatNewWidth, pFloatNewHeight,              // GUI input elements for X and y value
-                                       pToolData->NewWidth, pToolData->NewHeight,    // Set this X and Y values to the X GUI elements
+                                       pToolDataParam->NewWidth, pToolDataParam->NewHeight,    // Set this X and Y values to the X GUI elements
                                        false,                                        // Have size values
-                                       pToolData->NewUnit);                          // Use this calibration unit
+                                       pToolDataParam->NewUnit);                          // Use this calibration unit
 
     x1 += xx2 - 6;
     x1 += 4;
@@ -1548,13 +1579,13 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Box = new Fl_Box( x1, y, xx2, yy);
 
-    strcpy( TempBuffer, pYaIPS_Calib_Unit2String( pToolData->NewUnit));
-    if( pToolData->NewUnit == YAIPS_CALIB_UNIT_PIXEL) {      // Pixel unit need special attention
+    strcpy( TempBuffer, pYaIPS_Calib_Unit2String( pToolDataParam->NewUnit));
+    if( pToolDataParam->NewUnit == YAIPS_CALIB_UNIT_PIXEL) {      // Pixel unit need special attention
       strcat( TempBuffer, " !");
     }
 
     pTemp_Box->copy_label( TempBuffer);
-    pTemp_Box->labelcolor( pToolData->NewUnit == YAIPS_CALIB_UNIT_PIXEL ? FL_RED : FL_BLACK);  // Color red for pixel format
+    pTemp_Box->labelcolor( pToolDataParam->NewUnit == YAIPS_CALIB_UNIT_PIXEL ? FL_RED : FL_BLACK);  // Color red for pixel format
 
     pTemp_Box->tooltip( LangStringLookup( "&GUI_GenImage_TabA13a="
                                           "Unit selected in calibration dialog.\n"
@@ -1598,7 +1629,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                                              " 4 RGB color + alpha mask"));
     pTemp_Choice->align( FL_ALIGN_TOP_LEFT);     // align for label
     pTemp_Choice->labelsize( 10);
-    pTemp_Choice->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->NewPixelDepth);
+    pTemp_Choice->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->NewPixelDepth);
     pTemp_Choice->menu_box( FL_BORDER_BOX);
 
     pChoice_NewPixelDepth = pTemp_Choice;
@@ -1606,7 +1637,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pChoice_NewPixelDepth->add( LANGDEF_PIXDEPTH_2_TXT, 0, NULL, (void *)(fl_intptr_t)2);
     pChoice_NewPixelDepth->add( LANGDEF_PIXDEPTH_3_TXT, 0, NULL, (void *)(fl_intptr_t)3);
     pChoice_NewPixelDepth->add( LANGDEF_PIXDEPTH_4_TXT, 0, NULL, (void *)(fl_intptr_t)4);
-    pChoice_NewPixelDepth->value( pToolData->NewPixelDepth - 1);
+    pChoice_NewPixelDepth->value( pToolDataParam->NewPixelDepth - 1);
 
     x1 += xx2;
     x1 += 4;
@@ -1697,7 +1728,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                             "A separate color can be specified\n"
                             "for each corner of the background."));
     pRadioButTemp->callback( YaIPS_BGndType_Callback, (void *)YAIPS_SHAPE_GEN_BGND_COLOR);
-    pRadioButTemp->value( pToolData->BGndType == YAIPS_SHAPE_GEN_BGND_COLOR);
+    pRadioButTemp->value( pToolDataParam->BGndType == YAIPS_SHAPE_GEN_BGND_COLOR);
     pBGndType_0 = pRadioButTemp;
 
     // Next line
@@ -1713,8 +1744,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Box->align( FL_ALIGN_RIGHT | FL_ALIGN_INSIDE | FL_ALIGN_CLIP);
 
     pTemp_Button = new Fl_Button( x1 + 4, y, yy * 2, yy, "");
-    pTemp_Button->color( pToolData->BGND_LT_Color);
-    pTemp_Button->callback( IqeB_GUI_But_Color_SetValue_Callback, &pToolData->BGND_LT_Color);
+    pTemp_Button->color( pToolDataParam->BGND_LT_Color);
+    pTemp_Button->callback( IqeB_GUI_But_Color_SetValue_Callback, &pToolDataParam->BGND_LT_Color);
     pTemp_Button->tooltip( LangStringLookup( "&GUI_GenImage_TabB10a="
                            "Color for image background of left upper corner"));
     pButCol_LT = pTemp_Button;
@@ -1724,12 +1755,12 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     xx2 = 30;
     x1 += 20;
 
-    Fl::get_color( pToolData->BGND_LT_Color, r, g, b);
+    Fl::get_color( pToolDataParam->BGND_LT_Color, r, g, b);
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_R);
     pTemp_Int->tooltip( LANGDEF_COL_CHANNEL_R);
     pTemp_Int->SetValue( r);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColR_Callback, &pToolData->BGND_LT_Color);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColR_Callback, &pToolDataParam->BGND_LT_Color);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pIntColR_LT = pTemp_Int;
 
@@ -1739,7 +1770,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_G);
     pTemp_Int->tooltip( LANGDEF_COL_CHANNEL_G);
     pTemp_Int->SetValue( g);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColG_Callback, &pToolData->BGND_LT_Color);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColG_Callback, &pToolDataParam->BGND_LT_Color);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pIntColG_LT = pTemp_Int;
 
@@ -1749,7 +1780,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_B);
     pTemp_Int->tooltip( LANGDEF_COL_CHANNEL_B);
     pTemp_Int->SetValue( b);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColB_Callback, &pToolData->BGND_LT_Color);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColB_Callback, &pToolDataParam->BGND_LT_Color);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pIntColB_LT = pTemp_Int;
 
@@ -1759,8 +1790,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pCheckTemp = new Fl_Check_Button( x1, y, 30, yy, LANGDEF_ACTIVE_SHORT);
     pCheckTemp->tooltip( LangStringLookup( "&GUI_GenImage_TabB11a="
                          "Check this to use the color for the named corner."));
-    pCheckTemp->value( pToolData->BGND_LT_Col_A);
-    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolData->BGND_LT_Col_A);
+    pCheckTemp->value( pToolDataParam->BGND_LT_Col_A);
+    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolDataParam->BGND_LT_Col_A);
     pCheckBut_LT = pCheckTemp;
 
     // Next line
@@ -1776,8 +1807,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Box->align( FL_ALIGN_RIGHT | FL_ALIGN_INSIDE | FL_ALIGN_CLIP);
 
     pTemp_Button = new Fl_Button( x1 + 4, y, yy * 2, yy, "");
-    pTemp_Button->color( pToolData->BGND_RT_Color);
-    pTemp_Button->callback( IqeB_GUI_But_Color_SetValue_Callback, &pToolData->BGND_RT_Color);
+    pTemp_Button->color( pToolDataParam->BGND_RT_Color);
+    pTemp_Button->callback( IqeB_GUI_But_Color_SetValue_Callback, &pToolDataParam->BGND_RT_Color);
     pTemp_Button->tooltip( LangStringLookup( "&GUI_GenImage_TabB12a="
                            "Color for image background of right upper corner"));
     pButCol_RT = pTemp_Button;
@@ -1787,12 +1818,12 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     xx2 = 30;
     x1 += 20;
 
-    Fl::get_color( pToolData->BGND_RT_Color, r, g, b);
+    Fl::get_color( pToolDataParam->BGND_RT_Color, r, g, b);
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_R);
     pTemp_Int->tooltip( LANGDEF_COL_CHANNEL_R);
     pTemp_Int->SetValue( r);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColR_Callback, &pToolData->BGND_RT_Color);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColR_Callback, &pToolDataParam->BGND_RT_Color);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pIntColR_RT = pTemp_Int;
 
@@ -1802,7 +1833,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_G);
     pTemp_Int->tooltip( LANGDEF_COL_CHANNEL_G);
     pTemp_Int->SetValue( g);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColG_Callback, &pToolData->BGND_RT_Color);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColG_Callback, &pToolDataParam->BGND_RT_Color);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pIntColG_RT = pTemp_Int;
 
@@ -1812,7 +1843,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_B);
     pTemp_Int->tooltip( LANGDEF_COL_CHANNEL_B);
     pTemp_Int->SetValue( b);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColB_Callback, &pToolData->BGND_RT_Color);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColB_Callback, &pToolDataParam->BGND_RT_Color);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pIntColB_RT = pTemp_Int;
 
@@ -1822,8 +1853,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pCheckTemp = new Fl_Check_Button( x1, y, 30, yy, LANGDEF_ACTIVE_SHORT);
     pCheckTemp->tooltip( LangStringLookup( "&GUI_GenImage_TabB11a="
                          "Check this to use the color for the named corner."));
-    pCheckTemp->value( pToolData->BGND_RT_Col_A);
-    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolData->BGND_RT_Col_A);
+    pCheckTemp->value( pToolDataParam->BGND_RT_Col_A);
+    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolDataParam->BGND_RT_Col_A);
     pCheckBut_RT = pCheckTemp;
 
     // Next line
@@ -1839,8 +1870,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Box->align( FL_ALIGN_RIGHT | FL_ALIGN_INSIDE | FL_ALIGN_CLIP);
 
     pTemp_Button = new Fl_Button( x1 + 4, y, yy * 2, yy, "");
-    pTemp_Button->color( pToolData->BGND_LB_Color);
-    pTemp_Button->callback( IqeB_GUI_But_Color_SetValue_Callback, &pToolData->BGND_LB_Color);
+    pTemp_Button->color( pToolDataParam->BGND_LB_Color);
+    pTemp_Button->callback( IqeB_GUI_But_Color_SetValue_Callback, &pToolDataParam->BGND_LB_Color);
     pTemp_Button->tooltip( LangStringLookup( "&GUI_GenImage_TabB13a="
                            "Color for image background of left bottom corner"));
     pButCol_LB = pTemp_Button;
@@ -1850,12 +1881,12 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     xx2 = 30;
     x1 += 20;
 
-    Fl::get_color( pToolData->BGND_LB_Color, r, g, b);
+    Fl::get_color( pToolDataParam->BGND_LB_Color, r, g, b);
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_R);
     pTemp_Int->tooltip( LANGDEF_COL_CHANNEL_R);
     pTemp_Int->SetValue( r);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColR_Callback, &pToolData->BGND_LB_Color);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColR_Callback, &pToolDataParam->BGND_LB_Color);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pIntColR_LB = pTemp_Int;
 
@@ -1865,7 +1896,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_G);
     pTemp_Int->tooltip( LANGDEF_COL_CHANNEL_G);
     pTemp_Int->SetValue( g);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColG_Callback, &pToolData->BGND_LB_Color);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColG_Callback, &pToolDataParam->BGND_LB_Color);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pIntColG_LB = pTemp_Int;
 
@@ -1875,7 +1906,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_B);
     pTemp_Int->tooltip( LANGDEF_COL_CHANNEL_B);
     pTemp_Int->SetValue( b);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColB_Callback, &pToolData->BGND_LB_Color);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColB_Callback, &pToolDataParam->BGND_LB_Color);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pIntColB_LB = pTemp_Int;
 
@@ -1885,8 +1916,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pCheckTemp = new Fl_Check_Button( x1, y, 30, yy, LANGDEF_ACTIVE_SHORT);
     pCheckTemp->tooltip( LangStringLookup( "&GUI_GenImage_TabB11a="
                          "Check this to use the color for the named corner."));
-    pCheckTemp->value( pToolData->BGND_LB_Col_A);
-    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolData->BGND_LB_Col_A);
+    pCheckTemp->value( pToolDataParam->BGND_LB_Col_A);
+    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolDataParam->BGND_LB_Col_A);
     pCheckBut_LB = pCheckTemp;
 
     // Next line
@@ -1902,8 +1933,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Box->align( FL_ALIGN_RIGHT | FL_ALIGN_INSIDE | FL_ALIGN_CLIP);
 
     pTemp_Button = new Fl_Button( x1 + 4, y, yy * 2, yy, "");
-    pTemp_Button->color( pToolData->BGND_RB_Color);
-    pTemp_Button->callback( IqeB_GUI_But_Color_SetValue_Callback, &pToolData->BGND_RB_Color);
+    pTemp_Button->color( pToolDataParam->BGND_RB_Color);
+    pTemp_Button->callback( IqeB_GUI_But_Color_SetValue_Callback, &pToolDataParam->BGND_RB_Color);
     pTemp_Button->tooltip( LangStringLookup( "&GUI_GenImage_TabB14a="
                            "Color for image background of right bottom corner"));
     pButCol_RB = pTemp_Button;
@@ -1913,12 +1944,12 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     xx2 = 30;
     x1 += 20;
 
-    Fl::get_color( pToolData->BGND_RB_Color, r, g, b);
+    Fl::get_color( pToolDataParam->BGND_RB_Color, r, g, b);
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_R);
     pTemp_Int->tooltip( LANGDEF_COL_CHANNEL_R);
     pTemp_Int->SetValue( r);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColR_Callback, &pToolData->BGND_RB_Color);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColR_Callback, &pToolDataParam->BGND_RB_Color);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pIntColR_RB = pTemp_Int;
 
@@ -1928,7 +1959,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_G);
     pTemp_Int->tooltip( LANGDEF_COL_CHANNEL_G);
     pTemp_Int->SetValue( g);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColG_Callback, &pToolData->BGND_RB_Color);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColG_Callback, &pToolDataParam->BGND_RB_Color);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pIntColG_RB = pTemp_Int;
 
@@ -1938,7 +1969,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_B);
     pTemp_Int->tooltip( LANGDEF_COL_CHANNEL_B);
     pTemp_Int->SetValue( b);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColB_Callback, &pToolData->BGND_RB_Color);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColB_Callback, &pToolDataParam->BGND_RB_Color);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pIntColB_RB = pTemp_Int;
 
@@ -1948,8 +1979,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pCheckTemp = new Fl_Check_Button( x1, y, 30, yy, LANGDEF_ACTIVE_SHORT);
     pCheckTemp->tooltip( LangStringLookup( "&GUI_GenImage_TabB11a="
                          "Check this to use the color for the named corner."));
-    pCheckTemp->value( pToolData->BGND_RB_Col_A);
-    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolData->BGND_RB_Col_A);
+    pCheckTemp->value( pToolDataParam->BGND_RB_Col_A);
+    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolDataParam->BGND_RB_Col_A);
     pCheckBut_RB = pCheckTemp;
 
     // Next line
@@ -1963,7 +1994,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_GenImage_TabB2a_1="
                             "Background is an image file."));
     pRadioButTemp->callback( YaIPS_BGndType_Callback, (void *)YAIPS_SHAPE_GEN_BGND_IMAGE);
-    pRadioButTemp->value( pToolData->BGndType == YAIPS_SHAPE_GEN_BGND_IMAGE);
+    pRadioButTemp->value( pToolDataParam->BGndType == YAIPS_SHAPE_GEN_BGND_IMAGE);
     pBGndType_1 = pRadioButTemp;
 
     // Next line
@@ -2001,7 +2032,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   y = yGroup;
   x1 = 4;
 
-  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LangStringLookup( "&GUI_GenImage_TabC1=Alpha"));
+  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LANGDEF_COLOR_ALPHA);
   pTemp_Group->tooltip( LangStringLookup( "&GUI_GenImage_TabC1a=Alpha channel"));
 
     y += 8;
@@ -2043,8 +2074,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_ValSlider->color( FL_LIGHT2 + 1);  // Background color
     pTemp_ValSlider->bounds( 0.0, 100.0);
     pTemp_ValSlider->step( 0.1);
-    pTemp_ValSlider->value( pToolData->ShapeArg);
-    pTemp_ValSlider->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->ShapeArg);
+    pTemp_ValSlider->value( pToolDataParam->ShapeArg);
+    pTemp_ValSlider->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->ShapeArg);
     pSlider_3D_ShapeArg = pTemp_ValSlider;
 
     // Next line
@@ -2063,8 +2094,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_ValSlider->color( FL_LIGHT2 + 1);  // Background color
     pTemp_ValSlider->bounds( 0.0, 100.0);
     pTemp_ValSlider->step( 0.1);
-    pTemp_ValSlider->value( pToolData->AlphaMult);
-    pTemp_ValSlider->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->AlphaMult);
+    pTemp_ValSlider->value( pToolDataParam->AlphaMult);
+    pTemp_ValSlider->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->AlphaMult);
     pSliderAlphaMult = pTemp_ValSlider;
 
     // Finish things for this group
@@ -2075,12 +2106,16 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
   pTemp_Tabs->end();
 
-  pTemp_Tabs->SetTabGroup( pToolData->Tab_Group_Selected);    // Select tab group from last session
+  pTemp_Tabs->SetTabGroup( pToolDataParam->Tab_Group_Selected);    // Select tab group from last session
 
     // finish up
 
   pMyParWin->end();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  pMyParWin->set_non_modal();
+#else
   pMyParWin->set_modal();
+#endif
   pMyParWin->callback( close_Par_cb, &pMyParWin);
   pMyParWin->show();
 
@@ -2276,6 +2311,10 @@ static void close_cb( Fl_Widget *w, long int iToolData)
 
     return;
   }
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckClose( close_Par_cb, &pMyParWin, iToolData);   // Check to close specific associated parameter dialog
+#endif
 
   // Release intermediate images
 
@@ -2489,6 +2528,10 @@ static void MyWinUpdate( int iToolData, int DoEnable)
   IqeB_GUI_WidgetActivate( pMyToolWin->pGUI_Img_ShowOnBig,
                              DoEnable &&                                    // Enable GUI elements
                              pToolData->YaIPS_ImageDisp.pImage_Img != NULL); // and have an image loaded
+
+  IqeB_GUI_WidgetActivate( pMyToolWin->pGUI_Parameter,
+                            (pMyParWin == NULL || pToolDataParam->iToolData != iToolData) && // Parameter dialog is closed
+                             DoEnable);                             // Enable GUI elements
 
   // ...
 
@@ -3076,6 +3119,8 @@ static void IqeB_GUI_GenImageWinIntern( int xLeft, int xRight, int yTop, int yBo
   //
   // Prepare info data element
   //
+
+  pToolData->iToolData = iToolData;                        // Set sub window number
 
   pToolData->IsOpen = true;           // Flag image as open
 

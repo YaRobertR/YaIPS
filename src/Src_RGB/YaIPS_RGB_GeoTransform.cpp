@@ -122,7 +122,7 @@ int YaIPS_RGB_Geo_Resize2( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to R
                            int SizeShiftArgX,    // Power of 2 for X, < 0 is shrink > 0 is enlarge
                            int SizeShiftArgY)    // Power of 2 for Y, < 0 is shrink > 0 is enlarge
 {
-  int ierr, x, y, sx, sy, d, nByt, SizeFacX, SizeFacY, SizeShiftX, SizeShiftY;
+  int ierr, x, y, sx, sy, nByt, SizeFacX, SizeFacY, SizeShiftX, SizeShiftY;
   int sxx, syy, dxx, dyy, sld, dld, SizeFacX2, SizeOfLine, x2;
 #ifdef use_again
   int d;    // This variable was used before elimination of inner loop

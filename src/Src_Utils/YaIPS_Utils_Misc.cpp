@@ -13,6 +13,9 @@
                    Copy files in a directory to an other directory.
                  * New function IqeB_FileDelFilesInDir().
                    Delete files in a directory.
+  09.11.2026 RR: * Added support for check masks in image comparison.
+                   See: one of the defines YAIPS_INSP_COMP_FLAG_MASK,
+                        YAIPS_REFMASK_CHECK_MASK_ or YAIPS_NOALPHADISP_MASK_
 
 *****************************************************************************
 */
@@ -1485,7 +1488,6 @@ void YaIPS_ImageDispEmpty( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp, int KeepInfoS
 
   pYaIPS_ImageDisp->ImageName[ 0] = '\0';               // Reset name of image
   pYaIPS_ImageDisp->ImageSourceID    = YAIPS_WIN_ID_NONE; // Reset image source
-  pYaIPS_ImageDisp->ImageName[ 0]    = '\0';            // Reset image name
   pYaIPS_ImageDisp->BigImage_Calc_OK = false;           // Reset size calculations
   pYaIPS_ImageDisp->ImageChanged = 0;                   // Reset Count
 
@@ -1794,6 +1796,58 @@ int YaIPS_ImageDispCalcSizes( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp, int NewFla
 // extern declaration
 void YaIPS_ImageDispPlot3D( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp, Fl_RGB_Image *pDrawImage);
 
+static void YaIPS_ImageDispDrawUpdate_NoAlphaDisplay( uchar *pPixel, uchar Alpha, int NoAlphaDisplay)
+{
+  static int Last_NoAlphaDisplay = -1;
+  static int ColR, ColG, ColB, Shift;
+  static uchar Last_RefMask;
+
+  if( Last_NoAlphaDisplay != NoAlphaDisplay) {   // Argument has changed
+
+    // Store calculation paramaters until next change
+
+    Last_NoAlphaDisplay = NoAlphaDisplay;
+
+    switch( NoAlphaDisplay) {
+
+    case YAIPS_NOALPHADISP_CONTOUR:          // Hack to visualize contour
+
+      Last_RefMask = YAIPS_REFMASK_CONTOUR;
+
+      ColR = 3 *   0;
+      ColG = 3 * 255;
+      ColB = 3 * 255;
+      Shift = 2;          // Divide by 4
+
+      break;
+
+    case  YAIPS_NOALPHADISP_MASK_1:          // Hack to visualize 1. inspection reference mask
+    case  YAIPS_NOALPHADISP_MASK_2:          // Hack to visualize 2. inspection reference mask
+    case  YAIPS_NOALPHADISP_MASK_3:          // Hack to visualize 3. inspection reference mask
+
+      Last_RefMask = YAIPS_REFMASK_CHECK_MASK_1 << ( NoAlphaDisplay - YAIPS_NOALPHADISP_MASK_1);
+
+      ColR = 1 * 255;
+      ColG = 1 *   0;
+      ColB = 1 *   0;
+      Shift = 1;          // Divide by 2
+
+      pPixel[ 0] = (pPixel[ 0] + 255) / 2;
+      pPixel[ 1] = (pPixel[ 1] +   0) / 2;
+      pPixel[ 2] = (pPixel[ 2] +   0) / 2;
+
+      break;
+    }
+  }
+
+  if( (Alpha & Last_RefMask) != 0) {
+
+    pPixel[ 0] = (pPixel[ 0] + ColR) >> Shift;
+    pPixel[ 1] = (pPixel[ 1] + ColG) >> Shift;
+    pPixel[ 2] = (pPixel[ 2] + ColB) >> Shift;
+  }
+}
+
 void YaIPS_ImageDispDrawUpdate( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp, int ForceUpdate)
 {
   Fl_RGB_Image *oldimage;                   // Old image
@@ -1999,12 +2053,10 @@ void YaIPS_ImageDispDrawUpdate( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp, int Forc
 
                 *pDstLine2++ = 0xff;              // Alpha full brightness
 
-                if( pYaIPS_ImageDisp->NoAlphaDisplay == 2 &&          // Hack to visualize contour
-                    (pSrcLine2[ 3] & YAIPS_REFMASK_CONTOUR) != 0) {
+                if( pYaIPS_ImageDisp->NoAlphaDisplay >= YAIPS_NOALPHADISP_CONTOUR &&  // Hack to visualize contour or mask
+                    (pSrcLine2[ 3] & YAIPS_REFMASK_VIS_BITS) != 0) {
 
-                  pDstLine2[ -4] = 0;
-                  pDstLine2[ -3] = 255;
-                  pDstLine2[ -2] = 255;
+                  YaIPS_ImageDispDrawUpdate_NoAlphaDisplay( pDstLine2 - 4, pSrcLine2[ 3], pYaIPS_ImageDisp->NoAlphaDisplay);
                 }
 
               } else {
@@ -2031,12 +2083,10 @@ void YaIPS_ImageDispDrawUpdate( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp, int Forc
 
                 *pDstLine2++ = 0xff;              // Alpha full brightness
 
-                if( pYaIPS_ImageDisp->NoAlphaDisplay == 2 &&          // Hack to visualize contour
-                    (pSrcLine2[ 3] & YAIPS_REFMASK_CONTOUR) != 0) {
+                if( pYaIPS_ImageDisp->NoAlphaDisplay >= YAIPS_NOALPHADISP_CONTOUR &&  // Hack to visualize contour or mask
+                    (pSrcLine2[ 3] & YAIPS_REFMASK_VIS_BITS) != 0) {
 
-                  pDstLine2[ -4] = 0;
-                  pDstLine2[ -3] = 255;
-                  pDstLine2[ -2] = 255;
+                  YaIPS_ImageDispDrawUpdate_NoAlphaDisplay( pDstLine2 - 4, pSrcLine2[ 3], pYaIPS_ImageDisp->NoAlphaDisplay);
                 }
 
               } else {
@@ -2174,12 +2224,10 @@ void YaIPS_ImageDispDrawUpdate( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp, int Forc
                   *pDstLine2++ = 0xff;              // Alpha full brightness
 
 
-                  if( pYaIPS_ImageDisp->NoAlphaDisplay == 2 &&          // Hack to visualize contour
-                      (pSrcLine2[ 3] & YAIPS_REFMASK_CONTOUR) != 0) {
+                  if( pYaIPS_ImageDisp->NoAlphaDisplay >= YAIPS_NOALPHADISP_CONTOUR &&  // Hack to visualize contour or mask
+                      (pSrcLine2[ 3] & YAIPS_REFMASK_VIS_BITS) != 0) {
 
-                    pDstLine2[ -4] = 0;
-                    pDstLine2[ -3] = 255;
-                    pDstLine2[ -2] = 255;
+                    YaIPS_ImageDispDrawUpdate_NoAlphaDisplay( pDstLine2 - 4, pSrcLine2[ 3], pYaIPS_ImageDisp->NoAlphaDisplay);
                   }
 
                 } else {
@@ -2223,12 +2271,10 @@ void YaIPS_ImageDispDrawUpdate( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp, int Forc
 
                     *pDstLine2++ = 0xff;              // Alpha full brightness
 
-                    if( pYaIPS_ImageDisp->NoAlphaDisplay == 2 &&          // Hack to visualize contour
-                        (pSrcLine2[ 3] & YAIPS_REFMASK_CONTOUR) != 0) {
+                    if( pYaIPS_ImageDisp->NoAlphaDisplay >= YAIPS_NOALPHADISP_CONTOUR &&  // Hack to visualize contour or mask
+                        (pSrcLine2[ 3] & YAIPS_REFMASK_VIS_BITS) != 0) {
 
-                      pDstLine2[ -4] = 0;
-                      pDstLine2[ -3] = 255;
-                      pDstLine2[ -2] = 255;
+                      YaIPS_ImageDispDrawUpdate_NoAlphaDisplay( pDstLine2 - 4, pSrcLine2[ 3], pYaIPS_ImageDisp->NoAlphaDisplay);
                     }
 
                   } else {
@@ -2418,11 +2464,11 @@ void YaIPS_ImageDispDrawUpdate( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp, int Forc
 
             case YAIPS_DISP_COLMOD_A:          // Alpha component
 
-              r = (uchar)((left[3] * leftf + right[3] * rightf) * upf + (downleft[3] * leftf + downright[3] * rightf) * downf);
+              b = (uchar)((left[3] * leftf + right[3] * rightf) * upf + (downleft[3] * leftf + downright[3] * rightf) * downf);
 
-              r = pLookupR[ r];
-              g = pLookupG[ r];
-              b = pLookupB[ r];
+              r = pLookupR[ b];
+              g = pLookupG[ b];
+              b = pLookupB[ b];
 
               break;
 
@@ -2439,12 +2485,10 @@ void YaIPS_ImageDispDrawUpdate( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp, int Forc
 
                 new_ptr[ 3] = 0xff;              // Alpha full brightness
 
-                if( pYaIPS_ImageDisp->NoAlphaDisplay == 2 &&          // Hack to visualize contour
-                    (left[ 3] & YAIPS_REFMASK_CONTOUR) != 0) {
+                if( pYaIPS_ImageDisp->NoAlphaDisplay >= YAIPS_NOALPHADISP_CONTOUR &&  // Hack to visualize contour or mask
+                    (left[ 3] & YAIPS_REFMASK_VIS_BITS) != 0) {
 
-                  new_ptr[ 0] = 0;
-                  new_ptr[ 1] = 255;
-                  new_ptr[ 2] = 255;
+                  YaIPS_ImageDispDrawUpdate_NoAlphaDisplay( new_ptr, left[ 3], pYaIPS_ImageDisp->NoAlphaDisplay);
                 }
 
               } else {
@@ -2458,7 +2502,7 @@ void YaIPS_ImageDispDrawUpdate( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp, int Forc
             if( DisplayColModStyle == YAIPS_DISP_COLMOD_A ||  // Show alpha channel and image has an alpha channel
                 pYaIPS_ImageDisp->NoAlphaDisplay) {           // or no alpha display
 
-              r = (uchar)((left[1] * leftf + right[1] * rightf) * upf + (downleft[1] * leftf + downright[1] * rightf) * downf);
+              r = (uchar)((left[0] * leftf + right[0] * rightf) * upf + (downleft[0] * leftf + downright[0] * rightf) * downf);
 
               new_ptr[ 0] = pLookupR[ r];
               new_ptr[ 1] = pLookupG[ r];
@@ -2466,22 +2510,20 @@ void YaIPS_ImageDispDrawUpdate( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp, int Forc
 
               new_ptr[ 3] = 0xff;              // Alpha full brightness
 
-              if( pYaIPS_ImageDisp->NoAlphaDisplay == 2) {          // Hack to visualize contour
+              if( pYaIPS_ImageDisp->NoAlphaDisplay >= YAIPS_NOALPHADISP_CONTOUR) {  // Hack to visualize contour or mask
 
                 if( Src_d == 2) {
 
-                  if( (left[ 1] & YAIPS_REFMASK_CONTOUR) != 0) {
-                    new_ptr[ 0] = 0;
-                    new_ptr[ 1] = 255;
-                    new_ptr[ 2] = 255;
+                  if( (left[ 1] & YAIPS_REFMASK_VIS_BITS) != 0) {
+
+                    YaIPS_ImageDispDrawUpdate_NoAlphaDisplay( new_ptr, left[ 1], pYaIPS_ImageDisp->NoAlphaDisplay);
                   }
 
                 } else {
 
-                  if( (left[ 3] & YAIPS_REFMASK_CONTOUR) != 0) {
-                    new_ptr[ 0] = 0;
-                    new_ptr[ 1] = 255;
-                    new_ptr[ 2] = 255;
+                  if( (left[ 3] & YAIPS_REFMASK_VIS_BITS) != 0) {
+
+                    YaIPS_ImageDispDrawUpdate_NoAlphaDisplay( new_ptr, left[ 3], pYaIPS_ImageDisp->NoAlphaDisplay);
                   }
                 }
               }
@@ -3312,7 +3354,7 @@ void YaIPS_ImageDispMouse_CommonMouseWheel( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDi
 }
 
 /************************************************************************************
- * YaIPS_ImageDispMouse_CommonMouseWheel
+ * YaIPS_ImageDispMouse_CommonMouseBackGnd
  *
  * Mouse event callback for image displays.
  * Manage Left/right mouse button pressed on image background.
@@ -3722,6 +3764,19 @@ int YaIPS_ImageDispMouse_cb( Fl_Widget *pW, int event,
 
         break;
       }
+
+      // Check for context menu button
+      if( pYaIPS_ImageDisp->pImage_Box != NULL &&
+          pYaIPS_ImageDisp->pImage_Box->pMouseContextCallback != NULL &&  // Have a mouse context callback
+          ! pYaIPS_ImageDisp->Plot3D_Active &&                // and NO 3D plot active
+          pYaIPS_ImageDisp->mouseleft == 0 &&                 // and NO left button pressed
+          pYaIPS_ImageDisp->mouseright) {                     // and right button pressed
+
+
+        // Call the callback function
+        pYaIPS_ImageDisp->pImage_Box->pMouseContextCallback( NULL, pYaIPS_ImageDisp);
+      }
+
     }
 
     // Left/right mouse button pressed on image background
@@ -4164,6 +4219,155 @@ void ImageDispAoiRectDraw( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp,  // Point to 
   yyo = (int)( AOI_YY * pYaIPS_ImageDisp->PixelImageToScreen + 0.5);
 
   fl_rect( x1 + x, y1 + y, xxo, yyo);
+
+  // Draw text
+
+  if( DrawText &&            // Draw text
+      pText != NULL &&
+      pText[ 0] != '\0') {
+
+    int mdx, mdy, mw, mh;
+
+    fl_text_extents( pText, mdx, mdy, mw, mh);
+
+    if( y + mdy < 4) {         // To near to upper border
+
+      y += mh + 5;             // Show below upper frame
+      x += 4;
+
+    } else {                   // Fits above upper frame
+
+      y -= 4;
+    }
+
+    fl_draw( pText, x1 + x, y1 + y);
+  }
+
+  // Finish up
+
+  fl_line_style( 0);   // Reset to default
+}
+
+/************************************************************************************
+* ImageDispAoiEllipseDraw
+*
+* Draw an ellipse inside the AOI rectangle
+*
+* NOTE: Make a fl_push_clip() call before calling this function
+*
+*/
+
+void ImageDispAoiEllipseDraw( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp,  // Point to image display data
+                           Fl_YaIPS_AOI_t *pAOI,                    // Pointer to AOI data
+                           int Teach_mode,                          // 0 = inspection mode, 1 = teach mode
+                           int IsSelected,                          // True if window is selected
+                           int InspError,                           // != 0 if error in inspection. Color AOI red if Teach_mode is zero.
+                           char *pText)                             // If != NULL, draw this text
+{
+  int LineWidth;
+  int x1, y1, x, y, xxo, yyo, OffX, OffY, DrawText;
+  Fl_Color DrawColor;
+
+  // Check for valid output image displayed
+
+  if( pYaIPS_ImageDisp->pImage_Img == NULL) {
+
+    return;
+  }
+
+  // Preparations
+
+  x1 = pYaIPS_ImageDisp->BigImage_sx;
+  y1 = pYaIPS_ImageDisp->BigImage_sy;
+
+  // Points relative to image
+
+  OffX = (int)( pYaIPS_ImageDisp->SubImage_x + 0.5);
+  OffY = (int)( pYaIPS_ImageDisp->SubImage_y + 0.5);
+
+  LineWidth = YaIPS_Setting_Wide_Graphic_Lines ? YAIPS_LINE_WIDTH_WIDE : YAIPS_LINE_WIDTH_SMALL;
+
+  // Prepare font size
+
+  DrawText = false;                                            // Preset, do not draw text
+
+  if( pYaIPS_ImageDisp->PixelImageToScreen >= 0.33) {          // Screen resolution is NOT to tiny
+
+    int TempFontSize;
+
+    DrawText = true;                                           // Draw crcdf text
+
+    TempFontSize = (int)(pYaIPS_ImageDisp->PixelImageToScreen * 16.0 + 0.5);  // * 12.0
+
+    if( TempFontSize < 10) {
+      TempFontSize = 10;
+    }
+
+    fl_font( FL_HELVETICA, TempFontSize);
+  }
+
+  // Draw AOIs
+
+  int AOI_XX, AOI_YY;
+
+  // Get AOI
+
+  if( pAOI->XSize >= pYaIPS_ImageDisp->pImage_Img->w()) {
+
+    AOI_XX = pYaIPS_ImageDisp->pImage_Img->w();
+  } else {
+    AOI_XX = pAOI->XSize;
+  }
+
+  if( pAOI->YSize >= pYaIPS_ImageDisp->pImage_Img->h()) {
+
+    AOI_YY = pYaIPS_ImageDisp->pImage_Img->h();
+  } else {
+    AOI_YY = pAOI->YSize;
+  }
+
+  // Color
+
+  if( Teach_mode) {                // Teach mode
+
+    if( IsSelected) {     // Teach mode and mouse is over this AOI
+
+      DrawColor = FL_RED;
+    } else {
+
+      DrawColor = FL_GREEN - 2;
+    }
+
+  } else {                                // Inspection mode
+
+    if( InspError != 0) {
+
+      DrawColor = FL_RED;
+
+    } else {
+
+      DrawColor = FL_GREEN - 2;
+    }
+  }
+
+  fl_line_style( 0, LineWidth);   // Set line width
+  fl_color( DrawColor);           // Color
+
+  fl_line_style( 0, LineWidth);   // Set line width
+
+  // Draw rectangle
+
+  x = (int)( (pAOI->XPos - OffX) * pYaIPS_ImageDisp->PixelImageToScreen + 0.5);
+  y = (int)( (pAOI->YPos - OffY) * pYaIPS_ImageDisp->PixelImageToScreen + 0.5);
+
+  xxo = (int)( AOI_XX * pYaIPS_ImageDisp->PixelImageToScreen + 0.5);
+  yyo = (int)( AOI_YY * pYaIPS_ImageDisp->PixelImageToScreen + 0.5);
+
+#ifdef use_again
+  fl_rect( x1 + x, y1 + y, xxo, yyo);
+#else
+  fl_arc( x1 + x, y1 + y, xxo & 0xfffffffe, yyo & 0xfffffffe, 0.0, 360.0);
+#endif
 
   // Draw text
 

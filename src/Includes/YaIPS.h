@@ -11,6 +11,9 @@
                    * IqeB_FileCopyFilesInDir()
                    * IqeB_FileDelFilesInDir()
                    * IqeB_PresetCleanClipboard()
+  09.11.2026 RR: * Added support for check masks in image comparison.
+                   See: one of the defines YAIPS_INSP_COMP_FLAG_MASK,
+                        YAIPS_REFMASK_CHECK_MASK_ or YAIPS_NOALPHADISP_MASK_
 
 *****************************************************************************
 */
@@ -23,8 +26,8 @@
  */
 
 #define WIN_PROG_NAME         "&VersionInfo_PName=YaIPS"
-#define WIN_PROG_VERSION_NR   "V1.02"
-#define WIN_PROG_VERSION_DATE "&VersionInfo_Date=October 7, 2026"  // Date like: April 9  2017
+#define WIN_PROG_VERSION_NR   "V1.03"
+#define WIN_PROG_VERSION_DATE "&VersionInfo_Date=November 16, 2026"  // Date like: April 9  2017
 #define WIN_DEFAULT_TITLE     "&VersionInfo_Title=Yet another Image Processing Software"
 #define WIN_ENGLISH_TITLE     "Yet another Image Processing Software"
 
@@ -100,7 +103,9 @@ extern FL_EXPORT HINSTANCE fl_display;    // Is needed for LoadIcon()
 
 //x/#define YAIPS_IDLE_CALLBACK_USE    1    // define this to use the idle callbacks in tool windows
 
-#define USE_STB_IMAGE_FILES  1   // Define this to read/write images with stb functions else use FLTK functions
+#define USE_NON_MODAL_PAR_DIALOGS      1    // Define this to have none modal parameter dialogs else the dialogs are modal
+
+#define USE_STB_IMAGE_FILES            1    // Define this to read/write images with stb functions else use FLTK functions
 
 /************************************************************************************
  * Some common used things
@@ -137,6 +142,17 @@ typedef float YaIPS_dMatrix_t[ 6];    // Double Matrix
 #define YAIPS_COLOR_MAIN_BGND    220, 220, 220                  // Color for window background
 #define YAIPS_COLOR_SELECTION    fl_rgb_color(  97, 255, 140)   // Color for FL_SELECTION_COLOR
 #define YAIPS_COLOR_RONLY_BGND   fl_rgb_color(  255, 255, 200)  // Color for the background of read only input elements
+
+// Color used for drawing curves like histograms or profiles
+#define YAIPS_COLOR_CURVE_BW     fl_rgb_color(  224, 224,   0)  // Color for black white
+#define YAIPS_COLOR_CURVE_R      fl_rgb_color(  255,   0,   0)  // Color for red
+#define YAIPS_COLOR_CURVE_G      fl_rgb_color(    0, 255,   0)  // Color for green
+#define YAIPS_COLOR_CURVE_B      fl_rgb_color(    0, 128, 255)  // Color for blue
+#define YAIPS_COLOR_CURVE_A      fl_rgb_color(  128,   0, 255)  // Color for alpha
+
+#define YAIPS_COLOR_CURVE_I      fl_rgb_color(  192, 192,   0)  // Color for intensity
+#define YAIPS_COLOR_CURVE_H      fl_rgb_color(  255,   0, 255)  // Color for hue
+#define YAIPS_COLOR_CURVE_S      fl_rgb_color(  255, 128,   0)  // Color for saturation
 
 // Colors for buttons: Show this image on big display
 #define YAIPS_BCOL_BUTTON           (FL_BLUE + 5) //(FL_DARK3 - 2)       // 39 - 2  Dark gray
@@ -377,6 +393,13 @@ extern int YaIPS_CamPar_HMode_Top_Line;     // Height mode: Top line in area cam
 extern int YaIPS_CamPar_HMode_Base_Line;    // Height mode: Base/lower line in area camera
 extern int YaIPS_CamPar_HMode_Val_Thres;    // Height mode: Brightness threshold
 
+// Close the camera parameter dialog
+void YaIPS_GUI_CamSettings_close_Par_cb( Fl_Widget *w, void *pValueArg);
+
+// Check parameter dialog to be open
+int YaIPS_GUI_CamSettings_CheckIsOpen();
+
+// Open the camera parameter dialog
 void YaIPS_GUI_CamSettingsWin( int xLeft, int xRight, int yTop, int yBotton, int SubWinIDx);
 
 //
@@ -467,7 +490,13 @@ void IqeB_GUI_PosCorrWin( int xLeft, int xRight, int yTop, int yBotton, int SubW
 // YaIPS_GUI_InspRefImage.cpp
 //
 
+#define YAIPS_REFMASK_CHECK_MASK_1  0x10        // 1. check mask
+#define YAIPS_REFMASK_CHECK_MASK_2  0x20        // 2. check mask
+#define YAIPS_REFMASK_CHECK_MASK_3  0x40        // 2. check mask
 #define YAIPS_REFMASK_CONTOUR      0x80        // Use this bit to set contour in alpha channel.
+
+#define YAIPS_REFMASK_CHECK_MASKS  (YAIPS_REFMASK_CHECK_MASK_1 | YAIPS_REFMASK_CHECK_MASK_2 | YAIPS_REFMASK_CHECK_MASK_3) // All check mask bits
+#define YAIPS_REFMASK_VIS_BITS     (YAIPS_REFMASK_CHECK_MASKS | YAIPS_REFMASK_CONTOUR)  // All bits used for visualize contour or mask
 
 // Open inspection reference image window
 void IqeB_GUI_InspRefImgWin( int xLeft, int xRight, int yTop, int yBotton, int SubWinIDx); // Open dialog
@@ -644,8 +673,8 @@ public:
   void *MouseCallbackArg1 = NULL;                 // Argument for pMouseCallback. Must be pointer to Fl_YaIPS_ImageDisp_t.
   void *MouseCallbackArg2 = NULL;                 // Argument for pMouseCallback. Optional, could be pointer to ToolData.
   int MouseTeachState = 0;                        // Used to color teach pencil symbol on main GUI
+  Fl_Callback *pMouseContextCallback = NULL;      // Call on left mouse button press
                                                   // 0: no mouse callback set, 1: Teach mode not available, 2: disabled: 3: enabled
-
   // Draw callbacks
   Fl_Callback *pDrawBeforeCallback = NULL;     // Call before box drawing
   YaIPS_Fl_DrawAfter_Callback *pDrawAfterCallback  = NULL;     // Call after box drawing
@@ -666,6 +695,7 @@ public:
     MouseCallbackArg1    = NULL;
     MouseCallbackArg2    = NULL;
     MouseTeachState      = 0;
+    pMouseContextCallback = NULL;
 
     // Draw callbacks
     pDrawBeforeCallback  = NULL;
@@ -913,6 +943,12 @@ void YaIPS_ImageDispDrawAfter_cb( Fl_Widget *pW,
 void YaIPS_ImageDispUpdateByChangedImage( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp,  int ImageSourceID, char *pImageName);
 
 // Update an image display by a new image.
+
+#define YAIPS_NOALPHADISP_CONTOUR    2  // Hack to visualize inspection reference contour
+#define YAIPS_NOALPHADISP_MASK_1     3  // Hack to visualize 1. inspection reference mask
+#define YAIPS_NOALPHADISP_MASK_2     4  // Hack to visualize 2. inspection reference mask
+#define YAIPS_NOALPHADISP_MASK_3     5  // Hack to visualize 3. inspection reference mask
+
 void YaIPS_ImageDispUpdateByNewImage( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp, Fl_RGB_Image *pNewimage,
                                       int ImageSourceID, char *pFileName,
                                       int SetDoDispModify = true, int SetScaleAuto = false, int NoAlphaDisplay = false);
@@ -968,6 +1004,14 @@ typedef struct {
 
 // Draw an AOI
 void ImageDispAoiRectDraw( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp,  // Point to image display data
+                           Fl_YaIPS_AOI_t *pAOI,                    // Pointer to AOI data
+                           int Teach_mode,                          // 0 = inspection mode, 1 = teach mode
+                           int IsSelected,                          // True if window is selected
+                           int InspError,                           // != 0 if error in inspection. Color AOI red if Teach_mode is zero.
+                           char *pText);                            // If != NULL, draw this text
+
+// Draw an ellipse inside the AOI rectangle
+void ImageDispAoiEllipseDraw( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp,  // Point to image display data
                            Fl_YaIPS_AOI_t *pAOI,                    // Pointer to AOI data
                            int Teach_mode,                          // 0 = inspection mode, 1 = teach mode
                            int IsSelected,                          // True if window is selected
@@ -1410,10 +1454,15 @@ void YaIPS_ColMod_LUT_Draw( YaIPS_Fl_Box *pYaIPS_Box,          // Draw into this
 #define YAIPS_CRSUM_FLAG_NORMALIZE     0x00004 // Normalize summed up values by height/width
 #define YAIPS_CRSUM_FLAG_RESET         0x00008 // Reset the data envelope to zero. Else must be zeroed before first use.
 
+#define YAIPS_CRSUM_FLAG_DISP_SMOOTH   0x00100 // Draw shows smoothed profile
+#define YAIPS_CRSUM_FLAG_DISP_SLOPE    0x00200 // Draw shows slope of profile
+#define YAIPS_CRSUM_FLAG_DISP_MASK     0x00f00 // Mask over all display flags
+
 // Data structure for column/row summation profiles
 typedef struct {                                     // Data element for a single component histogram
   int nElements;                                     // number of elements in data vector
   int *pData;                                        // If != NULL, allocated vector of data
+  Fl_Color ColProfile;                               // Color for the profile drawing
   int ValueMax;                                      // Maximum value in vector
   int ValueMin;                                      // Maximum value in vector
 } Fl_YaIPS_ColRowSum_t;
@@ -1421,24 +1470,27 @@ typedef struct {                                     // Data element for a singl
 typedef struct {                                     // Data element for RGB profiles
   int nProfiles;                                     // 0 = no histogram, 1 = gray 3 = RGB profiles
   int Flags;                                         // Flag bits, see YAIPS_CRSUM_FLAG_XXX defines
-  Fl_YaIPS_ColRowSum_t R;                             // Profile for red component color or gray
-  Fl_YaIPS_ColRowSum_t G;                             // Profile for green component color
-  Fl_YaIPS_ColRowSum_t B;                             // Profile for blue component color
+  Fl_YaIPS_ColRowSum_t R;                            // Profile for red component color or gray
+  Fl_YaIPS_ColRowSum_t G;                            // Profile for green component color
+  Fl_YaIPS_ColRowSum_t B;                            // Profile for blue component color
+  Fl_YaIPS_ColRowSum_t Temp1;                        // Temporary vector for smooth or difference of profile
+  Fl_YaIPS_ColRowSum_t Temp2;                        // Temporary vector for smooth or difference of profile
 } Fl_YaIPS_ColRowSum_RGB_t;
 
 // Make column/row sum profiles from an image
 
-int YaIPS_ColRowSum_Measure( Fl_RGB_Image *pImage_Img,                  // Pointer to image envelop
-                            Fl_YaIPS_ColRowSum_RGB_t *pColRowSum_RGB,   // Pointer to RGB profiles
+int YaIPS_ColRowSum_Measure( Fl_RGB_Image *pImage_Img,                 // Pointer to image envelop
+                            Fl_YaIPS_ColRowSum_RGB_t *pColRowSum_RGB,  // Pointer to RGB profiles
                             int Flags,                                 // Flag bits, see YAIPS_CRSUM_FLAG_XXX defines
+                            int ColChannel,                            // Color channel selection, see YAIPS_DISP_COLMOD_XXX defines
                             int AoiX, int AoiY,                        // AOI rectangle start point
                             int AoiW, int AoiH);                       // AOI rectangle size
 
 // Draw a column / row sum profile
 void YaIPS_ColRowSum_Draw( Fl_YaIPS_ColRowSum_RGB_t *pColRowSum_RGB,   // Pointer to RGB profiles
-                           int x1, int y1,                            // Left upper drawing reference point
-                           int w, int h,                              // With / height of drawing box
-                           int LenghtSample, int LengthFirst);        // Length of all/first sample to draw
+                           int x1, int y1,                             // Left upper drawing reference point
+                           int w, int h,                               // With / height of drawing box
+                           int LenghtSample, int LengthFirst);         // Length of all/first sample to draw
 
 //
 // YaIPS_Utils_EdgeAOI.cpp
@@ -1574,6 +1626,9 @@ int YaIPS_EdgeAOI_DeltaAdd( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp,
 
 #define YAIPS_HISTO_N_POINTS   256                    // Number of entries in a histogram
 
+#define YAIPS_HISTO_FLAG_IHS         0x00001          // If this is set make a IHS histogram
+#define YAIPS_HISTO_FLAG_DISP_MASK   0x0000f          // Mask over all permanent flags
+
 typedef struct {                                      // Data element for a single component histogram
   int HistoTable[ YAIPS_HISTO_N_POINTS];              // Histogram table
   int HistMax;                                        // Maximum value in table
@@ -1584,6 +1639,7 @@ typedef struct {                                      // Data element for a sing
 
 typedef struct {                                      // Data element for a RGB histogram
   int nHistos;                                        // 0 = no histogram, 1 = gray 3 = RGB histogram
+  int Flags;                                          // Flag bits, see YAIPS_HISTO_FLAG_XXX defines
   Fl_YaIPS_Histo_t R;                                 // Histogram for red component color or gray
   Fl_YaIPS_Histo_t G;                                 // Histogram for green component color
   Fl_YaIPS_Histo_t B;                                 // Histogram for blue component color
@@ -1594,12 +1650,14 @@ typedef struct {                                      // Data element for a RGB 
 // Measure histogram data from an image
 void YaIPS_Histo_Measure( Fl_RGB_Image *pImage_Img,          // Pointer to image envelop
                           Fl_YaIPS_Histo_RGB_t *pHisto_RGB,  // Pointer to RGB histogram
+                          int Flags,                         // In: Flag bits, see YAIPS_HISTO_FLAG_XXX defines
                           int AoiX = 0, int AoiY = 0,        // AOI rectangle start point
                           int AoiW = 0, int AoiH = 0);       // AOI rectangle size
 
 // Measure histogram data from an image
 void YaIPS_Histo_Measure2( Fl_RGB_Image *pImage_Img,          // Pointer to image envelop
                            Fl_YaIPS_Histo_RGB_t *pHisto_RGB,  // Pointer to RGB histogram
+                           int Flags,                         // In: Flag bits, see YAIPS_HISTO_FLAG_XXX defines
                            int ColorSpace,                    // In: Color space for color images NORMAL, BW, R, G or B
                            int StepFast = 0,                  // In: If > 1 speed up measurement by using less pixels
                            int AoiX = 0, int AoiY = 0,        // AOI rectangle start point
@@ -1632,6 +1690,15 @@ int YaIPS_Histo_GetVal( Fl_RGB_Image *pImage_Img,         // Pointer to image en
 // YaIPS_Utils_ImageCompare.cpp
 //
 
+#define YAIPS_INSP_COMP_FLAG_DARKEN   0x0001  // If set, darken the image. This makes error markings more visible.
+#define YAIPS_INSP_COMP_FLAG_SHOWBA   0x0002  // If set, show area of small and large blobs.
+#define YAIPS_INSP_COMP_FLAG_MASK1    0x0010  // If set, check 1. mask to be set.
+#define YAIPS_INSP_COMP_FLAG_MASK2    0x0020  // If set, check 2. mask to be set.
+#define YAIPS_INSP_COMP_FLAG_MASK3    0x0040  // If set, check 3. mask to be set.
+#define YAIPS_INSP_COMP_FLAG_MASK1_N  0x0100  // If set, check 1. mask is NOT set.
+#define YAIPS_INSP_COMP_FLAG_MASK2_N  0x0200  // If set, check 2. mask is NOT set.
+#define YAIPS_INSP_COMP_FLAG_MASK3_N  0x0400  // If set, check 3. mask is NOT set.
+
 typedef struct {
   // GUI Parameter
   Fl_YaIPS_AOI_t AOI;             // The measurement AOI
@@ -1640,8 +1707,8 @@ typedef struct {
   float MinBlobArea;              // in units minimum blob area
   float MinLBlobArea;             // in units minimum large blob area
   float SumBlobArea;              // in units maximum sum area of all blobs
-  int   FlagDarken;               // If set, darken the image. This makes error markings more visible.
-  int   FlagShowBlobArea;         // If set, show area of small and large blobs
+  int   Flags;                    // Flag bits. See YAIPS_INSP_COMP_FLAG_XXX defines.
+
   // teach results
 
   //x/ Nothing is teached
@@ -1919,6 +1986,19 @@ int IqeB_GUI_WidgetColor( void *wArg, Fl_Color NewColor);
 // Change label color of widget
 int IqeB_GUI_WidgetLabelColor( void *wArg, Fl_Color NewColor);
 
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+
+// Check tool window parameter dialog is allowed to open
+int IqeB_GUI_ToolParCheckOpen( Fl_Callback *close_cb, void *pValueArg, int iToolData);
+
+// The one and only open tool window parameter dialog is closed
+void IqeB_GUI_ToolParCheckReset();
+
+// Check to close specific tool window parameter dialog
+void IqeB_GUI_ToolParCheckClose( Fl_Callback *close_cb, void *pValueArg, int iToolData);
+#endif
+
+// Close tool or parameter dialogs
 void IqeB_GUI_CloseToolWindow( void **ppMyToolWin);
 
 // Popup a dialog to choose a color

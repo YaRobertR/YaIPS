@@ -2,7 +2,7 @@
 ; YaIPS_GUI_Combine.cpp
 ;-------------------------------------------------------
 ;
-; 95 entries
+; 94 entries
 ;
 GUI_Combine_Title                  "Calculation"
 
@@ -105,8 +105,6 @@ GUI_Combine_TabA18                 ">="
 
 GUI_Combine_TabA18a                "Image compare: greater than or equal"
 
-GUI_Combine_TabA19                 "Gain"
-
 GUI_Combine_TabA19a                "Gain\nMultiplier"
 
 GUI_Combine_TabA20                 "Offs."
@@ -118,11 +116,11 @@ GUI_Combine_TabD1                  "Const."
 GUI_Combine_TabD1a                 "Combine image with constants.\n"
                                    "NOTE: Only the first input image is required."
 
-GUI_Combine_TabD3                  "I-C"
+GUI_Combine_TabD3                  "1-C"
 
 GUI_Combine_TabD3a                 "Subtraction\n1. input - constant"
 
-GUI_Combine_TabD4                  "C-I"
+GUI_Combine_TabD4                  "C-1"
 
 GUI_Combine_TabD4a                 "Subtraction\nConstant - 1. input"
 

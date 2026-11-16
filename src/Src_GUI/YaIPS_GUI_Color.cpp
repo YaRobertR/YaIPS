@@ -5,6 +5,12 @@
   Color processing.
 
   09.06.2025 RR: First edition of this file.
+  18.10.2026 RR: * Reworked behavior of tool window parameter dialogs.
+                   See functions IqeB_GUI_ToolParCheckOpen(),
+                   IqeB_GUI_ToolParCheckReset() and IqeB_GUI_ToolParCheckClose().
+  11.11.2026 RR: * MyWinUpdate()
+                   Parameter dialog button is disabled if the parameter dialog
+                   is open.
 
 *****************************************************************************
 */
@@ -310,7 +316,7 @@ static IqeB_PreferencesGroup MyPreferencesAdd( MY_WIN_PREF_NAME, MyPreferences, 
 // ...
 
 static  Fl_Window *pMyParWin;
-static  YaIPS_ToolData_info_t *pToolData;     // NOTE: Is used by all parameter dialog functions
+static  YaIPS_ToolData_info_t *pToolDataParam;     // NOTE: Is used by all parameter dialog functions
 static Fl_YaIPS_Histo_RGB_t BC_AOI_Histo;     // Histogram for brightness correction AOI
 
 static IqeFl_Tabs      *pTab_Groups;         // Point to tabulator GUI element
@@ -356,23 +362,23 @@ static void MyParWinUpdate()
 
   // Get last selected tab group
 
-  pToolData->Tab_Group_Selected = pTab_Groups->GetTabGroup();
+  pToolDataParam->Tab_Group_Selected = pTab_Groups->GetTabGroup();
 
   // Update filter button
   // Current selection must be set
 
   // Update all buttons
-  if( ColorType_Last != pToolData->ColorType) {                // Filter type has change
+  if( ColorType_Last != pToolDataParam->ColorType) {                // Filter type has change
 
-    ColorType_Last = pToolData->ColorType;
+    ColorType_Last = pToolDataParam->ColorType;
 
     for( i = 0; i < YAIPS_COLOR_GUI_BUTTON_MAX; i++) {
 
       ValThis = ColorButtons[ i]->value();
 
-      if( ValThis != (i == pToolData->ColorType)) {             // Not what we expected
+      if( ValThis != (i == pToolDataParam->ColorType)) {             // Not what we expected
 
-        ColorButtons[ i]->value( i == pToolData->ColorType);   // Set value
+        ColorButtons[ i]->value( i == pToolDataParam->ColorType);   // Set value
         ColorButtons[ i]->redraw();
       }
     }
@@ -382,7 +388,7 @@ static void MyParWinUpdate()
 
   pImgIn1 = NULL;       // Will be set if there is a valid scene image
 
-  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolData->iToolData, pToolData->Input1_WinIdNr,
+  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolDataParam->iToolData, pToolDataParam->Input1_WinIdNr,
                            NULL, &pImgIn1, NULL);
 
   if( pImgIn1 != NULL) {
@@ -398,32 +404,32 @@ static void MyParWinUpdate()
 
   // ...
 
-  IqeB_GUI_WidgetActivate( pInt_OffsetG, ! pToolData->GainCh1FA);
-  IqeB_GUI_WidgetActivate( pInt_OffsetB, ! pToolData->GainCh1FA);
-  IqeB_GUI_WidgetActivate( pInt_GainChG, ! pToolData->GainCh1FA);
-  IqeB_GUI_WidgetActivate( pInt_GainChB, ! pToolData->GainCh1FA);
+  IqeB_GUI_WidgetActivate( pInt_OffsetG, ! pToolDataParam->GainCh1FA);
+  IqeB_GUI_WidgetActivate( pInt_OffsetB, ! pToolDataParam->GainCh1FA);
+  IqeB_GUI_WidgetActivate( pInt_GainChG, ! pToolDataParam->GainCh1FA);
+  IqeB_GUI_WidgetActivate( pInt_GainChB, ! pToolDataParam->GainCh1FA);
 
-  IqeB_GUI_WidgetActivate( pFloat_GammaG, ! pToolData->Gamma1FA);
-  IqeB_GUI_WidgetActivate( pFloat_GammaB, ! pToolData->Gamma1FA);
+  IqeB_GUI_WidgetActivate( pFloat_GammaG, ! pToolDataParam->Gamma1FA);
+  IqeB_GUI_WidgetActivate( pFloat_GammaB, ! pToolDataParam->Gamma1FA);
 
-  IqeB_GUI_WidgetActivate( pIHS_IntAdjust, pToolData->ColorType == YAIPS_COLOR_GUI_IHS_ADJUST);
-  IqeB_GUI_WidgetActivate( pIHS_HueAdjust, pToolData->ColorType == YAIPS_COLOR_GUI_IHS_ADJUST);
-  IqeB_GUI_WidgetActivate( pIHS_SatAdjust, pToolData->ColorType == YAIPS_COLOR_GUI_IHS_ADJUST);
+  IqeB_GUI_WidgetActivate( pIHS_IntAdjust, pToolDataParam->ColorType == YAIPS_COLOR_GUI_IHS_ADJUST);
+  IqeB_GUI_WidgetActivate( pIHS_HueAdjust, pToolDataParam->ColorType == YAIPS_COLOR_GUI_IHS_ADJUST);
+  IqeB_GUI_WidgetActivate( pIHS_SatAdjust, pToolDataParam->ColorType == YAIPS_COLOR_GUI_IHS_ADJUST);
 
   // Duotone
 
-  if( pButCol_Br->color() != pToolData->Duotone_Br_Color) {
-    pButCol_Br->color( pToolData->Duotone_Br_Color);
+  if( pButCol_Br->color() != pToolDataParam->Duotone_Br_Color) {
+    pButCol_Br->color( pToolDataParam->Duotone_Br_Color);
     pButCol_Br->redraw();
   }
 
-  if( pButCol_Da->color() != pToolData->Duotone_Da_Color) {
-    pButCol_Da->color( pToolData->Duotone_Da_Color);
+  if( pButCol_Da->color() != pToolDataParam->Duotone_Da_Color) {
+    pButCol_Da->color( pToolDataParam->Duotone_Da_Color);
     pButCol_Da->redraw();
   }
 
 #ifdef use_again
-  TempEnable = pToolData->ColorType == YAIPS_COLOR_GUI_LUT_DUOTONE;
+  TempEnable = pToolDataParam->ColorType == YAIPS_COLOR_GUI_LUT_DUOTONE;
 
   IqeB_GUI_WidgetActivate( pButCol_Br, TempEnable);
   IqeB_GUI_WidgetActivate( pIntColR_Br, TempEnable);
@@ -446,34 +452,34 @@ static void MyParWinUpdate()
 
   // Check mix color channels input images
 
-  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolData->iToolData, pToolData->Mix_In_A_WinIdNr, pMix_In_A_Box);
-  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolData->iToolData, pToolData->Mix_In_G_WinIdNr, pMix_In_G_Box);
-  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolData->iToolData, pToolData->Mix_In_B_WinIdNr, pMix_In_B_Box);
+  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolDataParam->iToolData, pToolDataParam->Mix_In_A_WinIdNr, pMix_In_A_Box);
+  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolDataParam->iToolData, pToolDataParam->Mix_In_G_WinIdNr, pMix_In_G_Box);
+  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolDataParam->iToolData, pToolDataParam->Mix_In_B_WinIdNr, pMix_In_B_Box);
 
   // Brightness correction: Pick color button
 
-  IqeB_GUI_WidgetActivate( pBC_PickColor, pToolData->ColorType == YAIPS_COLOR_GUI_BRIGHT_CORR &&
+  IqeB_GUI_WidgetActivate( pBC_PickColor, pToolDataParam->ColorType == YAIPS_COLOR_GUI_BRIGHT_CORR &&
                                           BC_AOI_Histo.nHistos > 0);
 
   // Brightness correction: Enable AOI pos/size input buttons
 
-  IqeB_GUI_WidgetActivate( pBC_AOI_X, pToolData->ColorType == YAIPS_COLOR_GUI_BRIGHT_CORR && pToolData->BC_AOI_Teach);
-  IqeB_GUI_WidgetActivate( pBC_AOI_Y, pToolData->ColorType == YAIPS_COLOR_GUI_BRIGHT_CORR && pToolData->BC_AOI_Teach);
-  IqeB_GUI_WidgetActivate( pBC_AOI_XX, pToolData->ColorType == YAIPS_COLOR_GUI_BRIGHT_CORR && pToolData->BC_AOI_Teach);
-  IqeB_GUI_WidgetActivate( pBC_AOI_YY, pToolData->ColorType == YAIPS_COLOR_GUI_BRIGHT_CORR && pToolData->BC_AOI_Teach);
+  IqeB_GUI_WidgetActivate( pBC_AOI_X, pToolDataParam->ColorType == YAIPS_COLOR_GUI_BRIGHT_CORR && pToolDataParam->BC_AOI_Teach);
+  IqeB_GUI_WidgetActivate( pBC_AOI_Y, pToolDataParam->ColorType == YAIPS_COLOR_GUI_BRIGHT_CORR && pToolDataParam->BC_AOI_Teach);
+  IqeB_GUI_WidgetActivate( pBC_AOI_XX, pToolDataParam->ColorType == YAIPS_COLOR_GUI_BRIGHT_CORR && pToolDataParam->BC_AOI_Teach);
+  IqeB_GUI_WidgetActivate( pBC_AOI_YY, pToolDataParam->ColorType == YAIPS_COLOR_GUI_BRIGHT_CORR && pToolDataParam->BC_AOI_Teach);
 
   // Brightness correction: Color teach toggle button
 
-  IqeB_GUI_WidgetActivate( pTeachToggle, pToolData->ColorType == YAIPS_COLOR_GUI_BRIGHT_CORR);// Only usable for brightness correction
+  IqeB_GUI_WidgetActivate( pTeachToggle, pToolDataParam->ColorType == YAIPS_COLOR_GUI_BRIGHT_CORR);// Only usable for brightness correction
 
-  IqeB_GUI_WidgetLabelColor( pTeachToggle, pToolData->BC_AOI_Teach ? FL_GREEN : YAIPS_BCOL_BUTTON);
+  IqeB_GUI_WidgetLabelColor( pTeachToggle, pToolDataParam->BC_AOI_Teach ? FL_GREEN : YAIPS_BCOL_BUTTON);
 
   // Check AOI
 
   if( pCurrFocus != pBC_AOI_X  && pCurrFocus != pBC_AOI_Y &&               // Input element has NO keyboard focus ?
       pCurrFocus != pBC_AOI_XX && pCurrFocus != pBC_AOI_YY) {
 
-    if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolData->BC_AOI, ImgXX, ImgYY,
+    if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolDataParam->BC_AOI, ImgXX, ImgYY,
                                         pBC_AOI_X, pBC_AOI_Y, pBC_AOI_XX, pBC_AOI_YY) > 0) {
 
       RedrawOnExit = true;                                 // Redraw on exit
@@ -484,13 +490,13 @@ static void MyParWinUpdate()
 
   if( RedrawOnExit) {                                           // Redraw on exit
 
-    if( pToolData->ColorType == YAIPS_COLOR_GUI_BRIGHT_CORR) {  // AOI is displayed on image
+    if( pToolDataParam->ColorType == YAIPS_COLOR_GUI_BRIGHT_CORR) {  // AOI is displayed on image
 
-      if( pToolData->YaIPS_ImageDisp.pImage_Box != NULL) {
-        pToolData->YaIPS_ImageDisp.pImage_Box->redraw();
+      if( pToolDataParam->YaIPS_ImageDisp.pImage_Box != NULL) {
+        pToolDataParam->YaIPS_ImageDisp.pImage_Box->redraw();
       }
 
-      if( YaIPS_BigImageDisp.ImageSourceID == MY_WIN_ID + pToolData->iToolData) {   // and display this on the big image
+      if( YaIPS_BigImageDisp.ImageSourceID == MY_WIN_ID + pToolDataParam->iToolData) {   // and display this on the big image
 
         if( YaIPS_BigImageDisp.pImage_Box != NULL) {
           YaIPS_BigImageDisp.pImage_Box->redraw();
@@ -549,8 +555,12 @@ static void IqeB_GUI_ParIdleAction( void *)
 static void close_Par_cb( Fl_Widget *w, void *pValueArg)
 {
 
-  pToolData->MyParPosX = pMyParWin->x();
-  pToolData->MyParPosY = pMyParWin->y();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckReset();   // The one and only open tool window parameter dialog is closed
+#endif
+
+  pToolDataParam->MyParPosX = pMyParWin->x();
+  pToolDataParam->MyParPosY = pMyParWin->y();
 
 #ifdef YAIPS_IDLE_CALLBACK_USE  // Use the idle callbacks in tool windows
   Fl::remove_idle( IqeB_GUI_ParIdleAction);      // Redraw window during idle
@@ -574,14 +584,14 @@ static void YaIPS_Color_Callback( Fl_Widget *w, void *data)
 
   Value = (long long)(data);                       // get value to set
 
-  if( pToolData->ColorType == Value) {             // Value will not change
+  if( pToolDataParam->ColorType == Value) {             // Value will not change
 
     return;                                        // Exit, nothing to do
   }
 
-  pToolData->ColorType = Value;                   // Set new value
+  pToolDataParam->ColorType = Value;                   // Set new value
 
-  pToolData->Input1_Change = 0;                   // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                   // Force recalculation output
 }
 
 /************************************************************************************
@@ -620,33 +630,33 @@ static void IqeB_ColorFilter_PresetButton_Callback( Fl_Widget *w)
 
   // Set data
 
-  pToolData->R_Offset = pColorMatrix->R_Offset;
-  pToolData->G_Offset = pColorMatrix->G_Offset;
-  pToolData->B_Offset = pColorMatrix->B_Offset;
+  pToolDataParam->R_Offset = pColorMatrix->R_Offset;
+  pToolDataParam->G_Offset = pColorMatrix->G_Offset;
+  pToolDataParam->B_Offset = pColorMatrix->B_Offset;
 
   pInt_MatOffR->SetValue( pColorMatrix->R_Offset);
   pInt_MatOffG->SetValue( pColorMatrix->G_Offset);
   pInt_MatOffB->SetValue( pColorMatrix->B_Offset);
 
-  pToolData->R_MultR = pColorMatrix->R_MultR;
-  pToolData->R_MultG = pColorMatrix->R_MultG;
-  pToolData->R_MultB = pColorMatrix->R_MultB;
+  pToolDataParam->R_MultR = pColorMatrix->R_MultR;
+  pToolDataParam->R_MultG = pColorMatrix->R_MultG;
+  pToolDataParam->R_MultB = pColorMatrix->R_MultB;
 
   pFloat_MatMulRR->SetValue( pColorMatrix->R_MultR);
   pFloat_MatMulRG->SetValue( pColorMatrix->R_MultG);
   pFloat_MatMulRB->SetValue( pColorMatrix->R_MultB);
 
-  pToolData->G_MultR = pColorMatrix->G_MultR;
-  pToolData->G_MultG = pColorMatrix->G_MultG;
-  pToolData->G_MultB = pColorMatrix->G_MultB;
+  pToolDataParam->G_MultR = pColorMatrix->G_MultR;
+  pToolDataParam->G_MultG = pColorMatrix->G_MultG;
+  pToolDataParam->G_MultB = pColorMatrix->G_MultB;
 
   pFloat_MatMulGR->SetValue( pColorMatrix->G_MultR);
   pFloat_MatMulGG->SetValue( pColorMatrix->G_MultG);
   pFloat_MatMulGB->SetValue( pColorMatrix->G_MultB);
 
-  pToolData->B_MultR = pColorMatrix->B_MultR;
-  pToolData->B_MultG = pColorMatrix->B_MultG;
-  pToolData->B_MultB = pColorMatrix->B_MultB;
+  pToolDataParam->B_MultR = pColorMatrix->B_MultR;
+  pToolDataParam->B_MultG = pColorMatrix->B_MultG;
+  pToolDataParam->B_MultB = pColorMatrix->B_MultB;
 
   pFloat_MatMulBR->SetValue( pColorMatrix->B_MultR);
   pFloat_MatMulBG->SetValue( pColorMatrix->B_MultG);
@@ -654,9 +664,9 @@ static void IqeB_ColorFilter_PresetButton_Callback( Fl_Widget *w)
 
   // ...
 
-  if( pToolData->ColorType == YAIPS_COLOR_GUI_MATRIX) {  // Color matrix operation is selected
+  if( pToolDataParam->ColorType == YAIPS_COLOR_GUI_MATRIX) {  // Color matrix operation is selected
 
-    pToolData->Input1_Change = 0;                        // Force recalculation output
+    pToolDataParam->Input1_Change = 0;                        // Force recalculation output
   }
 }
 
@@ -704,18 +714,18 @@ static void IqeB_GUI_Float_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   *(float *)pValue = Value;
 
-  if( pValue == &pToolData->GammaR &&      // Red gamma and 'one for all' checkbox is set
-      pToolData->Gamma1FA != 0) {
+  if( pValue == &pToolDataParam->GammaR &&      // Red gamma and 'one for all' checkbox is set
+      pToolDataParam->Gamma1FA != 0) {
 
-    pToolData->GammaG = pToolData->GammaR;        // Copy red to green and blue
-    pToolData->GammaB = pToolData->GammaR;
-    pFloat_GammaG->SetValue( pToolData->GammaR);  // and update GUI
-    pFloat_GammaB->SetValue( pToolData->GammaR);
+    pToolDataParam->GammaG = pToolDataParam->GammaR;        // Copy red to green and blue
+    pToolDataParam->GammaB = pToolDataParam->GammaR;
+    pFloat_GammaG->SetValue( pToolDataParam->GammaR);  // and update GUI
+    pFloat_GammaB->SetValue( pToolDataParam->GammaR);
   }
 
   // ...
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -762,25 +772,25 @@ static void IqeB_GUI_Int_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     }
   }
 
-  if( pValue == &pToolData->OffsetR) {      // Red offset change and 'one for all' checkbox is set
+  if( pValue == &pToolDataParam->OffsetR) {      // Red offset change and 'one for all' checkbox is set
 
-    if( pToolData->GainCh1FA != 0) {
+    if( pToolDataParam->GainCh1FA != 0) {
 
-      pToolData->OffsetG = pToolData->OffsetR;        // Copy red to green and blue
-      pToolData->OffsetB = pToolData->OffsetR;
-      pInt_OffsetG->SetValue( pToolData->OffsetR);  // and update GUI
-      pInt_OffsetB->SetValue( pToolData->OffsetR);
+      pToolDataParam->OffsetG = pToolDataParam->OffsetR;        // Copy red to green and blue
+      pToolDataParam->OffsetB = pToolDataParam->OffsetR;
+      pInt_OffsetG->SetValue( pToolDataParam->OffsetR);  // and update GUI
+      pInt_OffsetB->SetValue( pToolDataParam->OffsetR);
     }
 
   } else
-  if( pValue == &pToolData->GainChR) {      // Red gain change and 'one for all' checkbox is set
+  if( pValue == &pToolDataParam->GainChR) {      // Red gain change and 'one for all' checkbox is set
 
-    if( pToolData->GainCh1FA != 0) {
+    if( pToolDataParam->GainCh1FA != 0) {
 
-      pToolData->GainChG = pToolData->GainChR;        // Copy red to green and blue
-      pToolData->GainChB = pToolData->GainChR;
-      pInt_GainChG->SetValue( pToolData->GainChR);  // and update GUI
-      pInt_GainChB->SetValue( pToolData->GainChR);
+      pToolDataParam->GainChG = pToolDataParam->GainChR;        // Copy red to green and blue
+      pToolDataParam->GainChB = pToolDataParam->GainChR;
+      pInt_GainChG->SetValue( pToolDataParam->GainChR);  // and update GUI
+      pInt_GainChB->SetValue( pToolDataParam->GainChR);
     }
   }
 
@@ -790,7 +800,7 @@ static void IqeB_GUI_Int_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
     *pValue = Value;                       // update the variable
 
-    pToolData->Input1_Change = 0;          // Force recalculation output
+    pToolDataParam->Input1_Change = 0;          // Force recalculation output
   }
 }
 
@@ -830,7 +840,7 @@ static void IqeB_GUI_Int_SetValue_ColR_Callback( Fl_Widget *w, void *pValueArg)
 
     *pValue = fl_rgb_color( r, g, b);
 
-    pToolData->Input1_Change = 0;                    // Force recalculation output
+    pToolDataParam->Input1_Change = 0;                    // Force recalculation output
   }
 }
 
@@ -870,7 +880,7 @@ static void IqeB_GUI_Int_SetValue_ColG_Callback( Fl_Widget *w, void *pValueArg)
 
     *pValue = fl_rgb_color( r, g, b);
 
-    pToolData->Input1_Change = 0;                    // Force recalculation output
+    pToolDataParam->Input1_Change = 0;                    // Force recalculation output
   }
 }
 
@@ -910,7 +920,7 @@ static void IqeB_GUI_Int_SetValue_ColB_Callback( Fl_Widget *w, void *pValueArg)
 
     *pValue = fl_rgb_color( r, g, b);
 
-    pToolData->Input1_Change = 0;                // Force recalculation output
+    pToolDataParam->Input1_Change = 0;                // Force recalculation output
   }
 }
 
@@ -940,17 +950,17 @@ static void IqeB_GUI_But_Color_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     // Update color RGB components
     Fl::get_color( *pColor, r, g, b);
 
-    if( pColor == &pToolData->Duotone_Br_Color) {
+    if( pColor == &pToolDataParam->Duotone_Br_Color) {
       pIntColR_Br->SetValue( r);
       pIntColG_Br->SetValue( g);
       pIntColB_Br->SetValue( b);
-    } else if( pColor == &pToolData->Duotone_Da_Color) {
+    } else if( pColor == &pToolDataParam->Duotone_Da_Color) {
       pIntColR_Da->SetValue( r);
       pIntColG_Da->SetValue( g);
       pIntColB_Da->SetValue( b);
     }
 
-    pToolData->Input1_Change = 0;          // Force recalculation output
+    pToolDataParam->Input1_Change = 0;          // Force recalculation output
   }
 }
 
@@ -974,9 +984,9 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   if( w == pTeachToggle) {                   // Toggle Teach / Inspection button
 
-    pToolData->BC_AOI_Teach = ! pToolData->BC_AOI_Teach;
+    pToolDataParam->BC_AOI_Teach = ! pToolDataParam->BC_AOI_Teach;
 
-  } else if( pValue == &pToolData->LUT_Table) {
+  } else if( pValue == &pToolDataParam->LUT_Table) {
 
     // Fl_Choice
 
@@ -985,46 +995,46 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     pThis  = (Fl_Choice *)w;
     *pValue = pThis->value();                // update the variable
 
-  } else if( pValue == &pToolData->Mix_In_A_WinIdNr) {
+  } else if( pValue == &pToolDataParam->Mix_In_A_WinIdNr) {
 
     int WinIdNr_Before;
 
-    WinIdNr_Before = pToolData->Mix_In_A_WinIdNr;
+    WinIdNr_Before = pToolDataParam->Mix_In_A_WinIdNr;
 
     // Select an input image
-    YaIPS_ToolWinInputSelect( MY_WIN_ID + pToolData->iToolData, &pToolData->Mix_In_A_WinIdNr, pMix_In_A_But, pMix_In_A_Box);
+    YaIPS_ToolWinInputSelect( MY_WIN_ID + pToolDataParam->iToolData, &pToolDataParam->Mix_In_A_WinIdNr, pMix_In_A_But, pMix_In_A_Box);
 
-    if( WinIdNr_Before != pToolData->Mix_In_A_WinIdNr) {    // Image source selection as changed
+    if( WinIdNr_Before != pToolDataParam->Mix_In_A_WinIdNr) {    // Image source selection as changed
 
-      pToolData->Input1_Change = 0;                         // Force recalculation output
+      pToolDataParam->Input1_Change = 0;                         // Force recalculation output
     }
 
-  } else if( pValue == &pToolData->Mix_In_G_WinIdNr) {
+  } else if( pValue == &pToolDataParam->Mix_In_G_WinIdNr) {
 
     int WinIdNr_Before;
 
-    WinIdNr_Before = pToolData->Mix_In_G_WinIdNr;
+    WinIdNr_Before = pToolDataParam->Mix_In_G_WinIdNr;
 
     // Select an input image
-    YaIPS_ToolWinInputSelect( MY_WIN_ID + pToolData->iToolData, &pToolData->Mix_In_G_WinIdNr, pMix_In_G_But, pMix_In_G_Box);
+    YaIPS_ToolWinInputSelect( MY_WIN_ID + pToolDataParam->iToolData, &pToolDataParam->Mix_In_G_WinIdNr, pMix_In_G_But, pMix_In_G_Box);
 
-    if( WinIdNr_Before != pToolData->Mix_In_G_WinIdNr) {    // Image source selection as changed
+    if( WinIdNr_Before != pToolDataParam->Mix_In_G_WinIdNr) {    // Image source selection as changed
 
-      pToolData->Input1_Change = 0;                         // Force recalculation output
+      pToolDataParam->Input1_Change = 0;                         // Force recalculation output
     }
 
-  } else if( pValue == &pToolData->Mix_In_B_WinIdNr) {
+  } else if( pValue == &pToolDataParam->Mix_In_B_WinIdNr) {
 
     int WinIdNr_Before;
 
-    WinIdNr_Before = pToolData->Mix_In_B_WinIdNr;
+    WinIdNr_Before = pToolDataParam->Mix_In_B_WinIdNr;
 
     // Select an input image
-    YaIPS_ToolWinInputSelect( MY_WIN_ID + pToolData->iToolData, &pToolData->Mix_In_B_WinIdNr, pMix_In_B_But, pMix_In_B_Box);
+    YaIPS_ToolWinInputSelect( MY_WIN_ID + pToolDataParam->iToolData, &pToolDataParam->Mix_In_B_WinIdNr, pMix_In_B_But, pMix_In_B_Box);
 
-    if( WinIdNr_Before != pToolData->Mix_In_B_WinIdNr) {    // Image source selection as changed
+    if( WinIdNr_Before != pToolDataParam->Mix_In_B_WinIdNr) {    // Image source selection as changed
 
-      pToolData->Input1_Change = 0;                         // Force recalculation output
+      pToolDataParam->Input1_Change = 0;                         // Force recalculation output
     }
 
   } else {
@@ -1035,36 +1045,36 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     *pValue = pThis->value();                // update the variable
 
 
-    if( pValue == &pToolData->GainCh1FA) {    // Gain change 'one for all' checkbox
+    if( pValue == &pToolDataParam->GainCh1FA) {    // Gain change 'one for all' checkbox
 
-      if( pToolData->GainCh1FA != 0) {        // and checkbox changed to on
+      if( pToolDataParam->GainCh1FA != 0) {        // and checkbox changed to on
 
 
-        pToolData->OffsetG = pToolData->OffsetR;        // Copy red to green and blue
-        pToolData->OffsetB = pToolData->OffsetR;
-        pInt_OffsetG->SetValue( pToolData->OffsetR);  // and update GUI
-        pInt_OffsetB->SetValue( pToolData->OffsetR);
+        pToolDataParam->OffsetG = pToolDataParam->OffsetR;        // Copy red to green and blue
+        pToolDataParam->OffsetB = pToolDataParam->OffsetR;
+        pInt_OffsetG->SetValue( pToolDataParam->OffsetR);  // and update GUI
+        pInt_OffsetB->SetValue( pToolDataParam->OffsetR);
 
-        pToolData->GainChG = pToolData->GainChR;        // Copy red to green and blue
-        pToolData->GainChB = pToolData->GainChR;
-        pInt_GainChG->SetValue( pToolData->GainChR);  // and update GUI
-        pInt_GainChB->SetValue( pToolData->GainChR);
+        pToolDataParam->GainChG = pToolDataParam->GainChR;        // Copy red to green and blue
+        pToolDataParam->GainChB = pToolDataParam->GainChR;
+        pInt_GainChG->SetValue( pToolDataParam->GainChR);  // and update GUI
+        pInt_GainChB->SetValue( pToolDataParam->GainChR);
       }
 
     } else
-    if( pValue == &pToolData->Gamma1FA) {    // Gamma 'one for all' checkbox
+    if( pValue == &pToolDataParam->Gamma1FA) {    // Gamma 'one for all' checkbox
 
-      if( pToolData->Gamma1FA != 0) {        // and checkbox changed to on
+      if( pToolDataParam->Gamma1FA != 0) {        // and checkbox changed to on
 
-        pToolData->GammaG = pToolData->GammaR;        // Copy red to green and blue
-        pToolData->GammaB = pToolData->GammaR;
-        pFloat_GammaG->SetValue( pToolData->GammaR);  // and update GUI
-        pFloat_GammaB->SetValue( pToolData->GammaR);
+        pToolDataParam->GammaG = pToolDataParam->GammaR;        // Copy red to green and blue
+        pToolDataParam->GammaB = pToolDataParam->GammaR;
+        pFloat_GammaG->SetValue( pToolDataParam->GammaR);  // and update GUI
+        pFloat_GammaB->SetValue( pToolDataParam->GammaR);
       }
     }
   }
 
-  pToolData->Input1_Change = 0;          // Force recalculation output
+  pToolDataParam->Input1_Change = 0;          // Force recalculation output
 }
 
 /************************************************************************************
@@ -1079,7 +1089,7 @@ static void YaIPS_GUI_PickColor( Fl_Widget *w, void *pValueArg)
 
   // Check proper settings
 
-  if( pToolData->ColorType != YAIPS_COLOR_GUI_BRIGHT_CORR ||   // Brightness correction
+  if( pToolDataParam->ColorType != YAIPS_COLOR_GUI_BRIGHT_CORR ||   // Brightness correction
       BC_AOI_Histo.nHistos <= 0) {                             // and measured value
 
     return;
@@ -1103,16 +1113,16 @@ static void YaIPS_GUI_PickColor( Fl_Widget *w, void *pValueArg)
 
     // Change nothing
 
-    NewR = pToolData->BC_TargetR;
-    NewG = pToolData->BC_TargetG;
-    NewB = pToolData->BC_TargetB;
+    NewR = pToolDataParam->BC_TargetR;
+    NewG = pToolDataParam->BC_TargetG;
+    NewB = pToolDataParam->BC_TargetB;
   }
 
   // Changed any value ?
 
-  if( NewR != pToolData->BC_TargetR ||
-      NewG != pToolData->BC_TargetG ||
-      NewB != pToolData->BC_TargetB) {
+  if( NewR != pToolDataParam->BC_TargetR ||
+      NewG != pToolDataParam->BC_TargetG ||
+      NewB != pToolDataParam->BC_TargetB) {
 
     // Set value to GUI
     pBC_TargetR->SetValue( NewR);
@@ -1120,13 +1130,13 @@ static void YaIPS_GUI_PickColor( Fl_Widget *w, void *pValueArg)
     pBC_TargetB->SetValue( NewB);
 
     // Get value from GUI picks the clipped values
-    pToolData->BC_TargetR = pBC_TargetR->GetValue();
-    pToolData->BC_TargetG = pBC_TargetG->GetValue();
-    pToolData->BC_TargetB = pBC_TargetB->GetValue();
+    pToolDataParam->BC_TargetR = pBC_TargetR->GetValue();
+    pToolDataParam->BC_TargetG = pBC_TargetG->GetValue();
+    pToolDataParam->BC_TargetB = pBC_TargetB->GetValue();
 
     // ...
 
-    pToolData->Input1_Change = 0;                    // Force recalculation output
+    pToolDataParam->Input1_Change = 0;                    // Force recalculation output
   }
 }
 
@@ -1140,10 +1150,20 @@ static void YaIPS_GUI_PickColor( Fl_Widget *w, void *pValueArg)
 static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 {
   int xPos, yPos;
+  Fl_Double_Window *pMyToolWin;
+
+  // Check parameter dialog is allowed to open
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  if( IqeB_GUI_ToolParCheckOpen( close_Par_cb, &pMyParWin, iToolData) < 0) {    // Allowed to open parameter dialog
+
+    return;
+  }
+#endif
 
   // Get pointer to tool data
 
-  pToolData = YaIPS_ToolData_info + iToolData;             // Point to info data
+  pToolDataParam = YaIPS_ToolData_info + iToolData;             // Point to info data
 
   //
   // creation of window on first call
@@ -1152,18 +1172,28 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   xPos = xLeft;
   yPos = yTop;
 
-  if( pToolData->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolData->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
+  if( pToolDataParam->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolDataParam->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
 
-    xPos = pToolData->MyParPosX;
-    yPos = pToolData->MyParPosY;
+    xPos = pToolDataParam->MyParPosX;
+    yPos = pToolDataParam->MyParPosY;
   }
 
-  pMyParWin = new Fl_Window( xPos, yPos, 297 /*IQE_GUI_TOOLS_STD_WITDH*/, 142 /* 162 */, LANGDEF_SETTINGS);
+  pMyParWin = new Fl_Window( xPos, yPos, 297 /*IQE_GUI_TOOLS_STD_WITDH*/, 142 /* 162 */);
 
   if( pMyParWin == NULL) {  // security test
 
     return;
   }
+
+  // Set window title
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+
+   pMyToolWin = (Fl_Double_Window *)pToolDataParam->pMyToolWin;  // Convert type of pointer
+
+   pMyParWin->copy_label( pMyToolWin->label());
+#else
+   pMyParWin->label( LANGDEF_SETTINGS);
+#endif
 
   ColorType_Last = -1;         // Reset last filter type
 
@@ -1328,7 +1358,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Choice = new Fl_Choice( x1, y, xx2 - 10, yy);
     pTemp_Choice->tooltip( LANGDEF_LUT_TOOLTIP);
-    pTemp_Choice->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->LUT_Table);
+    pTemp_Choice->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->LUT_Table);
 
     // Add predefined LUT tables
     for( int i = 0; i < YaIPS_ColMod_nLUT_tables; i++) {
@@ -1336,7 +1366,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
       pTemp_Choice->add( LangStringLookup( YaIPS_ColMod_LUT_table[ i]));
     }
 
-    pTemp_Choice->value( pToolData->LUT_Table);
+    pTemp_Choice->value( pToolDataParam->LUT_Table);
 
     x1 += xx2;
     //x/x1 += 4;
@@ -1345,8 +1375,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pCheckTemp = new Fl_Check_Button( x1, y, xx2 - 16, yy, LANGDEF_INVERTED);
     pCheckTemp->tooltip( LangStringLookup( "&GUI_Color_TabB4a=Inverts color, black and white image or color palette"));
-    pCheckTemp->value( pToolData->LUT_Invert);
-    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->LUT_Invert);
+    pCheckTemp->value( pToolDataParam->LUT_Invert);
+    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->LUT_Invert);
 
     // Next line
 
@@ -1370,8 +1400,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_R);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabB6a=Brightness for the red color channel."));
-    pTemp_Int->SetValue( pToolData->GainChR);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->GainChR);
+    pTemp_Int->SetValue( pToolDataParam->GainChR);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->GainChR);
     pTemp_Int->SetModifyData( -100, 100, 10, 1);
     pInt_GainChR = pTemp_Int;
 
@@ -1380,8 +1410,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_G);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabB7a=Brightness for the green color channel."));
-    pTemp_Int->SetValue( pToolData->GainChG);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->GainChG);
+    pTemp_Int->SetValue( pToolDataParam->GainChG);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->GainChG);
     pTemp_Int->SetModifyData( -100, 100, 10, 1);
     pInt_GainChG = pTemp_Int;
 
@@ -1390,8 +1420,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_B);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabB8a=Brightness for the blue color channel."));
-    pTemp_Int->SetValue( pToolData->GainChB);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->GainChB);
+    pTemp_Int->SetValue( pToolDataParam->GainChB);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->GainChB);
     pTemp_Int->SetModifyData( -100, 100, 10, 1);
     pInt_GainChB = pTemp_Int;
 
@@ -1402,8 +1432,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pCheckTemp = new Fl_Check_Button( x1, y, xx2 - 16, yy, LANGDEF_ACTIVE_SHORT);
     pCheckTemp->tooltip( LANGDEF_COLOR_RED_FOR_ALL);
-    pCheckTemp->value( pToolData->GainCh1FA);
-    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->GainCh1FA);
+    pCheckTemp->value( pToolDataParam->GainCh1FA);
+    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->GainCh1FA);
 
     // Next line
 
@@ -1416,8 +1446,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Color_TabB10=Offset  R"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabB10a=Offset for the red color channel."));
-    pTemp_Int->SetValue( pToolData->OffsetR);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->OffsetR);
+    pTemp_Int->SetValue( pToolDataParam->OffsetR);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->OffsetR);
     pTemp_Int->SetModifyData( -256, 256, 16, 1);
     pInt_OffsetR = pTemp_Int;
 
@@ -1426,8 +1456,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_G);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabB11a=Offset for the green color channel."));
-    pTemp_Int->SetValue( pToolData->OffsetG);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->OffsetG);
+    pTemp_Int->SetValue( pToolDataParam->OffsetG);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->OffsetG);
     pTemp_Int->SetModifyData( -256, 256, 16, 1);
     pInt_OffsetG = pTemp_Int;
 
@@ -1436,8 +1466,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_B);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabB12a=Offset for the blue color channel."));
-    pTemp_Int->SetValue( pToolData->OffsetB);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->OffsetB);
+    pTemp_Int->SetValue( pToolDataParam->OffsetB);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->OffsetB);
     pTemp_Int->SetModifyData( -256, 256, 16, 1);
     pInt_OffsetB = pTemp_Int;
 
@@ -1469,8 +1499,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                                            "Gamma factor for the red color channel."
                                            "No correction is made at 1.0."));
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->GammaR);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->GammaR);
+    pFloatTemp->SetValue( pToolDataParam->GammaR);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->GammaR);
     pFloatTemp->SetModifyData( 0.2, 5.0, 0.1, 0.01);
     pFloat_GammaR = pFloatTemp;
 
@@ -1483,8 +1513,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                                            "Gamma factor for the green color channel."
                                            "No correction is made at 1.0."));
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->GammaG);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->GammaG);
+    pFloatTemp->SetValue( pToolDataParam->GammaG);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->GammaG);
     pFloatTemp->SetModifyData( 0.2, 5.0, 0.1, 0.01);
     pFloat_GammaG = pFloatTemp;
 
@@ -1497,8 +1527,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                                            "Gamma factor for the blue color channel."
                                            "No correction is made at 1.0."));
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->GammaB);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->GammaB);
+    pFloatTemp->SetValue( pToolDataParam->GammaB);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->GammaB);
     pFloatTemp->SetModifyData( 0.2, 5.0, 0.1, 0.01);
     pFloat_GammaB = pFloatTemp;
 
@@ -1509,8 +1539,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pCheckTemp = new Fl_Check_Button( x1, y, xx2 - 16, yy, LANGDEF_ACTIVE_SHORT);
     pCheckTemp->tooltip( LANGDEF_COLOR_RED_FOR_ALL);
-    pCheckTemp->value( pToolData->Gamma1FA);
-    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->Gamma1FA);
+    pCheckTemp->value( pToolDataParam->Gamma1FA);
+    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->Gamma1FA);
 
     // Finish things for this group
 
@@ -1547,8 +1577,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Color_TabM3=Li"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabM3a=Lower control point, in value."));
-    pTemp_Int->SetValue( pToolData->Contrast1in);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Contrast1in);
+    pTemp_Int->SetValue( pToolDataParam->Contrast1in);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Contrast1in);
     pTemp_Int->SetModifyData( 0, 255, 10, 1);
 
     x1 += xx2;
@@ -1556,8 +1586,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Color_TabM4=Ui"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabM4a=Upper control point, in value."));
-    pTemp_Int->SetValue( pToolData->Contrast2in);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Contrast2in);
+    pTemp_Int->SetValue( pToolDataParam->Contrast2in);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Contrast2in);
     pTemp_Int->SetModifyData( 0, 255, 10, 1);
 
     x1 += xx2;
@@ -1565,8 +1595,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Color_TabM5=Lo"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabM5a=Lower control point, out value."));
-    pTemp_Int->SetValue( pToolData->Contrast1out);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Contrast1out);
+    pTemp_Int->SetValue( pToolDataParam->Contrast1out);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Contrast1out);
     pTemp_Int->SetModifyData( 0, 255, 10, 1);
 
     x1 += xx2;
@@ -1574,8 +1604,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Color_TabM6=Uo"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabM6a=Upper control point, out value."));
-    pTemp_Int->SetValue( pToolData->Contrast2out);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Contrast2out);
+    pTemp_Int->SetValue( pToolDataParam->Contrast2out);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Contrast2out);
     pTemp_Int->SetModifyData( 0, 255, 10, 1);
 
     // Next line
@@ -1603,8 +1633,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     xx2 = 30;
 
     pTemp_Button = new Fl_Button( x1, y, xx2, yy, "");
-    pTemp_Button->color( pToolData->Duotone_Br_Color);
-    pTemp_Button->callback( IqeB_GUI_But_Color_SetValue_Callback, &pToolData->Duotone_Br_Color);
+    pTemp_Button->color( pToolDataParam->Duotone_Br_Color);
+    pTemp_Button->callback( IqeB_GUI_But_Color_SetValue_Callback, &pToolDataParam->Duotone_Br_Color);
     pTemp_Button->tooltip( LangStringLookup( "&GUI_Color_TabM11a="
                            "Bright color for highlighting."));
     pButCol_Br = pTemp_Button;
@@ -1613,12 +1643,12 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     xx2 = 30;
 
-    Fl::get_color( pToolData->Duotone_Br_Color, r, g, b);
+    Fl::get_color( pToolDataParam->Duotone_Br_Color, r, g, b);
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_R);
     pTemp_Int->tooltip( LANGDEF_COL_CHANNEL_R);
     pTemp_Int->SetValue( r);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColR_Callback, &pToolData->Duotone_Br_Color);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColR_Callback, &pToolDataParam->Duotone_Br_Color);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pIntColR_Br= pTemp_Int;
 
@@ -1628,7 +1658,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_G);
     pTemp_Int->tooltip( LANGDEF_COL_CHANNEL_G);
     pTemp_Int->SetValue( g);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColG_Callback, &pToolData->Duotone_Br_Color);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColG_Callback, &pToolDataParam->Duotone_Br_Color);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pIntColG_Br = pTemp_Int;
 
@@ -1638,7 +1668,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_B);
     pTemp_Int->tooltip( LANGDEF_COL_CHANNEL_B);
     pTemp_Int->SetValue( b);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColB_Callback, &pToolData->Duotone_Br_Color);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColB_Callback, &pToolDataParam->Duotone_Br_Color);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pIntColB_Br = pTemp_Int;
 
@@ -1658,8 +1688,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     xx2 = 30;
 
     pTemp_Button = new Fl_Button( x1, y, xx2, yy, "");
-    pTemp_Button->color( pToolData->Duotone_Da_Color);
-    pTemp_Button->callback( IqeB_GUI_But_Color_SetValue_Callback, &pToolData->Duotone_Da_Color);
+    pTemp_Button->color( pToolDataParam->Duotone_Da_Color);
+    pTemp_Button->callback( IqeB_GUI_But_Color_SetValue_Callback, &pToolDataParam->Duotone_Da_Color);
     pTemp_Button->tooltip( LangStringLookup( "&GUI_GenImage_TabM12a="
                            "Dark color for shadows."));
     pButCol_Da = pTemp_Button;
@@ -1668,12 +1698,12 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     xx2 = 30;
 
-    Fl::get_color( pToolData->Duotone_Da_Color, r, g, b);
+    Fl::get_color( pToolDataParam->Duotone_Da_Color, r, g, b);
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_R);
     pTemp_Int->tooltip( LANGDEF_COL_CHANNEL_R);
     pTemp_Int->SetValue( r);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColR_Callback, &pToolData->Duotone_Da_Color);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColR_Callback, &pToolDataParam->Duotone_Da_Color);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pIntColR_Da = pTemp_Int;
 
@@ -1683,7 +1713,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_G);
     pTemp_Int->tooltip( LANGDEF_COL_CHANNEL_G);
     pTemp_Int->SetValue( g);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColG_Callback, &pToolData->Duotone_Da_Color);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColG_Callback, &pToolDataParam->Duotone_Da_Color);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pIntColG_Da = pTemp_Int;
 
@@ -1693,7 +1723,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_B);
     pTemp_Int->tooltip( LANGDEF_COL_CHANNEL_B);
     pTemp_Int->SetValue( b);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColB_Callback, &pToolData->Duotone_Da_Color);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_ColB_Callback, &pToolDataParam->Duotone_Da_Color);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pIntColB_Da = pTemp_Int;
 
@@ -1711,8 +1741,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                                           "Contrast\n"
                                           "Range -100 ... 100.\n"
                                           "0 = no change."));
-    pTemp_Int->SetValue( pToolData->Duotone_contrast);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Duotone_contrast);
+    pTemp_Int->SetValue( pToolDataParam->Duotone_contrast);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Duotone_contrast);
     pTemp_Int->SetModifyData( -100, 100, 10, 1);
     pIntDuoToneCo = pTemp_Int;
 
@@ -1723,8 +1753,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                                           "Brightness\n"
                                           "Range -100 ... 100.\n"
                                           "0 = no change."));
-    pTemp_Int->SetValue( pToolData->Duotone_brightness);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Duotone_brightness);
+    pTemp_Int->SetValue( pToolDataParam->Duotone_brightness);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Duotone_brightness);
     pTemp_Int->SetModifyData( -100, 100, 10, 1);
     pIntDuoToneBr = pTemp_Int;
 
@@ -1739,8 +1769,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                                           "Fade between RGB and BW (saturation) pixels.\n"
                                           "Range 0 ... 100.\n"
                                           "0 = use RGB pixels. 100 = use BW pixels"));
-    pTemp_Int->SetValue( pToolData->Duotone_RGB_Fade);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Duotone_RGB_Fade);
+    pTemp_Int->SetValue( pToolDataParam->Duotone_RGB_Fade);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Duotone_RGB_Fade);
     pTemp_Int->SetModifyData( 0, 100, 10, 1);
     pIntDuoToneFade = pTemp_Int;
 
@@ -1797,8 +1827,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Color_TabC4=R ="));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabC4a=Offset for the red color channel."));
-    pTemp_Int->SetValue( pToolData->R_Offset);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->R_Offset);
+    pTemp_Int->SetValue( pToolDataParam->R_Offset);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->R_Offset);
     pTemp_Int->SetModifyData( -400, 400, 10, 1);
     pInt_MatOffR = pTemp_Int;
 
@@ -1809,8 +1839,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LANGDEF_COL_MULT_R2);
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->R_MultR);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->R_MultR);
+    pFloatTemp->SetValue( pToolDataParam->R_MultR);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->R_MultR);
     pFloatTemp->SetModifyData( -2.0, 2.0, 0.1, 0.01);
     pFloat_MatMulRR = pFloatTemp;
 
@@ -1821,8 +1851,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LANGDEF_COL_MULT_G2);
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->R_MultG);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->R_MultG);
+    pFloatTemp->SetValue( pToolDataParam->R_MultG);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->R_MultG);
     pFloatTemp->SetModifyData( -2.0, 2.0, 0.1, 0.01);
     pFloat_MatMulRG = pFloatTemp;
 
@@ -1833,8 +1863,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LANGDEF_COL_MULT_B2);
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->R_MultB);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->R_MultB);
+    pFloatTemp->SetValue( pToolDataParam->R_MultB);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->R_MultB);
     pFloatTemp->SetModifyData( -2.0, 2.0, 0.1, 0.01);
     pFloat_MatMulRB = pFloatTemp;
 
@@ -1849,8 +1879,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Color_TabC7=G ="));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabC7a=Offset for the green color channel."));
-    pTemp_Int->SetValue( pToolData->G_Offset);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->G_Offset);
+    pTemp_Int->SetValue( pToolDataParam->G_Offset);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->G_Offset);
     pTemp_Int->SetModifyData( -400, 400, 10, 1);
     pInt_MatOffG = pTemp_Int;
 
@@ -1861,8 +1891,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LANGDEF_COL_MULT_R2);
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->G_MultR);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->G_MultR);
+    pFloatTemp->SetValue( pToolDataParam->G_MultR);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->G_MultR);
     pFloatTemp->SetModifyData( -2.0, 2.0, 0.1, 0.01);
     pFloat_MatMulGR = pFloatTemp;
 
@@ -1873,8 +1903,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LANGDEF_COL_MULT_G2);
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->G_MultG);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->G_MultG);
+    pFloatTemp->SetValue( pToolDataParam->G_MultG);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->G_MultG);
     pFloatTemp->SetModifyData( -2.0, 2.0, 0.1, 0.01);
     pFloat_MatMulGG = pFloatTemp;
 
@@ -1885,8 +1915,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LANGDEF_COL_MULT_B2);
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->G_MultB);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->G_MultB);
+    pFloatTemp->SetValue( pToolDataParam->G_MultB);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->G_MultB);
     pFloatTemp->SetModifyData( -2.0, 2.0, 0.1, 0.01);
     pFloat_MatMulGB = pFloatTemp;
 
@@ -1901,8 +1931,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Color_TabC11=B ="));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabC11a=Offset for the blue color channel."));
-    pTemp_Int->SetValue( pToolData->B_Offset);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->B_Offset);
+    pTemp_Int->SetValue( pToolDataParam->B_Offset);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->B_Offset);
     pTemp_Int->SetModifyData( -400, 400, 10, 1);
     pInt_MatOffB = pTemp_Int;
 
@@ -1913,8 +1943,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LANGDEF_COL_MULT_R2);
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->B_MultR);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->B_MultR);
+    pFloatTemp->SetValue( pToolDataParam->B_MultR);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->B_MultR);
     pFloatTemp->SetModifyData( -2.0, 2.0, 0.1, 0.01);
     pFloat_MatMulBR = pFloatTemp;
 
@@ -1925,8 +1955,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LANGDEF_COL_MULT_G2);
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->B_MultG);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->B_MultG);
+    pFloatTemp->SetValue( pToolDataParam->B_MultG);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->B_MultG);
     pFloatTemp->SetModifyData( -2.0, 2.0, 0.1, 0.01);
     pFloat_MatMulBG = pFloatTemp;
 
@@ -1937,8 +1967,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LANGDEF_COL_MULT_B2);
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->B_MultB);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->B_MultB);
+    pFloatTemp->SetValue( pToolDataParam->B_MultB);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->B_MultB);
     pFloatTemp->SetModifyData( -2.0, 2.0, 0.1, 0.01);
     pFloat_MatMulBB = pFloatTemp;
 
@@ -1995,8 +2025,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Color_TabD5=Intensity %"));
     pTemp_Int->tooltip(  LangStringLookup( "&GUI_Color_TabD5a=Adjusting the intensity."));
-    pTemp_Int->SetValue( pToolData->IHS_IntAdjust);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->IHS_IntAdjust);
+    pTemp_Int->SetValue( pToolDataParam->IHS_IntAdjust);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->IHS_IntAdjust);
     pTemp_Int->SetModifyData( -100, 100, 10, 1);
     pIHS_IntAdjust = pTemp_Int;
 
@@ -2011,8 +2041,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Color_TabD6=Hue %"));
     pTemp_Int->tooltip(  LangStringLookup( "&GUI_Color_TabD6a=Adjusting the hue."));
-    pTemp_Int->SetValue( pToolData->IHS_HueAdjust);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->IHS_HueAdjust);
+    pTemp_Int->SetValue( pToolDataParam->IHS_HueAdjust);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->IHS_HueAdjust);
     pTemp_Int->SetModifyData( -100, 100, 10, 1);
     pIHS_HueAdjust = pTemp_Int;
 
@@ -2027,8 +2057,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Color_TabD7=Saturation %"));
     pTemp_Int->tooltip(  LangStringLookup( "&GUI_Color_TabD7a=Adjusting saturation."));
-    pTemp_Int->SetValue( pToolData->IHS_SatAdjust);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->IHS_SatAdjust);
+    pTemp_Int->SetValue( pToolDataParam->IHS_SatAdjust);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->IHS_SatAdjust);
     pTemp_Int->SetModifyData( -100, 100, 10, 1);
     pIHS_SatAdjust = pTemp_Int;
 
@@ -2070,8 +2100,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabE3a="
                                           "Target value for the red color channel\n"
                                           "or for a black and white image."));
-    pTemp_Int->SetValue( pToolData->BC_TargetR);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BC_TargetR);
+    pTemp_Int->SetValue( pToolDataParam->BC_TargetR);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BC_TargetR);
     pTemp_Int->SetModifyData( 100, 255, 10, 1);
     pBC_TargetR = pTemp_Int;
 
@@ -2080,8 +2110,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_G);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabE4a=Target value for the green color channel."));
-    pTemp_Int->SetValue( pToolData->BC_TargetG);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BC_TargetG);
+    pTemp_Int->SetValue( pToolDataParam->BC_TargetG);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BC_TargetG);
     pTemp_Int->SetModifyData( 100, 255, 10, 1);
     pBC_TargetG = pTemp_Int;
 
@@ -2090,8 +2120,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_B);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabE5a=Target value for the blue color channel."));
-    pTemp_Int->SetValue( pToolData->BC_TargetB);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BC_TargetB);
+    pTemp_Int->SetValue( pToolDataParam->BC_TargetB);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BC_TargetB);
     pTemp_Int->SetModifyData( 100, 255, 10, 1);
     pBC_TargetB = pTemp_Int;
 
@@ -2117,8 +2147,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_AOI_LEFT);
     pTemp_Int->tooltip( LANGDEF_AOI_LEFT_TOOLTIP);
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BC_AOI.XPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BC_AOI.XPos);
+    pTemp_Int->SetValue( pToolDataParam->BC_AOI.XPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BC_AOI.XPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pBC_AOI_X = pTemp_Int;
 
@@ -2128,8 +2158,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_AOI_TOP);
     pTemp_Int->tooltip( LANGDEF_AOI_TOP_TOOLTIP);
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BC_AOI.YPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BC_AOI.YPos);
+    pTemp_Int->SetValue( pToolDataParam->BC_AOI.YPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BC_AOI.YPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pBC_AOI_Y = pTemp_Int;
 
@@ -2137,7 +2167,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     x1 += 8;
 
     pTemp_Button = new Fl_Button( x1, y, 28, 28, "@+1pencil");
-    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->BC_AOI_Teach);
+    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->BC_AOI_Teach);
     pTemp_Button->tooltip( LANGDEF_AOI_TEACH_TOOLTIP);
     pTemp_Button->labelcolor( YAIPS_BCOL_BUTTON);
     pTemp_Button->shortcut( FL_COMMAND+'t');       // Short cut key
@@ -2155,8 +2185,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_AOI_WIDTH);
     pTemp_Int->tooltip( LANGDEF_AOI_WIDTH_TOOLTIP);
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BC_AOI.XSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BC_AOI.XSize);
+    pTemp_Int->SetValue( pToolDataParam->BC_AOI.XSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BC_AOI.XSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pBC_AOI_XX = pTemp_Int;
 
@@ -2166,8 +2196,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_AOI_HEIGHT);
     pTemp_Int->tooltip( LANGDEF_AOI_HEIGHT_TOOLTIP);
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BC_AOI.YSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BC_AOI.YSize);
+    pTemp_Int->SetValue( pToolDataParam->BC_AOI.YSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BC_AOI.YSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pBC_AOI_YY = pTemp_Int;
 
@@ -2222,7 +2252,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pMix_In_A_Box->copy_label( "---");
 
     // Legend
-    pTemp_Box = new Fl_Box( x1 - 80, y, 80, yy + 2, LangStringLookup( "&GUI_Color_TabF3=Alpha"));
+    pTemp_Box = new Fl_Box( x1 - 80, y, 80, yy + 2, LANGDEF_COLOR_ALPHA);
     pTemp_Box->box( FL_NO_BOX);
     pTemp_Box->align( FL_ALIGN_RIGHT | FL_ALIGN_INSIDE | FL_ALIGN_CLIP);
     //x/pTemp_Box->labelsize( 10);
@@ -2232,7 +2262,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     xx2 = yy;
 
     pMix_In_A_But = new Fl_Button( x1, y, xx2, yy + 2, "@2>");
-    pMix_In_A_But->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->Mix_In_A_WinIdNr);
+    pMix_In_A_But->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->Mix_In_A_WinIdNr);
     pMix_In_A_But->tooltip( LangStringLookup( "&GUI_Color_TabF3a=Select image for alpha channel"));
     pMix_In_A_But->labelcolor( YAIPS_BCOL_BUTTON);
     pMix_In_A_But->box( FL_BORDER_BOX);
@@ -2264,7 +2294,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     xx2 = yy;
 
     pMix_In_G_But = new Fl_Button( x1, y, xx2, yy + 2, "@2>");
-    pMix_In_G_But->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->Mix_In_G_WinIdNr);
+    pMix_In_G_But->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->Mix_In_G_WinIdNr);
     pMix_In_G_But->tooltip( LangStringLookup( "&GUI_Color_TabF4a=Select image for the green channel"));
     pMix_In_G_But->labelcolor( YAIPS_BCOL_BUTTON);
     pMix_In_G_But->box( FL_BORDER_BOX);
@@ -2296,7 +2326,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     xx2 = yy;
 
     pMix_In_B_But = new Fl_Button( x1, y, xx2, yy + 2, "@2>");
-    pMix_In_B_But->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->Mix_In_B_WinIdNr);
+    pMix_In_B_But->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->Mix_In_B_WinIdNr);
     pMix_In_B_But->tooltip( LangStringLookup( "&GUI_Color_TabF5a=Select image for the blue channel"));
     pMix_In_B_But->labelcolor( YAIPS_BCOL_BUTTON);
     pMix_In_B_But->box( FL_BORDER_BOX);
@@ -2309,12 +2339,16 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
   pTemp_Tabs->end();
 
-  pTemp_Tabs->SetTabGroup( pToolData->Tab_Group_Selected);    // Select tab group from last session
+  pTemp_Tabs->SetTabGroup( pToolDataParam->Tab_Group_Selected);    // Select tab group from last session
 
   // finish up
 
   pMyParWin->end();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  pMyParWin->set_non_modal();
+#else
   pMyParWin->set_modal();
+#endif
   pMyParWin->callback( close_Par_cb, &pMyParWin);
   pMyParWin->show();
 
@@ -2541,6 +2575,10 @@ static void close_cb( Fl_Widget *w, long int iToolData)
     return;
   }
 
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckClose( close_Par_cb, &pMyParWin, iToolData);   // Check to close specific associated parameter dialog
+#endif
+
   YaIPS_ImageDispReleaseBeforeClose( &pToolData->YaIPS_ImageDisp);
 
   pToolData->IsOpen = false;               // Flag info data is not in use
@@ -2694,6 +2732,9 @@ static void MyWinUpdate( int iToolData, int DoEnable)
                              DoEnable &&                                    // Enable GUI elements
                              pToolData->YaIPS_ImageDisp.pImage_Img != NULL); // and have an image loaded
 
+  IqeB_GUI_WidgetActivate( pMyToolWin->pGUI_Parameter,
+                            (pMyParWin == NULL || pToolDataParam->iToolData != iToolData) && // Parameter dialog is closed
+                             DoEnable);                             // Enable GUI elements
 
   // Check input image and visualize state
   YaIPS_ToolWinInputCheck( MY_WIN_ID + iToolData, pToolData->Input1_WinIdNr, pMyToolWin->pBox_Input1);

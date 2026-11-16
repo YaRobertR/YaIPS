@@ -2,7 +2,7 @@
 ; YaIPS_GUI_Color.cpp
 ;-------------------------------------------------------
 ;
-; 105 entries
+; 104 entries
 ;
 GUI_Color_Title                    "Farbe"
 
@@ -237,8 +237,6 @@ GUI_Color_TabF2a                   "Mischen von Farbkanälen zum Erstellen eines
                                    "  Ausgangsbild hat einen Alphakanal.\n"
                                    "  Falls vorhanden, wird der Alphakanal verwendet,\n"
                                    "  Ansonsten muss Alpha ein SW Bild sein.\n"
-
-GUI_Color_TabF3                    "Alpha"
 
 GUI_Color_TabF3a                   "Auswählen Bilde für den Alpha Kanal"
 

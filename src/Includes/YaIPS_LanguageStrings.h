@@ -52,6 +52,10 @@ char * LangStringLookup( const char *pString);
 #define LANGDEF_Y                     LangStringLookup( "&Text_Y=Y")
 #define LANGDEF_PIXEL_UCF             LangStringLookup( "&Text_Pixel_UCF=Pixel")       // Upper case first
 #define LANGDEF_PIXEL_LC              LangStringLookup( "&Text_Pixel_LC=pixel")        // Lower case
+#define LANGDEF_EDGES                 LangStringLookup( "&Text_Edges=Edges")
+#define LANGDEF_SIZE                  LangStringLookup( "&Text_Size=Size")
+#define LANGDEF_GAIN                  LangStringLookup( "&Text_Gain=Gain")
+#define LANGDEF_FADE_SHORT            LangStringLookup( "&Text_Fade_Short=F")          // Text Fade short
 
 // Color
 #define LANGDEF_COLOR                 LangStringLookup( "&Text_Color=Color")
@@ -62,6 +66,8 @@ char * LangStringLookup( const char *pString);
 #define LANGDEF_COLOR_BW              LangStringLookup( "&Text_ColorBW=BW")     // Black white
 
 #define LANGDEF_COLOR_ALPHA           LangStringLookup( "&Text_ColorAlpha=Alpha")
+#define LANGDEF_COLOR_RGB             LangStringLookup( "&Text_ColorRGB=RGB")
+#define LANGDEF_COLOR_IHS             LangStringLookup( "&Text_ColorIHS=IHS")
 
 #define LANGDEF_COLOR_RED_FOR_ALL     LangStringLookup( "&Text_ColorRedForAll=If set, the red value is used\nfor all three channels.")
 

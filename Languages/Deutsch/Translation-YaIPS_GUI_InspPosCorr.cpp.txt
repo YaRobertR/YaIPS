@@ -2,7 +2,7 @@
 ; YaIPS_GUI_InspPosCorr.cpp
 ;-------------------------------------------------------
 ;
-; 81 entries
+; 78 entries
 ;
 GUI_PosCorr_Title                  "Lagekorrektur"
 
@@ -25,8 +25,6 @@ GUI_PosCorr_TabA4                  "Außenbereich ausblenden"
 GUI_PosCorr_TabA4a                 "Außenbereich ausblenden.\n"
                                    "Wenn aktiviert, wird der Bereich außerhalb des Bildes ausgeblendet.\n"
                                    "Andernfalls ist der Bereich außerhalb des Bildes sichtbar."
-
-GUI_PosCorr_TabB1                  "Kanten"
 
 GUI_PosCorr_TabB1a                 "Positionskorrektur mit Kantenfindung"
 

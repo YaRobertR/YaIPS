@@ -184,6 +184,7 @@ int YaIPS_RGB_RLC_Code( Timages **ppRLC1,        // Out: Point to pointer to ima
 
     YaIPS_Histo_Measure2( pSrc,                              // Pointer to image envelop
                           &YaIPS_RGB_RLC_BM_Histo,           // Pointer to RGB histogram
+                          0,                                 // In: Flag bits, see YAIPS_HISTO_FLAG_XXX defines
                           ColorSpace,                        // In: Color space for color images NORMAL, BW, R, G or B
                           4,                                 // In: If > 1 speed up measurement by using less pixels
                           AOI_X, AOI_Y,                      // AOI rectangle start point

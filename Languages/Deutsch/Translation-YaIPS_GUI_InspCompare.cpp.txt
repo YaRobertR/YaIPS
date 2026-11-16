@@ -2,7 +2,7 @@
 ; YaIPS_GUI_InspCompare.cpp
 ;-------------------------------------------------------
 ;
-; 24 entries
+; 27 entries
 ;
 GUI_InspCompare_Title              "Vergleichen"
 
@@ -59,6 +59,22 @@ GUI_InspCompare_GroupC2            "Fläche"
 
 GUI_InspCompare_GroupC2a           "Wenn gesetzt, Fläche kleiner\n"
                                    "und großer Flecken anzeigen."
+
+GUI_InspCompare_GroupD1            "Prüfmaske"
+
+GUI_InspCompare_GroupD2            "Maske"
+
+GUI_InspCompare_GroupD2a           "Eine Maske beschränkt den Vergleich auf bestimmte\n"
+                                   "Bereiche.\n"
+                                   "Weitere Informationen finden Sie im Werkzeugfenster\n"
+                                   "'Inspektion Referenzbild'."
+
+GUI_InspCompare_GroupD3            "Nicht"
+
+GUI_InspCompare_GroupD3a           "Diese Option beschränkt den Vergleich auf nicht\n"
+                                   "maskierte Bereiche.\n"
+                                   "Weitere Informationen finden Sie im Werkzeugfenster\n"
+                                   "'Inspektion Referenzbild'."
 
 ;
 ;

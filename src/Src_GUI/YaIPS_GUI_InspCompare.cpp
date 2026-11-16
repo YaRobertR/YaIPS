@@ -5,6 +5,15 @@
   Compare image parts.
 
   15.09.2025 RR: First edition of this file.
+  18.10.2026 RR: * Reworked behavior of tool window parameter dialogs.
+                   See functions IqeB_GUI_ToolParCheckOpen(),
+                   IqeB_GUI_ToolParCheckReset() and IqeB_GUI_ToolParCheckClose().
+  09.11.2026 RR: * Added support for check masks in image comparison.
+                   See: one of the defines YAIPS_INSP_COMP_FLAG_MASK,
+                        YAIPS_REFMASK_CHECK_MASK_ or YAIPS_NOALPHADISP_MASK_
+  11.11.2026 RR: * MyWinUpdate()
+                   Parameter dialog button is disabled if the parameter dialog
+                   is open.
 
 *****************************************************************************
 */
@@ -140,8 +149,7 @@ static T_GUI_PreferenceEntry MyPreferences[] =
   { PREF_T_FLOAT,     "MinBlobArea",  "1.0", &YaIPS_ToolData_info[0].Cmp.MinBlobArea},
   { PREF_T_FLOAT,    "MinLBlobArea",  "5.0", &YaIPS_ToolData_info[0].Cmp.MinLBlobArea},
   { PREF_T_FLOAT,     "SumBlobArea", "10.0", &YaIPS_ToolData_info[0].Cmp.SumBlobArea},
-  { PREF_T_INT,        "FlagDarken",    "1", &YaIPS_ToolData_info[0].Cmp.FlagDarken},
-  { PREF_T_INT,  "FlagShowBlobArea",    "0", &YaIPS_ToolData_info[0].Cmp.FlagShowBlobArea},
+  { PREF_T_INT,             "Flags",    "1", &YaIPS_ToolData_info[0].Cmp.Flags},
 };
 
 // Automatic add this preference settings at startup of the program.
@@ -161,10 +169,11 @@ static IqeB_PreferencesGroup MyPreferencesAdd( MY_WIN_PREF_NAME, MyPreferences, 
 // ...
 
 static  Fl_Window *pMyParWin;
-static  YaIPS_ToolData_info_t *pToolData;     // NOTE: Is used by all parameter dialog functions
+static  YaIPS_ToolData_info_t *pToolDataParam;     // NOTE: Is used by all parameter dialog functions
 
 static IqeFl_Int_Input *pAOI_X, *pAOI_Y, *pAOI_XX, *pAOI_YY;
 static Fl_Button *pTeachToggle;
+static IqeFl_Check_Bit *pCBit_MaskNot1, *pCBit_MaskNot2, *pCBit_MaskNot3;
 
 /************************************************************************************
  * update GUI of this tool window
@@ -182,20 +191,20 @@ static void MyParWinUpdate()
   pCurrFocus = Fl::focus();
 
   // Enable AOI pos/size input buttons
-  IqeB_GUI_WidgetActivate( pAOI_X, pToolData->Teach_mode);
-  IqeB_GUI_WidgetActivate( pAOI_Y, pToolData->Teach_mode);
-  IqeB_GUI_WidgetActivate( pAOI_XX, pToolData->Teach_mode);
-  IqeB_GUI_WidgetActivate( pAOI_YY, pToolData->Teach_mode);
+  IqeB_GUI_WidgetActivate( pAOI_X, pToolDataParam->Teach_mode);
+  IqeB_GUI_WidgetActivate( pAOI_Y, pToolDataParam->Teach_mode);
+  IqeB_GUI_WidgetActivate( pAOI_XX, pToolDataParam->Teach_mode);
+  IqeB_GUI_WidgetActivate( pAOI_YY, pToolDataParam->Teach_mode);
 
   // Color teach toggle button
 
-  IqeB_GUI_WidgetLabelColor( pTeachToggle, pToolData->Teach_mode ? FL_GREEN : YAIPS_BCOL_BUTTON);
+  IqeB_GUI_WidgetLabelColor( pTeachToggle, pToolDataParam->Teach_mode ? FL_GREEN : YAIPS_BCOL_BUTTON);
 
   // Check Scene input
 
   pImgIn1 = NULL;       // Will be set if there is a valid scene image
 
-  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolData->iToolData, pToolData->Input1_WinIdNr,
+  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolDataParam->iToolData, pToolDataParam->Input1_WinIdNr,
                            NULL, &pImgIn1, NULL);
 
   if( pImgIn1 != NULL) {
@@ -214,18 +223,24 @@ static void MyParWinUpdate()
   if( pCurrFocus != pAOI_X  && pCurrFocus != pAOI_Y &&               // Input element has NO keyboard focus ?
       pCurrFocus != pAOI_XX && pCurrFocus != pAOI_YY) {
 
-    if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolData->Cmp.AOI, ImgXX, ImgYY,
+    if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolDataParam->Cmp.AOI, ImgXX, ImgYY,
                                           pAOI_X, pAOI_Y, pAOI_XX, pAOI_YY) > 0) {
 
       RedrawOnExit = true;                                 // Redraw on exit
     }
   }
 
+  // Check enables for mask negate
+
+  IqeB_GUI_WidgetActivate( pCBit_MaskNot1, (pToolDataParam->Cmp.Flags & YAIPS_INSP_COMP_FLAG_MASK1) != 0);
+  IqeB_GUI_WidgetActivate( pCBit_MaskNot2, (pToolDataParam->Cmp.Flags & YAIPS_INSP_COMP_FLAG_MASK2) != 0);
+  IqeB_GUI_WidgetActivate( pCBit_MaskNot3, (pToolDataParam->Cmp.Flags & YAIPS_INSP_COMP_FLAG_MASK3) != 0);
+
   // Redraw
 
   if( RedrawOnExit) {                                           // Redraw on exit
 
-    pToolData->Input1_Change = 0;                // Reset image change check
+    pToolDataParam->Input1_Change = 0;                // Reset image change check
   }
 }
 
@@ -278,8 +293,12 @@ static void IqeB_GUI_ParIdleAction( void *)
 static void close_Par_cb( Fl_Widget *w, void *pValueArg)
 {
 
-  pToolData->MyParPosX = pMyParWin->x();
-  pToolData->MyParPosY = pMyParWin->y();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckReset();   // The one and only open tool window parameter dialog is closed
+#endif
+
+  pToolDataParam->MyParPosX = pMyParWin->x();
+  pToolDataParam->MyParPosY = pMyParWin->y();
 
 #ifdef YAIPS_IDLE_CALLBACK_USE  // Use the idle callbacks in tool windows
   Fl::remove_idle( IqeB_GUI_ParIdleAction);      // Redraw window during idle
@@ -335,8 +354,8 @@ static void IqeB_GUI_Float_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   // ...
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -387,8 +406,8 @@ static void IqeB_GUI_Int_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   // ...
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -411,7 +430,7 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   if( w == pTeachToggle) {                   // Toggle Teach / Inspection button
 
-    pToolData->Teach_mode = ! pToolData->Teach_mode;
+    pToolDataParam->Teach_mode = ! pToolDataParam->Teach_mode;
 
   } else {
 
@@ -421,8 +440,34 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     *pValue = pThis->value();                // update the variable
   }
 
-  pToolData->Input1_Change = 0;          // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;          // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
+}
+
+/************************************************************************************
+ * IqeB_GUI_CBox_SetValue_Callback
+ */
+
+static void IqeB_GUI_Check_Bit_Callback( Fl_Widget *w, void *pValueArg)
+{
+  int *pValue /*, HasChanged*/;
+  IqeFl_Check_Bit *pThis;
+
+  pThis  = (IqeFl_Check_Bit *)w;
+  pValue = (int *)pValueArg;             // get pointer to associated variable
+
+  if( pThis == NULL ||                   // security test
+      pValue == NULL) {
+
+    return;
+  }
+
+  // Set value
+
+  /*HasChanged = */ pThis->GetValue();      // Update the variable
+
+  pToolDataParam->Input1_Change = 0;          // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -435,10 +480,20 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 {
   int xPos, yPos;
+  Fl_Double_Window *pMyToolWin;
+
+  // Check parameter dialog is allowed to open
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  if( IqeB_GUI_ToolParCheckOpen( close_Par_cb, &pMyParWin, iToolData) < 0) {    // Allowed to open parameter dialog
+
+    return;
+  }
+#endif
 
   // Get pointer to tool data
 
-  pToolData = YaIPS_ToolData_info + iToolData;             // Point to info data
+  pToolDataParam = YaIPS_ToolData_info + iToolData;             // Point to info data
 
   //
   // creation of window on first call
@@ -447,18 +502,28 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   xPos = xLeft;
   yPos = yTop;
 
-  if( pToolData->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolData->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
+  if( pToolDataParam->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolDataParam->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
 
-    xPos = pToolData->MyParPosX;
-    yPos = pToolData->MyParPosY;
+    xPos = pToolDataParam->MyParPosX;
+    yPos = pToolDataParam->MyParPosY;
   }
 
-  pMyParWin = new Fl_Window( xPos, yPos, 355 /*IQE_GUI_TOOLS_STD_WITDH*/, 147, LANGDEF_SETTINGS);
+  pMyParWin = new Fl_Window( xPos, yPos, 355 /*IQE_GUI_TOOLS_STD_WITDH*/, 147);
 
   if( pMyParWin == NULL) {  // security test
 
     return;
   }
+
+  // Set window title
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+
+   pMyToolWin = (Fl_Double_Window *)pToolDataParam->pMyToolWin;  // Convert type of pointer
+
+   pMyParWin->copy_label( pMyToolWin->label());
+#else
+   pMyParWin->label( LANGDEF_SETTINGS);
+#endif
 
   //
   //  GUI things
@@ -468,7 +533,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   //x/int xx1, xc;
   char TempBuffer[ 256];
 
-  Fl_Check_Button *pCheckTemp;
+  //x/Fl_Check_Button *pCheckTemp;
   Fl_Box          *pTemp_Box;
   IqeFl_Int_Input    *pTemp_Int;
   IqeFl_Float_Input  *pFloatTemp;
@@ -476,6 +541,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   Fl_Button       *pTemp_Button;
   //x/Fl_Choice       *pTemp_Choice;
   //x/Fl_Radio_Round_Button *pRadioButTemp;
+  IqeFl_Check_Bit *pTemp_Check_Bit;
 
   yy  = 20;
 
@@ -486,7 +552,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   x1 = pMyParWin->w() - 28 - 4;
 
   pTemp_Button = new Fl_Button( x1, y, 28, 28, "@+1pencil");
-  pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->Teach_mode);
+  pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->Teach_mode);
   pTemp_Button->tooltip( LANGDEF_SWITCH_TEACH_INSPECT);
   pTemp_Button->labelcolor( YAIPS_BCOL_BUTTON);
   pTemp_Button->shortcut( FL_COMMAND+'t');       // Short cut key
@@ -495,7 +561,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   x1  = 4;
 
   pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 28 - 8, yy + 8);
-  pTemp_Group->box( FL_UP_BOX);
+  pTemp_Group->box( FL_THIN_DOWN_BOX);
 
     // Next line
 
@@ -513,8 +579,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_X);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspCompare_TabA2a=Position left edge AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->Cmp.AOI.XPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Cmp.AOI.XPos);
+    pTemp_Int->SetValue( pToolDataParam->Cmp.AOI.XPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Cmp.AOI.XPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pAOI_X = pTemp_Int;
 
@@ -524,8 +590,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_Y);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspCompare_TabA3a=Position upper edge AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->Cmp.AOI.YPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Cmp.AOI.YPos);
+    pTemp_Int->SetValue( pToolDataParam->Cmp.AOI.YPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Cmp.AOI.YPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pAOI_Y = pTemp_Int;
 
@@ -535,8 +601,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_InspCompare_TabA4=W"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspCompare_TabA4a=Width of the AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->Cmp.AOI.XSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Cmp.AOI.XSize);
+    pTemp_Int->SetValue( pToolDataParam->Cmp.AOI.XSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Cmp.AOI.XSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pAOI_XX = pTemp_Int;
 
@@ -546,8 +612,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_InspCompare_TabA6=H"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspCompare_TabA5a=Height of the AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->Cmp.AOI.YSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Cmp.AOI.YSize);
+    pTemp_Int->SetValue( pToolDataParam->Cmp.AOI.YSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Cmp.AOI.YSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pAOI_YY = pTemp_Int;
 
@@ -572,7 +638,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   ySave = y;    // Remember y position
 
   pTemp_Group = new Fl_Group( x1, y, xx1 + xx2 + 41, 5 * yy + 8);
-  pTemp_Group->box( FL_UP_BOX);
+  pTemp_Group->box( FL_THIN_DOWN_BOX);
 
     // Next line
 
@@ -590,8 +656,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspCompare_GroupB1a="
                          "Image pixels with a brightness deviation larger\n"
                          "than this dark tolerance are marked as error pixels."));
-    pTemp_Int->SetValue( pToolData->Cmp.GWToleranceHi);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Cmp.GWToleranceHi);
+    pTemp_Int->SetValue( pToolDataParam->Cmp.GWToleranceHi);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Cmp.GWToleranceHi);
     pTemp_Int->SetModifyData( 0, 255, 10, 1);
 
     // Next line
@@ -610,8 +676,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspCompare_GroupB2a="
                          "Image pixels with a brightness deviation larger\n"
                          "than this bright tolerance are marked as error pixels."));
-    pTemp_Int->SetValue( pToolData->Cmp.GWToleranceLo);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Cmp.GWToleranceLo);
+    pTemp_Int->SetValue( pToolDataParam->Cmp.GWToleranceLo);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Cmp.GWToleranceLo);
     pTemp_Int->SetModifyData( 0, 255, 10, 1);
 
     // Next line
@@ -638,8 +704,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                          "An area higher than this and smaller than\n"
                          "'Error area big blobs' is a small blob (colored green).\n"));
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->Cmp.MinBlobArea);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->Cmp.MinBlobArea);
+    pFloatTemp->SetValue( pToolDataParam->Cmp.MinBlobArea);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->Cmp.MinBlobArea);
     pFloatTemp->SetModifyData( 0.0, 100.0, 1.0, 0.1);
 
     // Next line
@@ -663,8 +729,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                          "A bad inspection result occurs when\n"
                          "there are one or more large blobs."));
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->Cmp.MinLBlobArea);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->Cmp.MinLBlobArea);
+    pFloatTemp->SetValue( pToolDataParam->Cmp.MinLBlobArea);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->Cmp.MinLBlobArea);
     pFloatTemp->SetModifyData( 0.0, 100.0, 1.0, 0.1);
 
     // Next line
@@ -686,8 +752,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                                  "A bad inspection result occurs when the area\n"
                                  "sum area of all small blobs this threshold."));
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->Cmp.SumBlobArea);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->Cmp.SumBlobArea);
+    pFloatTemp->SetValue( pToolDataParam->Cmp.SumBlobArea);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->Cmp.SumBlobArea);
     pFloatTemp->SetModifyData( 0.0, 100.0, 1.0, 0.1);
 
 
@@ -706,42 +772,175 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
   x1 = pTemp_Group->x() + pTemp_Group->w() + 4;   // Position near next group
 
-  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, 2 * yy + 8);
-  pTemp_Group->box( FL_UP_BOX);
+  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, 2 * yy + 2);
+  pTemp_Group->box( FL_THIN_DOWN_BOX);
 
     // Next line
 
     x1 += 4;                                        // Left side for check buttons
     xx2 = pMyParWin->w() - x1 - 8;
 
-    y += 4;
+    y += 1;
 
-    pCheckTemp = new Fl_Check_Button( x1, y, xx2, yy, LangStringLookup( "&GUI_InspCompare_GroupC1=Darken"));
-    pCheckTemp->tooltip( LangStringLookup( "&GUI_InspCompare_GroupC1a="
+    pTemp_Check_Bit = new IqeFl_Check_Bit( x1, y, xx2, yy, &pToolDataParam->Cmp.Flags, YAIPS_INSP_COMP_FLAG_DARKEN, LangStringLookup( "&GUI_InspCompare_GroupC1=Darken"));
+    pTemp_Check_Bit->tooltip( LangStringLookup( "&GUI_InspCompare_GroupC1a="
                          "If set, darken the image.\n"
                          "This makes error markings more visible."));
-    pCheckTemp->value( pToolData->Cmp.FlagDarken);
-    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->Cmp.FlagDarken);
+    pTemp_Check_Bit->callback( IqeB_GUI_Check_Bit_Callback, &pToolDataParam->Cmp.Flags);
 
     // Next line
 
     y += yy;
 
-    pCheckTemp = new Fl_Check_Button( x1, y, xx2, yy, LangStringLookup( "&GUI_InspCompare_GroupC2=Area"));
-    pCheckTemp->tooltip( LangStringLookup( "&GUI_InspCompare_GroupC2a="
+    pTemp_Check_Bit = new IqeFl_Check_Bit( x1, y, xx2, yy, &pToolDataParam->Cmp.Flags, YAIPS_INSP_COMP_FLAG_SHOWBA, LangStringLookup( "&GUI_InspCompare_GroupC2=Area"));
+    pTemp_Check_Bit->tooltip( LangStringLookup( "&GUI_InspCompare_GroupC2a="
                          "If set, show area\n"
                          "of small and large blobs."));
-    pCheckTemp->value( pToolData->Cmp.FlagShowBlobArea);
-    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->Cmp.FlagShowBlobArea);
+    pTemp_Check_Bit->callback( IqeB_GUI_Check_Bit_Callback, &pToolDataParam->Cmp.Flags);
 
     // Finish things for this group
 
     pTemp_Group->end();
 
+    // Check mask group
+
+    xx1 = 160;     // With of legend
+    xx2 = 54;      // With of input element
+
+    x1  = 4;
+
+    y = pTemp_Group->y() + pTemp_Group->h() + 4;    // Restore y position below last group
+
+    x1 = pTemp_Group->x();                          // Same position as last group
+
+    pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, 2 * yy + 22 /*2*/, LangStringLookup( "&GUI_InspCompare_GroupD1=Check mask"));
+    pTemp_Group->box( FL_THIN_DOWN_BOX);
+    pTemp_Group->align( FL_ALIGN_INSIDE | FL_ALIGN_TOP_LEFT);
+    pTemp_Group->labelsize( 11);
+
+      // Next line
+
+      x1 += 2 + 36;                                        // Left side for check buttons
+      xx2 = 18;
+
+      y += 24;
+
+      pTemp_Box = new Fl_Box( x1, y - 14, xx2, yy, "1");
+      pTemp_Box->labelsize( 11);
+      pTemp_Box->box( FL_NO_BOX);
+      pTemp_Box->align( FL_ALIGN_CENTER);     // align for label
+
+      x1 += xx2 + 1;
+
+      pTemp_Box = new Fl_Box( x1, y - 14, xx2, yy, "2");
+      pTemp_Box->labelsize( 11);
+      pTemp_Box->box( FL_NO_BOX);
+      pTemp_Box->align( FL_ALIGN_CENTER);     // align for label
+
+      x1 += xx2 + 1;
+
+      pTemp_Box = new Fl_Box( x1, y - 14, xx2, yy, "3");
+      pTemp_Box->labelsize( 11);
+      pTemp_Box->box( FL_NO_BOX);
+      pTemp_Box->align( FL_ALIGN_CENTER);     // align for label
+
+      x1 = pTemp_Group->x();                          // Same position as last group
+
+      x1 += 2;                                   // Left side for check buttons
+
+      pTemp_Box = new Fl_Box( x1, y, 34, yy, LangStringLookup( "&GUI_InspCompare_GroupD2=Mask"));
+      pTemp_Box->labelsize( 11);
+      pTemp_Box->box( FL_NO_BOX);
+      pTemp_Box->align( FL_ALIGN_INSIDE | FL_ALIGN_LEFT);     // align for label
+
+      x1 += 2 + 34;                                   // Left side for check buttons
+
+      pTemp_Check_Bit = new IqeFl_Check_Bit( x1, y, xx2, yy, &pToolDataParam->Cmp.Flags, YAIPS_INSP_COMP_FLAG_MASK1);
+      pTemp_Check_Bit->tooltip( LangStringLookup( "&GUI_InspCompare_GroupD2a="
+                           "A mask limits the comparison to specific\n"
+                           "regions.\n"
+                           "See inspection reference image tool window for\n"
+                           "further details."));
+      pTemp_Check_Bit->callback( IqeB_GUI_Check_Bit_Callback, &pToolDataParam->Cmp.Flags);
+
+      x1 += xx2 + 1;
+
+      pTemp_Check_Bit = new IqeFl_Check_Bit( x1, y, xx2, yy, &pToolDataParam->Cmp.Flags, YAIPS_INSP_COMP_FLAG_MASK2);
+      pTemp_Check_Bit->tooltip( LangStringLookup( "&GUI_InspCompare_GroupD2a="
+                          "A mask limits the comparison to specific\n"
+                          "regions.\n"
+                          "See inspection reference image tool window for\n"
+                          "further details."));
+      pTemp_Check_Bit->callback( IqeB_GUI_Check_Bit_Callback, &pToolDataParam->Cmp.Flags);
+
+      x1 += xx2 + 1;
+
+      pTemp_Check_Bit = new IqeFl_Check_Bit( x1, y, xx2, yy, &pToolDataParam->Cmp.Flags, YAIPS_INSP_COMP_FLAG_MASK3);
+      pTemp_Check_Bit->tooltip( LangStringLookup( "&GUI_InspCompare_GroupD2a="
+                          "A mask limits the comparison to specific\n"
+                          "regions.\n"
+                          "See inspection reference image tool window for\n"
+                          "further details."));
+      pTemp_Check_Bit->callback( IqeB_GUI_Check_Bit_Callback, &pToolDataParam->Cmp.Flags);
+
+      // Next line
+
+      x1 = pTemp_Group->x();                          // Same position as last group
+
+      y += yy - 2;
+
+      x1 += 2;                                   // Left side for check buttons
+
+      pTemp_Box = new Fl_Box( x1, y, 34, yy, LangStringLookup( "&GUI_InspCompare_GroupD3=Not"));
+      pTemp_Box->labelsize( 11);
+      pTemp_Box->box( FL_NO_BOX);
+      pTemp_Box->align( FL_ALIGN_INSIDE | FL_ALIGN_LEFT);     // align for label
+
+      x1 += 2 + 34;                                   // Left side for check buttons
+
+      pTemp_Check_Bit = new IqeFl_Check_Bit( x1, y, xx2, yy, &pToolDataParam->Cmp.Flags, YAIPS_INSP_COMP_FLAG_MASK1_N);
+      pTemp_Check_Bit->tooltip( LangStringLookup( "&GUI_InspCompare_GroupD3a="
+                           "This setting limits the comparison to unmasked\n"
+                           "regions.\n"
+                           "See inspection reference image tool window for\n"
+                           "further details."));
+      pTemp_Check_Bit->callback( IqeB_GUI_Check_Bit_Callback, &pToolDataParam->Cmp.Flags);
+      pCBit_MaskNot1 = pTemp_Check_Bit;
+
+      x1 += xx2 + 1;
+
+      pTemp_Check_Bit = new IqeFl_Check_Bit( x1, y, xx2, yy, &pToolDataParam->Cmp.Flags, YAIPS_INSP_COMP_FLAG_MASK2_N);
+      pTemp_Check_Bit->tooltip( LangStringLookup( "&GUI_InspCompare_GroupD3a="
+                           "This setting limits the comparison to unmasked\n"
+                           "regions.\n"
+                           "See inspection reference image tool window for\n"
+                           "further details."));
+      pTemp_Check_Bit->callback( IqeB_GUI_Check_Bit_Callback, &pToolDataParam->Cmp.Flags);
+      pCBit_MaskNot2 = pTemp_Check_Bit;
+
+      x1 += xx2 + 1;
+
+      pTemp_Check_Bit = new IqeFl_Check_Bit( x1, y, xx2, yy, &pToolDataParam->Cmp.Flags, YAIPS_INSP_COMP_FLAG_MASK3_N);
+      pTemp_Check_Bit->tooltip( LangStringLookup( "&GUI_InspCompare_GroupD3a="
+                           "This setting limits the comparison to unmasked\n"
+                           "regions.\n"
+                           "See inspection reference image tool window for\n"
+                           "further details."));
+      pTemp_Check_Bit->callback( IqeB_GUI_Check_Bit_Callback, &pToolDataParam->Cmp.Flags);
+      pCBit_MaskNot3 = pTemp_Check_Bit;
+
+      // Finish things for this group
+
+      pTemp_Group->end();
+
   // finish up
 
   pMyParWin->end();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  pMyParWin->set_non_modal();
+#else
   pMyParWin->set_modal();
+#endif
   pMyParWin->callback( close_Par_cb, &pMyParWin);
   pMyParWin->show();
 
@@ -998,6 +1197,10 @@ static void close_cb( Fl_Widget *w, long int iToolData)
     return;
   }
 
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckClose( close_Par_cb, &pMyParWin, iToolData);   // Check to close specific associated parameter dialog
+#endif
+
   YaIPS_ImageDispReleaseBeforeClose( &pToolData->YaIPS_ImageDisp);
 
   pToolData->IsOpen = false;               // Flag info data is not in use
@@ -1166,6 +1369,9 @@ static void MyWinUpdate( int iToolData, int DoEnable)
                              DoEnable &&                                    // Enable GUI elements
                              pToolData->YaIPS_ImageDisp.pImage_Img != NULL); // and have an image loaded
 
+  IqeB_GUI_WidgetActivate( pMyToolWin->pGUI_Parameter,
+                            (pMyParWin == NULL || pToolDataParam->iToolData != iToolData) && // Parameter dialog is closed
+                             DoEnable);                             // Enable GUI elements
 
   // Check input image and visualize state
   YaIPS_ToolWinInputCheck( MY_WIN_ID + iToolData, pToolData->Input1_WinIdNr, pMyToolWin->pBox_Input1);
@@ -1664,7 +1870,7 @@ static void YaIPS_GUI_MyDrawAfter_Func( Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp, 
     ImageDispAoiRectDraw( pYaIPS_ImageDisp, pAOI, pToolData->Teach_mode, IsSelected, InspError, pInspText);
 
     if( ! pToolData->Teach_mode &&          // If inspection mode
-        pToolData->Cmp.FlagShowBlobArea) {  // and draw the blobs
+        (pToolData->Cmp.Flags & YAIPS_INSP_COMP_FLAG_SHOWBA) != 0) {  // and draw the blobs
 
       // Draw the blob areas
       YaIPS_ImageCompare_DrawArea( pYaIPS_ImageDisp, &pToolData->Cmp, pToolData->Teach_mode);

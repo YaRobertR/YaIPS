@@ -46,7 +46,7 @@ MyParPosY:723
 
 [./Settings]
 
-Language:Deutsch
+Language:English
 WinPosX:-251
 WinPosY:229
 Group_Selected:1
@@ -131,21 +131,21 @@ Obj_BinThresPc:50
 
 [./GUI_Main]
 
-WinPosX:38
-WinPosY:42
+WinPosX:-1909
+WinPosY:55
 WinSizeX:1862
 WinSizeY:968
 RightSideWidth:617
 FileBrowserLastDir:.\\Images\\Demo\\Inspection-1\\
 ImageSourceID_Last:106
-YaIPS_BigImageResolution:0
+YaIPS_BigImageResolution:1
 FileBrowserLastVideo:E:\\Robert\\Temp\\XX-Temp-4\\
 YaIPS_BigImageColModFalseC:0
 YaIPS_BigImageShowInfoMode:0
-YaIPS_BigImageAoiP2x:396
-YaIPS_BigImageAoiP2y:236
-YaIPS_BigImageAoiP1x:220
-YaIPS_BigImageAoiP1y:220
+YaIPS_BigImageAoiP2x:450
+YaIPS_BigImageAoiP2y:494
+YaIPS_BigImageAoiP1x:447
+YaIPS_BigImageAoiP1y:490
 YaIPS_BigImagePlot3D_Active:0
 YaIPS_BigImagePlot3D_Azim:31
 YaIPS_BigImagePlot3D_Elev:33
@@ -158,15 +158,22 @@ RightSideWidthFS:385
 
 [./WinInspRefImg-1]
 
-WinPosX:1573
-WinPosY:206
+WinPosX:-387
+WinPosY:220
 IsOpen:1
 WinSizeX:227
 WinSizeY:190
 Input1_WinIdNr:10
-MyParPosX:-304
-MyParPosY:462
+MyParPosX:-332
+MyParPosY:451
 ContourPlaneThres:24
+Group_Selected:2
+MaskDrawMode_1:5
+MaskDrawMode_2:1
+MaskAutoThres_1:40
+MaskColor_1:1
+MaskBrush_1:9
+MaskBrush_2:3
 
 [./WinInspRefImg-2]
 
@@ -179,8 +186,8 @@ ContourPlaneThres:24
 
 [./WinPosCorr-1]
 
-WinPosX:1292
-WinPosY:440
+WinPosX:-651
+WinPosY:475
 IsOpen:1
 WinSizeX:262
 WinSizeY:190
@@ -268,8 +275,8 @@ Base_OutsiteBlend:0
 
 [./Win_Edges-1]
 
-WinPosX:1291
-WinPosY:671
+WinPosX:-656
+WinPosY:739
 IsOpen:1
 WinSizeX:262
 WinSizeY:190
@@ -314,26 +321,27 @@ OrientationAngle:15
 
 [./WinInspCompare-1]
 
-WinPosX:1570
-WinPosY:673
+WinPosX:-373
+WinPosY:742
 IsOpen:1
 WinSizeX:262
-WinSizeY:190
+WinSizeY:267
 Input1_WinIdNr:74
 Input2_WinIdNr:114
 FlagShowBlobArea:1
-MyParPosX:-403
-MyParPosY:507
+MyParPosX:-383
+MyParPosY:608
 Teach_mode:0
-AOI_X:146
-AOI_Y:260
-AOI_XX:519
-AOI_YY:248
+AOI_X:35
+AOI_Y:110
+AOI_XX:689
+AOI_YY:428
 GWToleranceHi:55
 GWToleranceLo:55
 MinLBlobArea:10
 MinBlobArea:1
 FlagDarken:1
+Flags:563
 
 [./WinInspCompare-2]
 
@@ -346,8 +354,8 @@ FlagDarken:1
 
 [./WinInspColor-1]
 
-WinPosX:1571
-WinPosY:443
+WinPosX:-372
+WinPosY:474
 IsOpen:1
 WinSizeX:262
 WinSizeY:190
@@ -364,9 +372,9 @@ BT_AOI_Y:176
 BT_AOI_XX:123
 BT_AOI_YY:17
 Group_Selected:1
-BC_RefCol_0:217
-BC_RefCol_1:229
-BC_RefCol_2:209
+BC_RefCol_0:68
+BC_RefCol_1:81
+BC_RefCol_2:55
 BC_Mode:0
 BC_AOI_X:238
 BC_AOI_Y:167
@@ -408,12 +416,12 @@ NewHeight:12
 
 [./WinImage-1]
 
-WinPosX:1296
-WinPosY:203
+WinPosX:-651
+WinPosY:215
 IsOpen:1
 WinSizeX:205
-WinSizeY:190
-LastFileName:.\\Images\\Demo\\Inspection-1\\01 - Reference.png
+WinSizeY:191
+LastFileName:.\\Images\\Demo\\Inspection-1\\03.png
 
 [./WinImage-2]
 

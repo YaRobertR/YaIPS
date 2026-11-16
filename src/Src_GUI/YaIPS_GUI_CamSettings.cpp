@@ -5,6 +5,9 @@
   Camera settings.
 
   23.04.2025 RR: First edition of this file.
+  18.10.2026 RR: * Reworked behavior of tool window parameter dialogs.
+                   See functions IqeB_GUI_ToolParCheckOpen(),
+                   IqeB_GUI_ToolParCheckReset() and IqeB_GUI_ToolParCheckClose().
 
 *****************************************************************************
 */
@@ -60,7 +63,7 @@ int YaIPS_CamPar_HMode_Val_Thres =  32;  // Height mode: Brightness threshold
  * Statics
  */
 
-static  Fl_Window *pMyToolWin;
+static  Fl_Window *pMyParWin;
 static int MyWinPosX = IQE_GUI_NO_WINPOS_X, MyWinPosY = IQE_GUI_NO_WINPOS_Y; // last window position
 
 static IqeFl_Tabs      *pTab_Groups;         // Point to tabulator GUI element
@@ -109,7 +112,7 @@ static Fl_Button *pTeachToggle_HMode;        // Height mode: Toggle teach / insp
 
 // Automatic add this preference settings at startup of the program.
 static IqeB_PreferencesGroup MyPreferencesAdd( MY_WIN_PREF_NAME, MyPreferences, sizeof( MyPreferences) / sizeof( T_GUI_PreferenceEntry),
-                                               (void **)(&pMyToolWin), &MyWinPosX, &MyWinPosY);
+                                               (void **)(&pMyParWin), &MyWinPosX, &MyWinPosY);
 
 /************************************************************************************
  * update GUI of this tool window
@@ -477,7 +480,7 @@ static void IqeB_GUI_ToolsMyIdleAction( void *)
 
   //
 
-  if( pMyToolWin == NULL) {     // Security test, window must exist
+  if( pMyParWin == NULL) {     // Security test, window must exist
 
     return;
   }
@@ -494,8 +497,8 @@ static void IqeB_GUI_ToolsMyIdleAction( void *)
 
     // update window size
 
-    //x/MyWinSizeX = pMyToolWin->w();  // update window size
-    //x/MyWinSizeY = pMyToolWin->h();  // update window size
+    //x/MyWinSizeX = pMyParWin->w();  // update window size
+    //x/MyWinSizeY = pMyParWin->h();  // update window size
 
     // Periodically updates on GUI
     MyWinUpdate();
@@ -505,20 +508,39 @@ static void IqeB_GUI_ToolsMyIdleAction( void *)
 }
 
 /************************************************************************************
- * close_cb, close this window
+ * close_Par_cb, close this parameter dialog
  *
  * pValueArg is a pointer to the widget. Set this pointer to NULL on deletion.
  */
 
-static void close_cb( Fl_Widget *w, void *pValueArg)
+void YaIPS_GUI_CamSettings_close_Par_cb( Fl_Widget *w, void *pValueArg)
 {
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckReset();   // The one and only open tool window parameter dialog is closed
+#endif
 
 #ifdef YAIPS_IDLE_CALLBACK_USE  // Use the idle callbacks in tool windows
   Fl::remove_idle( IqeB_GUI_ToolsMyIdleAction);      // Redraw window during idle
 #endif
   Fl::remove_check( IqeB_GUI_ToolsMyIdleAction);     // Check small image size change
 
-  IqeB_GUI_CloseToolWindow( (void **)&pMyToolWin);
+  IqeB_GUI_CloseToolWindow( (void **)&pMyParWin);
+}
+
+/************************************************************************************
+ * YaIPS_GUI_CamSettings_CheckIsOpen
+ *
+ * Check parameter dialog to be open
+ *
+ * return:    1  Parameter dialog is open
+ *            0  Parameter dialog is closed
+ */
+
+int YaIPS_GUI_CamSettings_CheckIsOpen()
+{
+
+  return( pMyParWin != NULL);
 }
 
 /************************************************************************************
@@ -533,15 +555,24 @@ static void close_cb( Fl_Widget *w, void *pValueArg)
 void YaIPS_GUI_CamSettingsWin( int xLeft, int xRight, int yTop, int yBotton, int SubWinIDx)
 {
 
+  // Check parameter dialog is allowed to open
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  if( IqeB_GUI_ToolParCheckOpen( YaIPS_GUI_CamSettings_close_Par_cb, NULL, SubWinIDx) < 0) {    // Allowed to open parameter dialog
+
+    return;
+  }
+#endif
+
   //
   // window already created --> show it
   //
 
-  if( pMyToolWin != NULL) {         // already have tool window
+  if( pMyParWin != NULL) {         // already have tool window
 
     // Show invisible window or bring visible window to foreground
 
-    pMyToolWin->show();          // show it
+    pMyParWin->show();          // show it
 
     return;
   }
@@ -550,7 +581,7 @@ void YaIPS_GUI_CamSettingsWin( int xLeft, int xRight, int yTop, int yBotton, int
   // creation of window on first call
   //
 
-  if( pMyToolWin == NULL) {  // no tool window until now
+  if( pMyParWin == NULL) {  // no tool window until now
 
     int xPos, yPos;
 
@@ -563,12 +594,20 @@ void YaIPS_GUI_CamSettingsWin( int xLeft, int xRight, int yTop, int yBotton, int
       yPos = MyWinPosY;
     }
 
-    pMyToolWin = new Fl_Window( xPos, yPos, IQE_GUI_TOOLS_STD_WITDH, 168, LANGDEF_SETTINGS);
+    pMyParWin = new Fl_Window( xPos, yPos, IQE_GUI_TOOLS_STD_WITDH, 168);
 
-    if( pMyToolWin == NULL) {  // security test
+    if( pMyParWin == NULL) {  // security test
 
       return;
     }
+
+    // Set window title
+  #ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+
+     pMyParWin->copy_label( LangStringLookup("&GUI_Camera_Title=Camera"));
+  #else
+     pMyParWin->label( LANGDEF_SETTINGS);
+  #endif
   }
 
   //
@@ -591,9 +630,9 @@ void YaIPS_GUI_CamSettingsWin( int xLeft, int xRight, int yTop, int yBotton, int
   Fl_Radio_Round_Button *pRadioButTemp;
 
   x1  = 4;
-  xx1 = pMyToolWin->w() - 16;
+  xx1 = pMyParWin->w() - 16;
   //x/xx2 = xx1 / 2;
-  //x/xc  = pMyToolWin->w() / 2;          // x center
+  //x/xc  = pMyParWin->w() / 2;          // x center
   yy  = 26;
 
   y = 4;
@@ -604,7 +643,7 @@ void YaIPS_GUI_CamSettingsWin( int xLeft, int xRight, int yTop, int yBotton, int
 
   y += 18;
 
-  pTemp_Tabs = new IqeFl_Tabs( x1, y, pMyToolWin->w() - x1 - 4, pMyToolWin->h() - y - 4, LangStringLookup( "&GUI_CamSettings_TabA0=Camera operating modes"));
+  pTemp_Tabs = new IqeFl_Tabs( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LangStringLookup( "&GUI_CamSettings_TabA0=Camera operating modes"));
   pTemp_Tabs->selection_color( YAIPS_COLOR_SELECTION);
   pTab_Groups = pTemp_Tabs;
 
@@ -622,14 +661,14 @@ void YaIPS_GUI_CamSettingsWin( int xLeft, int xRight, int yTop, int yBotton, int
 
   y = yGroup;
   x1  = 4;
-  pTemp_Group = new Fl_Group( x1, y, pMyToolWin->w() - x1 - 4, pMyToolWin->h() - y - 4, LangStringLookup( "&GUI_CamSettings_TabA1=Area"));
+  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LangStringLookup( "&GUI_CamSettings_TabA1=Area"));
 
     // Square cut out
 
     y += 4;
     y += 4;
 
-    xx1 = pMyToolWin->w() - 16;
+    xx1 = pMyParWin->w() - 16;
 
     pTemp_Check_Button = new Fl_Check_Button( x1 + 4, y, xx1, yy, LangStringLookup( "&GUI_CamSettings_TabA2=Square cutout"));
     pTemp_Check_Button->tooltip( LangStringLookup( "&GUI_CamSettings_TabA2a=The camera image is cropped to a square shape."));
@@ -645,7 +684,7 @@ void YaIPS_GUI_CamSettingsWin( int xLeft, int xRight, int yTop, int yBotton, int
     //
 
     x1 = 4;
-    xx1 = pMyToolWin->w() - x1 - 4;
+    xx1 = pMyParWin->w() - x1 - 4;
 
     pTemp_Group2 = new Fl_Group( x1, y, xx1, yy + 14, LANGDEF_COL_CHANNEL_DPOINT);  // Group around this radio buttons
     pTemp_Group2->align( FL_ALIGN_INSIDE | FL_ALIGN_TOP_LEFT);
@@ -707,7 +746,7 @@ void YaIPS_GUI_CamSettingsWin( int xLeft, int xRight, int yTop, int yBotton, int
 
     // Skip first camera
 
-    xx1 = pMyToolWin->w() - 16;
+    xx1 = pMyParWin->w() - 16;
 
     pTemp_Check_Button = new Fl_Check_Button( x1 + 4, y, xx1, yy - 3, LangStringLookup( "&GUI_CamSettings_TabA4=Ignore first camera"));
     pTemp_Check_Button->tooltip( LangStringLookup( "&GUI_CamSettings_TabA4a="
@@ -721,7 +760,7 @@ void YaIPS_GUI_CamSettingsWin( int xLeft, int xRight, int yTop, int yBotton, int
     y += yy - 3;
     x1 = 4;
 
-    xx1 = pMyToolWin->w() - 16;
+    xx1 = pMyParWin->w() - 16;
 
     pTemp_Check_Button = new Fl_Check_Button( x1 + 4, y, xx1, yy - 3, LangStringLookup( "&GUI_CamSettings_TabA5=Start with acquire on"));
     pTemp_Check_Button->tooltip( LangStringLookup( "&GUI_CamSettings_TabA5a="
@@ -736,7 +775,7 @@ void YaIPS_GUI_CamSettingsWin( int xLeft, int xRight, int yTop, int yBotton, int
 
   y = yGroup;
   x1  = 4;
-  pTemp_Group = new Fl_Group( x1, y, pMyToolWin->w() - x1 - 4, pMyToolWin->h() - y - 4, LangStringLookup( "&GUI_CamSettings_TabB1=Lines"));
+  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LangStringLookup( "&GUI_CamSettings_TabB1=Lines"));
   //x/pTemp_Group->tooltip( "Allgemeine Einstellungen\n");
 
     y += 4;
@@ -756,7 +795,7 @@ void YaIPS_GUI_CamSettingsWin( int xLeft, int xRight, int yTop, int yBotton, int
     //x/y += yy;
 
     xx1 = 40;
-    x1 = pMyToolWin->w() - xx1 - 8;
+    x1 = pMyParWin->w() - xx1 - 8;
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx1, yy, LangStringLookup( "&GUI_CamSettings_TabB2=# Lines to acquire"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
@@ -773,7 +812,7 @@ void YaIPS_GUI_CamSettingsWin( int xLeft, int xRight, int yTop, int yBotton, int
     y += yy;
 
     xx1 = 40;
-    x1 = pMyToolWin->w() - xx1 - 8;
+    x1 = pMyParWin->w() - xx1 - 8;
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx1, yy, LangStringLookup( "&GUI_CamSettings_TabB4=# lines averaged"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
@@ -809,7 +848,7 @@ void YaIPS_GUI_CamSettingsWin( int xLeft, int xRight, int yTop, int yBotton, int
 
   y = yGroup;
   x1  = 4;
-  pTemp_Group = new Fl_Group( x1, y, pMyToolWin->w() - x1 - 4, pMyToolWin->h() - y - 4, LangStringLookup( "&GUI_CamSettings_TabC1=Height"));
+  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LangStringLookup( "&GUI_CamSettings_TabC1=Height"));
 
     // Square cut out
 
@@ -828,7 +867,7 @@ void YaIPS_GUI_CamSettingsWin( int xLeft, int xRight, int yTop, int yBotton, int
     pTeachToggle_HMode = pTemp_Button;
 
     xx1 = 40;
-    x1 = pMyToolWin->w() - xx1 - 8;
+    x1 = pMyParWin->w() - xx1 - 8;
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx1, yy, LangStringLookup( "&GUI_CamSettings_TabC2=# Lines to acquire"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
@@ -844,7 +883,7 @@ void YaIPS_GUI_CamSettingsWin( int xLeft, int xRight, int yTop, int yBotton, int
     y += yy;
 
     xx1 = 40;
-    x1 = pMyToolWin->w() - xx1 - 8;
+    x1 = pMyParWin->w() - xx1 - 8;
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx1, yy, LangStringLookup( "&GUI_CamSettings_TabC4=Acquire area top"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
@@ -894,13 +933,17 @@ void YaIPS_GUI_CamSettingsWin( int xLeft, int xRight, int yTop, int yBotton, int
 
   // finish up
 
-  pMyToolWin->end();
-  pMyToolWin->set_modal();
-  pMyToolWin->callback( close_cb, &pMyToolWin);
-  pMyToolWin->show();
+  pMyParWin->end();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  pMyParWin->set_non_modal();
+#else
+  pMyParWin->set_modal();
+#endif
+  pMyParWin->callback( YaIPS_GUI_CamSettings_close_Par_cb, &pMyParWin);
+  pMyParWin->show();
 
   // Hack: Add close button to window caption
-  YaIPS_DialogAddCloseButton( pMyToolWin);
+  YaIPS_DialogAddCloseButton( pMyParWin);
 
   // Add idle action for this window
 

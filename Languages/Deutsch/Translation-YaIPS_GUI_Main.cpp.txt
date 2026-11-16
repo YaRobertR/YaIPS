@@ -2,7 +2,7 @@
 ; YaIPS_GUI_Main.cpp
 ;-------------------------------------------------------
 ;
-; 125 entries
+; 135 entries
 ;
 GUI_Main_Menu_Color_Copy           "Farbe in Zwischenablage kopieren"
 
@@ -13,6 +13,24 @@ GUI_Main_Menu_Color_Histo          "Farbe von Histogramm holen"
 GUI_Main_Disp_Dist_Pix             "%d Pixel"
 
 GUI_Main_Disp_Dist                 "%.3f %s/%d Pixel"
+
+GUI_Main_InfMeas_Lines             "Breite Linien"
+
+GUI_Main_InfMeas_P                 "Pixel"
+
+UI_Main_InfMeas_P_IHS_mode         "IHS-Modus"
+
+GUI_Main_InfMeas_H                 "Histogramm"
+
+UI_Main_InfMeas_H_IHS_mode         "IHS-Modus"
+
+GUI_Main_InfMeas_Su                "Helligkeitsprofile"
+
+UI_Main_InfMeas_Su_Smooth          "Glätte Profil"
+
+UI_Main_InfMeas_Su                 "Helligkeitsprofile"
+
+UI_Main_InfMeas_Su_Diff            "Steigung anzeigen"
 
 GUI_Main_Info_ISize1a              "%d x %d %s, %d Bytes/Pixel"
 
@@ -248,11 +266,11 @@ GUI_Main_InfMeas5bh                "Histogramm der Pixelwerte in einem Rechteck"
 
 GUI_Main_InfMeas6                  "Su |"
 
-GUI_Main_InfMeas6h                 "Profil der Spaltensummen in einem Rechteck"
+GUI_Main_InfMeas6h                 "Helligkeitsprofil (Spaltensumme) in einem Rechteck"
 
 GUI_Main_InfMeas7                  "Su -"
 
-GUI_Main_InfMeas7h                 "Profil der Zeilensummen in einem Rechteck"
+GUI_Main_InfMeas7h                 "Helligkeitsprofil (Zeilensumme) in einem Rechteck"
 
 GUI_Main_InfMeas8                  "Ab |"
 
@@ -261,6 +279,8 @@ GUI_Main_InfMeas8h                 "Misst vertikalen Abstand"
 GUI_Main_InfMeas9                  "Ab -"
 
 GUI_Main_InfMeas9h                 "Misst horizontalen Abstand"
+
+GUI_Main_InfMeasOpt1a              "Optionen."
 
 GUI_Main_InfBox1                   "Info"
 

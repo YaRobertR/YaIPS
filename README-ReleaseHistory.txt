@@ -4,6 +4,149 @@ README-ReleaseHistory.txt
 Release history of YaIPS.
 
 ------------------------------------------------------
+ V  1.03  16.11.2026
+
+* Reworked behavior of tool window parameter dialogs.
+  The parameter dialogs of the tool windows can be operated
+  parallel to other tool windows and the main window.
+  Only one parameter dialog from a tool window can be open
+  at a time. If a new parameter dialog is opened while
+  another parameter dialog is still open, this dialog
+  is automatically closed.
+  This approach results in a more efficient workflow
+  that requires less user interaction.
+  
+* Support for check masks in image comparison.
+  Each reference image holds three check masks.
+  For these masks, the 'inspection reference image' tool window
+  has an editor for creating check regions for image
+  comparison. The 'inspection compare' tool window has three
+  checkboxes to take the check masks into account.
+  For every set pixel within a checked check mask,
+  the image comparison is done.
+  
+* Reworked color channel selection on the left area of the
+  main window.
+  The selectable color channels now depend on the color
+  channels of the displayed image.
+  
+* Reworked the measurement tools on the left area of the
+  main window.
+  
+  * Histogram
+    Switch between RGB and IHS histograms
+  * Brighness profiles
+    Optional smooth brightness profiles
+    Option to display the slope
+    The measured profiles depends from the color channel selection
+  * All
+    Switch between thin and thick lines for the drawings
+    
+  The options can be accessed either via a menu button in
+  the 'Info/Measurement' group or via a context menu when
+  an AOI is selected.
+  
+------------------------------------------------------
+
+11.11.2026 RR: * All tool windows.
+                 * MyWinUpdate()
+                   Parameter dialog button is disabled if the parameter dialog
+                   is open.
+                   
+09.11.2026 RR: * YaIPS.h
+               * YaIPS_GUI_InspCompare.cpp
+               * YaIPS_GUI_InspRefImage.cpp
+               * YaIPS_Utils_ImageCompare.cpp
+               * YaIPS_Utils_Misc.cpp
+                 * Added support for check masks in image comparison.
+                   See: one of the defines YAIPS_INSP_COMP_FLAG_MASK,
+                        YAIPS_REFMASK_CHECK_MASK_ or YAIPS_NOALPHADISP_MASK_
+                        
+24.10.2026 RR: * YaIPS_GUI_InspRefImage.cpp
+                 * Begin with support for check masks in image comparison.
+                   The plan is to use the alpha channel of the reference image
+                   for check masks. There will be three check
+                   masks. Each will be stored in its own bit plane in the alpha
+                   channel. These masks will be made with an editor. 
+
+               * YaIPS_RGB_Graphic_2D.cpp
+                 * First edition of this file.
+                   Draw graphics into image. Is used to draw check masks
+                   into a bit layer of an reference image.
+                                     
+18.10.2026 RR: * YaIPS_GUI_Main.cpp
+                 * Reworked behavior of tool window parameter dialogs.
+                   New functions to allow tool window parameter dialogs
+                   to be operable side by side with other tool window dialogs
+                   and the main window.
+                   Only one tool window parameter dialog can be open at
+                   a time.
+                   * IqeB_GUI_ToolParCheckOpen()
+                     Called at begin of the function to create a tool window
+                     parameter dialog.
+                     This close an other open tool window parameter dialog.
+                   * IqeB_GUI_ToolParCheckReset()
+                     Called at the begin of a tool window parameter dialog
+                     close function.
+                     Marks no tool window parameter dialog is open.
+                   * IqeB_GUI_ToolParCheckClose()
+                     This is called from the close function of a tool windows.
+                     Closes a parameter dialog associated with this
+                     tool window.
+                     
+               * All tool windows.
+                 * Reworked behavior of tool window parameter dialogs.
+                   See functions IqeB_GUI_ToolParCheckOpen(),
+                   IqeB_GUI_ToolParCheckReset() and IqeB_GUI_ToolParCheckClose().
+                     
+15.10.2026 RR: * YaIPS_GUI_Main.cpp
+                 * YaIPS_GUI_pMouseContext_cb()
+                   New call back function. This function pops up a menu
+                   to change features for pixel value, brightness profiles,
+                   histograms an thick line drawings.
+                   This can be called either as a context menu when the
+                   mouse pointer is positioned over a selection rectangle
+                   within the image in the central area, or by clicking
+                   the button in the 'Info/Measurement' group.
+
+14.10.2026 RR: * YaIPS_Utils_Histo.cpp
+                 * YaIPS_Histo_Measure()
+                 * YaIPS_Histo_Measure2()
+                   If the 'YAIPS_HISTO_FLAG_IHS' flag is set,
+                   an IHS histogram is generated instead of an RGB histogram.
+                 * YaIPS_Histo_Draw()
+                   Added code to also draw an IHS histogram.
+                   
+               * YaIPS_RGB_Color.cpp
+                 * Bugfix YaIPS_RGB_Color_IHS2RGB()
+                    Accessing the tables YaIPS_ColMod_sintab and YaIPS_ColMod_costab
+                    with a value of ch = 64 us an index of 64 (A180 - 64 = 128 - 64 = 64)
+                    access one element after then end of the tables.
+                    HACK: Added one element to the tables replicating the last element.
+
+12.10.2026 RR: *  YaIPS_Utils_ColRowSum.cpp
+                  YaIPS_ColRowSum_SingleDraw()
+                  Added coded to draw the brightness profile smoothed
+                  and optional draw the slopes of the profiles.
+                   
+09.10.2026 RR: * YaIPS_Utils_ColRowSum.cpp
+                 * YaIPS_ColRowSum_Measure()
+                   Added argument color channel to function.
+                  This also allows to make profiles from one color channel
+                  or from the alpha channel.
+                  
+               * YaIPS_GUI_Main.cpp
+                 * YaIPS_GUI_DiffUsesCalcThings()
+                   To call of YaIPS_ColRowSum_Measure() at the current selected
+                   color channel to the arguments.
+                   If a brightness profile is shown, the measured profiles
+                   depends from the color channel selection.
+                 * MyWinUpdate()
+                   Enables for color channel selection depends from image
+                   type. Only for color images the color channels are
+                   enabled.
+
+------------------------------------------------------
  V  1.02  07.10.2026
 
 * The "Calculation" tool window has been updated with the feature

@@ -6,6 +6,12 @@
 
   25.04.2025 RR: First edition of this file.
   27.09.2026 RR: Finished coding for calculation with constants.
+  18.10.2026 RR: * Reworked behavior of tool window parameter dialogs.
+                   See functions IqeB_GUI_ToolParCheckOpen(),
+                   IqeB_GUI_ToolParCheckReset() and IqeB_GUI_ToolParCheckClose().
+  11.11.2026 RR: * MyWinUpdate()
+                   Parameter dialog button is disabled if the parameter dialog
+                   is open.
 
 *****************************************************************************
 */
@@ -249,7 +255,7 @@ static IqeB_PreferencesGroup MyPreferencesAdd( MY_WIN_PREF_NAME, MyPreferences, 
 // ...
 
 static  Fl_Window *pMyParWin;
-static  YaIPS_ToolData_info_t *pToolData;     // NOTE: Is used by all parameter dialog functions
+static  YaIPS_ToolData_info_t *pToolDataParam;     // NOTE: Is used by all parameter dialog functions
 
 static IqeFl_Tabs      *pTab_Groups;         // Point to tabulator GUI element
 static Fl_Radio_Round_Button *OperatorButtons[ YAIPS_COMBINE_GUI_BUTTON_MAX]; // Table of filter buttons
@@ -279,24 +285,24 @@ static void MyParWinUpdate()
 
   // Get last selected tab group
 
-  pToolData->Tab_Group_Selected = pTab_Groups->GetTabGroup();
+  pToolDataParam->Tab_Group_Selected = pTab_Groups->GetTabGroup();
 
   // Update filter button
   // Current selection must be set
 
   // Update all operator type buttons
 
-  if( OperatorType_Last != pToolData->CombineType) {              // Operator type has change
+  if( OperatorType_Last != pToolDataParam->CombineType) {              // Operator type has change
 
-    OperatorType_Last = pToolData->CombineType;
+    OperatorType_Last = pToolDataParam->CombineType;
 
     for( i = 0; i < YAIPS_COMBINE_GUI_BUTTON_MAX; i++) {
 
       ValThis = OperatorButtons[ i]->value();
 
-      if( ValThis != (i == pToolData->CombineType)) {             // Not what we expected
+      if( ValThis != (i == pToolDataParam->CombineType)) {             // Not what we expected
 
-        OperatorButtons[ i]->value( i == pToolData->CombineType);   // Set value
+        OperatorButtons[ i]->value( i == pToolDataParam->CombineType);   // Set value
         OperatorButtons[ i]->redraw();
       }
     }
@@ -304,17 +310,17 @@ static void MyParWinUpdate()
 
   // Update all alpha operator type buttons
 
-  if( AlphaType_Last != pToolData->Alpha_Op) {              // Alopha operator type has change
+  if( AlphaType_Last != pToolDataParam->Alpha_Op) {              // Alopha operator type has change
 
-    AlphaType_Last = pToolData->Alpha_Op;
+    AlphaType_Last = pToolDataParam->Alpha_Op;
 
     for( i = 0; i < YAIPS_COMBINE_ALPHA_BUTTON_MAX; i++) {
 
       ValThis = AlphaButtons[ i]->value();
 
-      if( ValThis != (i == pToolData->Alpha_Op)) {             // Not what we expected
+      if( ValThis != (i == pToolDataParam->Alpha_Op)) {             // Not what we expected
 
-        AlphaButtons[ i]->value( i == pToolData->Alpha_Op);   // Set value
+        AlphaButtons[ i]->value( i == pToolDataParam->Alpha_Op);   // Set value
         AlphaButtons[ i]->redraw();
       }
     }
@@ -322,19 +328,19 @@ static void MyParWinUpdate()
 
   // Support for shading
 
-  if( pInt_ShadAvgCount->GetValue() != pToolData->ShadingAverageCount) {  // If average count is different
+  if( pInt_ShadAvgCount->GetValue() != pToolDataParam->ShadingAverageCount) {  // If average count is different
 
-    pInt_ShadAvgCount->SetValue( pToolData->ShadingAverageCount);
+    pInt_ShadAvgCount->SetValue( pToolDataParam->ShadingAverageCount);
   }
 
   // Background of average count
   Fl_Color NewColor;
 
-  if( pToolData->ShadingAverageCount <= 0) {               // Not valid
+  if( pToolDataParam->ShadingAverageCount <= 0) {               // Not valid
 
     NewColor = FL_LIGHT1 + 1;
 
-  } else if( pToolData->ShadingAverageCount >= SHADING_MAX_AVERAGE_COUNT) {  // Maximum reached
+  } else if( pToolDataParam->ShadingAverageCount >= SHADING_MAX_AVERAGE_COUNT) {  // Maximum reached
 
     NewColor = FL_YELLOW;
 
@@ -354,32 +360,32 @@ static void MyParWinUpdate()
   //pImgIn2 = NULL;       // Will be set if there is a shading image
 
   // Get first input image
-  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolData->iToolData, pToolData->Input1_WinIdNr, NULL, &pImgIn1, NULL);
+  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolDataParam->iToolData, pToolDataParam->Input1_WinIdNr, NULL, &pImgIn1, NULL);
 
   // Second input image is only needed if we have the first.
   //if( pImgIn1 != NULL) {
 
-  //  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolData->iToolData, pToolData->Input2_WinIdNr, NULL, &pImgIn2, NULL);
+  //  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolDataParam->iToolData, pToolDataParam->Input2_WinIdNr, NULL, &pImgIn2, NULL);
   //}
 
   // Enable, if there is a first input image and the output of the second can be set.
-  Enable = pImgIn1 != NULL && YaIPS_ToolChangeOutputTest( pToolData->Input2_WinIdNr) > 0;  // Enable shading buttons
+  Enable = pImgIn1 != NULL && YaIPS_ToolChangeOutputTest( pToolDataParam->Input2_WinIdNr) > 0;  // Enable shading buttons
 
   IqeB_GUI_WidgetActivate( pBut_ShadReset, Enable);
-  IqeB_GUI_WidgetActivate( pBut_ShadAverage, Enable && pToolData->ShadingAverageCount < SHADING_MAX_AVERAGE_COUNT);
+  IqeB_GUI_WidgetActivate( pBut_ShadAverage, Enable && pToolDataParam->ShadingAverageCount < SHADING_MAX_AVERAGE_COUNT);
 
   // Fading with image
 
-  if( pToolData->CombineType == YAIPS_COMBINE_GUI_OP_FADEIMG1 ||    // Fade with image selected
-      pToolData->CombineType == YAIPS_COMBINE_GUI_OP_FADEIMG2) {
+  if( pToolDataParam->CombineType == YAIPS_COMBINE_GUI_OP_FADEIMG1 ||    // Fade with image selected
+      pToolDataParam->CombineType == YAIPS_COMBINE_GUI_OP_FADEIMG2) {
 
-    YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolData->iToolData, pToolData->FadeImg_WinIdNr, pMergeImg_Box);
+    YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolDataParam->iToolData, pToolDataParam->FadeImg_WinIdNr, pMergeImg_Box);
     IqeB_GUI_WidgetActivate( pMergeImg_Box, true); // Set item activated/inactive
     IqeB_GUI_WidgetActivate( pMergeImg_But, true); // Set item activated/inactive
 
   } else {
 
-    YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolData->iToolData, -1, pMergeImg_Box);
+    YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolDataParam->iToolData, -1, pMergeImg_Box);
     IqeB_GUI_WidgetActivate( pMergeImg_Box, false); // Set item activated/inactive
     IqeB_GUI_WidgetActivate( pMergeImg_But, false); // Set item activated/inactive
   }
@@ -390,11 +396,11 @@ static void MyParWinUpdate()
 
   nColor = pImgIn1 == NULL ? 0 : pImgIn1->d();       // Number of colors for input image
 
-  UseColor = (pToolData->CalcCoFlags & YAIPS_CALC_CONST_FLAGS_COLOR) != 0;
+  UseColor = (pToolDataParam->CalcCoFlags & YAIPS_CALC_CONST_FLAGS_COLOR) != 0;
 
   IqeB_GUI_WidgetActivate( pInt_CalcCoR, nColor > 0 && UseColor);
-  IqeB_GUI_WidgetActivate( pInt_CalcCoG, nColor >= 3 && UseColor && pToolData->CalcCoCh1FA == false);
-  IqeB_GUI_WidgetActivate( pInt_CalcCoB, nColor >= 3 && UseColor && pToolData->CalcCoCh1FA == false);
+  IqeB_GUI_WidgetActivate( pInt_CalcCoG, nColor >= 3 && UseColor && pToolDataParam->CalcCoCh1FA == false);
+  IqeB_GUI_WidgetActivate( pInt_CalcCoB, nColor >= 3 && UseColor && pToolDataParam->CalcCoCh1FA == false);
   IqeB_GUI_WidgetActivate( pCheck_CalcCoCh1FA, nColor >= 3 && UseColor);
 
   IqeB_GUI_WidgetActivate( pInt_CalcCoA, nColor == 2 || nColor == 4);    // Has alpha ?
@@ -451,8 +457,12 @@ static void IqeB_GUI_ParIdleAction( void *)
 static void close_Par_cb( Fl_Widget *w, void *pValueArg)
 {
 
-  pToolData->MyParPosX = pMyParWin->x();
-  pToolData->MyParPosY = pMyParWin->y();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckReset();   // The one and only open tool window parameter dialog is closed
+#endif
+
+  pToolDataParam->MyParPosX = pMyParWin->x();
+  pToolDataParam->MyParPosY = pMyParWin->y();
 
   #ifdef YAIPS_IDLE_CALLBACK_USE  // Use the idle callbacks in tool windows
   Fl::remove_idle( IqeB_GUI_ParIdleAction);      // Redraw window during idle
@@ -476,15 +486,15 @@ static void YaIPS_Operator_Callback( Fl_Widget *w, void *data)
 
   Value = (long long)(data);                       // get value to set
 
-  if( pToolData->CombineType == Value) {            // Value will not change
+  if( pToolDataParam->CombineType == Value) {            // Value will not change
 
     return;                                        // Exit, nothing to do
   }
 
-  pToolData->CombineType = Value;                   // Set new value
+  pToolDataParam->CombineType = Value;                   // Set new value
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -501,15 +511,15 @@ static void YaIPS_AlphaOp_Callback( Fl_Widget *w, void *data)
 
   Value = (long long)(data);                       // get value to set
 
-  if( pToolData->Alpha_Op == Value) {              // Value will not change
+  if( pToolDataParam->Alpha_Op == Value) {              // Value will not change
 
     return;                                        // Exit, nothing to do
   }
 
-  pToolData->Alpha_Op = Value;                     // Set new value
+  pToolDataParam->Alpha_Op = Value;                     // Set new value
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -556,8 +566,8 @@ static void IqeB_GUI_Float_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   *pValue = Value;                        // update the variable
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -610,20 +620,20 @@ static void IqeB_GUI_Int_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
     *pValue = Value;                       // update the variable
 
-    pToolData->Input1_Change = 0;          // Force recalculation output
-    pToolData->Input2_Change = 0;          // Force recalculation output
+    pToolDataParam->Input1_Change = 0;          // Force recalculation output
+    pToolDataParam->Input2_Change = 0;          // Force recalculation output
   }
 
   // ...
 
-  if( pValue == &pToolData->CalcCoR) {     // Red constant change and 'one for all' checkbox is set
+  if( pValue == &pToolDataParam->CalcCoR) {     // Red constant change and 'one for all' checkbox is set
 
-    if( pToolData->CalcCoCh1FA != 0) {
+    if( pToolDataParam->CalcCoCh1FA != 0) {
 
-      pToolData->CalcCoG = pToolData->CalcCoR;        // Copy red to green and blue
-      pToolData->CalcCoB = pToolData->CalcCoR;
-      pInt_CalcCoG->SetValue( pToolData->CalcCoR);  // and update GUI
-      pInt_CalcCoB->SetValue( pToolData->CalcCoR);
+      pToolDataParam->CalcCoG = pToolDataParam->CalcCoR;        // Copy red to green and blue
+      pToolDataParam->CalcCoB = pToolDataParam->CalcCoR;
+      pInt_CalcCoG->SetValue( pToolDataParam->CalcCoR);  // and update GUI
+      pInt_CalcCoB->SetValue( pToolDataParam->CalcCoR);
     }
   }
 
@@ -644,10 +654,10 @@ static void ShadingButtons( int Average)
   pImgInTemp = NULL;
 
   // Get first input image
-  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolData->iToolData, pToolData->Input1_WinIdNr, NULL, &pImgIn1, NULL);
+  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolDataParam->iToolData, pToolDataParam->Input1_WinIdNr, NULL, &pImgIn1, NULL);
 
   if( pImgIn1 == NULL ||         // No first image
-      YaIPS_ToolChangeOutputTest( pToolData->Input2_WinIdNr) <= 0) {  // Or second image can not set an output image
+      YaIPS_ToolChangeOutputTest( pToolDataParam->Input2_WinIdNr) <= 0) {  // Or second image can not set an output image
 
     // Same requests are not satisfied
     return;
@@ -655,7 +665,7 @@ static void ShadingButtons( int Average)
 
   if( Average <= 0) {                              // Reset shading
 
-    pToolData->ShadingAverageCount = 0;
+    pToolDataParam->ShadingAverageCount = 0;
 
     // Black second image
 
@@ -667,7 +677,7 @@ static void ShadingButtons( int Average)
 
     if( pImgInTemp != NULL) {  // Security test
 
-      YaIPS_ToolChangeOutputCall( pToolData->Input2_WinIdNr, pImgInTemp);
+      YaIPS_ToolChangeOutputCall( pToolDataParam->Input2_WinIdNr, pImgInTemp);
 
       pImgInTemp->release();
     }
@@ -675,16 +685,16 @@ static void ShadingButtons( int Average)
     return;    // Done
   }
 
-  if( pToolData->ShadingAverageCount >= SHADING_MAX_AVERAGE_COUNT) { // Over max average count
+  if( pToolDataParam->ShadingAverageCount >= SHADING_MAX_AVERAGE_COUNT) { // Over max average count
 
     // nothing to do
 
     return;
   }
 
-  if( pToolData->ShadingAverageCount < 0) {     // Clipping below sane value
+  if( pToolDataParam->ShadingAverageCount < 0) {     // Clipping below sane value
 
-    pToolData->ShadingAverageCount = 0;
+    pToolDataParam->ShadingAverageCount = 0;
   }
 
   // Gauss filter the first input image
@@ -693,19 +703,19 @@ static void ShadingButtons( int Average)
 
   if( pImgInTemp != NULL) {  // Security test
 
-    if( pToolData->ShadingAverageCount <= 0) {       // No Average until now
+    if( pToolDataParam->ShadingAverageCount <= 0) {       // No Average until now
 
       // Copy first shading image
 
-      pToolData->ShadingAverageCount += 1;
+      pToolDataParam->ShadingAverageCount += 1;
 
-      YaIPS_ToolChangeOutputCall( pToolData->Input2_WinIdNr, pImgInTemp);
+      YaIPS_ToolChangeOutputCall( pToolDataParam->Input2_WinIdNr, pImgInTemp);
 
       return;   // Done
     }
 
     // Check second input image
-    YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolData->iToolData, pToolData->Input2_WinIdNr, NULL, &pImgIn2, NULL);
+    YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolDataParam->iToolData, pToolDataParam->Input2_WinIdNr, NULL, &pImgIn2, NULL);
 
     if( pImgIn2 == NULL) {  // Security test
 
@@ -714,13 +724,13 @@ static void ShadingButtons( int Average)
 
     // Weighted add
 
-    pToolData->ShadingAverageCount += 1;
+    pToolDataParam->ShadingAverageCount += 1;
 
     YaIPS_RGB_Combine( &pImgInTemp, pImgInTemp, pImgIn2, YAIPS_COMBINE_OP_W_ADD,
-                       YAIPS_COMBINE_ALPHA_NO, 1.0 / pToolData->ShadingAverageCount, 0,
-                       (float)(pToolData->ShadingAverageCount - 1) / pToolData->ShadingAverageCount);
+                       YAIPS_COMBINE_ALPHA_NO, 1.0 / pToolDataParam->ShadingAverageCount, 0,
+                       (float)(pToolDataParam->ShadingAverageCount - 1) / pToolDataParam->ShadingAverageCount);
 
-    YaIPS_ToolChangeOutputCall( pToolData->Input2_WinIdNr, pImgInTemp);
+    YaIPS_ToolChangeOutputCall( pToolDataParam->Input2_WinIdNr, pImgInTemp);
   }
 
 }
@@ -755,7 +765,7 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   // Set value ...
 
-  } else if( pValue == (void *)&pToolData->Fade) {
+  } else if( pValue == (void *)&pToolDataParam->Fade) {
 
     // Fl_Valuator, Fl_Slider or Fl_Value_Slider
 
@@ -764,10 +774,10 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     pThis  = (Fl_Valuator *)w;
     *(float *)pValue = pThis->value();               // update the variable
 
-  } else if( pValueArg == &pToolData->FadeImg_WinIdNr) {
+  } else if( pValueArg == &pToolDataParam->FadeImg_WinIdNr) {
 
     // Select an input image
-    YaIPS_ToolWinInputSelect( MY_WIN_ID + pToolData->iToolData, &pToolData->FadeImg_WinIdNr, pMergeImg_But, pMergeImg_Box);
+    YaIPS_ToolWinInputSelect( MY_WIN_ID + pToolDataParam->iToolData, &pToolDataParam->FadeImg_WinIdNr, pMergeImg_But, pMergeImg_Box);
 
   } else {
 
@@ -776,20 +786,20 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     pThis  = (Fl_Check_Button *)w;
     *(int *)pValue = pThis->value();               // update the variable
 
-    if( pValue == &pToolData->CalcCoCh1FA) {       // Gain change 'one for all' checkbox
+    if( pValue == &pToolDataParam->CalcCoCh1FA) {       // Gain change 'one for all' checkbox
 
-      if( pToolData->CalcCoCh1FA != 0) {           // and checkbox changed to on
+      if( pToolDataParam->CalcCoCh1FA != 0) {           // and checkbox changed to on
 
-        pToolData->CalcCoG = pToolData->CalcCoR;        // Copy red to green and blue
-        pToolData->CalcCoB = pToolData->CalcCoR;
-        pInt_CalcCoG->SetValue( pToolData->CalcCoR);    // and update GUI
-        pInt_CalcCoB->SetValue( pToolData->CalcCoR);
+        pToolDataParam->CalcCoG = pToolDataParam->CalcCoR;        // Copy red to green and blue
+        pToolDataParam->CalcCoB = pToolDataParam->CalcCoR;
+        pInt_CalcCoG->SetValue( pToolDataParam->CalcCoR);    // and update GUI
+        pInt_CalcCoB->SetValue( pToolDataParam->CalcCoR);
       }
     }
   }
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -814,8 +824,8 @@ static void IqeB_GUI_Check_Bit_Callback( Fl_Widget *w, void *pValueArg)
 
   pThis->GetValue();                     // Update the variable
 
-  pToolData->Input1_Change = 0;          // Force recalculation output
-  pToolData->Input2_Change = 0;          // Force recalculation output
+  pToolDataParam->Input1_Change = 0;          // Force recalculation output
+  pToolDataParam->Input2_Change = 0;          // Force recalculation output
 }
 
 /************************************************************************************
@@ -828,10 +838,20 @@ static void IqeB_GUI_Check_Bit_Callback( Fl_Widget *w, void *pValueArg)
 static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 {
   int xPos, yPos;
+  Fl_Double_Window *pMyToolWin;
+
+  // Check parameter dialog is allowed to open
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  if( IqeB_GUI_ToolParCheckOpen( close_Par_cb, &pMyParWin, iToolData) < 0) {    // Allowed to open parameter dialog
+
+    return;
+  }
+#endif
 
   // Get pointer to tool data
 
-  pToolData = YaIPS_ToolData_info + iToolData;             // Point to info data
+  pToolDataParam = YaIPS_ToolData_info + iToolData;             // Point to info data
 
   //
   // creation of window on first call
@@ -840,18 +860,28 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   xPos = xLeft;
   yPos = yTop;
 
-  if( pToolData->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolData->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
+  if( pToolDataParam->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolDataParam->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
 
-    xPos = pToolData->MyParPosX;
-    yPos = pToolData->MyParPosY;
+    xPos = pToolDataParam->MyParPosX;
+    yPos = pToolDataParam->MyParPosY;
   }
 
-  pMyParWin = new Fl_Window( xPos, yPos, 297 /*IQE_GUI_TOOLS_STD_WITDH*/, 190 /* 162 */, LANGDEF_SETTINGS);
+  pMyParWin = new Fl_Window( xPos, yPos, 297 /*IQE_GUI_TOOLS_STD_WITDH*/, 190 /* 162 */);
 
   if( pMyParWin == NULL) {  // security test
 
     return;
   }
+
+  // Set window title
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+
+   pMyToolWin = (Fl_Double_Window *)pToolDataParam->pMyToolWin;  // Convert type of pointer
+
+   pMyParWin->copy_label( pMyToolWin->label());
+#else
+   pMyParWin->label( LANGDEF_SETTINGS);
+#endif
 
   OperatorType_Last = -1;         // Reset last operator type
   AlphaType_Last    = -1;         // Reset last alpha operator type
@@ -1132,12 +1162,12 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     x1 += 48;
     xx2 = 40;
 
-    pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Combine_TabA19=Gain"));
+    pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LANGDEF_GAIN);
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA19a=Gain\nMultiplier"));
     pFloatTemp->SetFormat( YAIPS_FILTER_FORMAT_MULT);
-    pFloatTemp->SetValue( pToolData->CombineResMult);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->CombineResMult);
+    pFloatTemp->SetValue( pToolDataParam->CombineResMult);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->CombineResMult);
     pFloatTemp->SetModifyData( 0.1, 8.0, 0.5, 0.1);
 
     x1 += xx2;
@@ -1145,8 +1175,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Combine_TabA20=Offs."));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Combine_TabA20a=Offset\nAddition"));
-    pTemp_Int->SetValue( pToolData->CombineOffset);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CombineOffset);
+    pTemp_Int->SetValue( pToolDataParam->CombineOffset);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->CombineOffset);
     pTemp_Int->SetModifyData( -256, 256, 16, 1);
 
     x1 += xx2;
@@ -1178,14 +1208,14 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     x1 += xx2;
 
-    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabD3=I-C"));
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabD3=1-C"));
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabD3a=Subtraction\n1. input - constant"));
     pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_CALC_CONST_GUI_OP_SUB_I_C);
     OperatorButtons[ YAIPS_CALC_CONST_GUI_OP_SUB_I_C] = pRadioButTemp;
 
     x1 += xx2;
 
-    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabD4=C-I"));
+    pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 2, yy, LangStringLookup( "&GUI_Combine_TabD4=C-1"));
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_Combine_TabD4a=Subtraction\nConstant - 1. input"));
     pRadioButTemp->callback( YaIPS_Operator_Callback, (void *)YAIPS_CALC_CONST_GUI_OP_SUB_C_I);
     OperatorButtons[ YAIPS_CALC_CONST_GUI_OP_SUB_C_I] = pRadioButTemp;
@@ -1312,13 +1342,13 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     xx2 = 72;
 
     pTemp_Check_Bit = new IqeFl_Check_Bit( x1, y, xx2, yy,
-                                           &pToolData->CalcCoFlags, YAIPS_CALC_CONST_FLAGS_COLOR,
+                                           &pToolDataParam->CalcCoFlags, YAIPS_CALC_CONST_FLAGS_COLOR,
                                            LANGDEF_COLOR);
 
     pTemp_Check_Bit->tooltip( LangStringLookup( "&GUI_Color_TabD30a="
                               "Use this for calculations\n"
                               "of the color channels."));
-    pTemp_Check_Bit->callback( IqeB_GUI_Check_Bit_Callback, &pToolData->CalcCoFlags);
+    pTemp_Check_Bit->callback( IqeB_GUI_Check_Bit_Callback, &pToolDataParam->CalcCoFlags);
 
     x1 += xx2;
     x1 += 16;
@@ -1327,8 +1357,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_R);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabD31a=Constant for the red color channel."));
-    pTemp_Int->SetValue( pToolData->CalcCoR);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CalcCoR);
+    pTemp_Int->SetValue( pToolDataParam->CalcCoR);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->CalcCoR);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pInt_CalcCoR = pTemp_Int;
 
@@ -1337,8 +1367,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_G);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabD32a=Constant for the green color channel."));
-    pTemp_Int->SetValue( pToolData->CalcCoG);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CalcCoG);
+    pTemp_Int->SetValue( pToolDataParam->CalcCoG);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->CalcCoG);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pInt_CalcCoG = pTemp_Int;
 
@@ -1347,8 +1377,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_B);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabD33a=Constant for the blue color channel."));
-    pTemp_Int->SetValue( pToolData->CalcCoB);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CalcCoB);
+    pTemp_Int->SetValue( pToolDataParam->CalcCoB);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->CalcCoB);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pInt_CalcCoB = pTemp_Int;
 
@@ -1359,8 +1389,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pCheckTemp = new Fl_Check_Button( x1, y, xx2, yy, LANGDEF_ACTIVE_SHORT);
     pCheckTemp->tooltip( LANGDEF_COLOR_RED_FOR_ALL);
-    pCheckTemp->value( pToolData->CalcCoCh1FA);
-    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->CalcCoCh1FA);
+    pCheckTemp->value( pToolDataParam->CalcCoCh1FA);
+    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->CalcCoCh1FA);
     pCheck_CalcCoCh1FA = pCheckTemp;
 
     // Next line
@@ -1371,13 +1401,13 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     xx2 = 72;
 
     pTemp_Check_Bit = new IqeFl_Check_Bit( x1, y, xx2, yy,
-                                           &pToolData->CalcCoFlags, YAIPS_CALC_CONST_FLAGS_ALPHA,
+                                           &pToolDataParam->CalcCoFlags, YAIPS_CALC_CONST_FLAGS_ALPHA,
                                            LANGDEF_COLOR_ALPHA);
 
     pTemp_Check_Bit->tooltip( LangStringLookup( "&GUI_Color_TabD35a="
                               "Use this for alpha channel calculations.\n"
                               "NOTE: The input image must have an alpha channel."));
-    pTemp_Check_Bit->callback( IqeB_GUI_Check_Bit_Callback, &pToolData->CalcCoFlags);
+    pTemp_Check_Bit->callback( IqeB_GUI_Check_Bit_Callback, &pToolDataParam->CalcCoFlags);
     pCheck_Bit_CalcAlpha = pTemp_Check_Bit;
 
     x1 += xx2;
@@ -1387,8 +1417,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_A);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Color_TabD36a=Constant for the alpha color channel."));
-    pTemp_Int->SetValue( pToolData->CalcCoA);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CalcCoA);
+    pTemp_Int->SetValue( pToolDataParam->CalcCoA);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->CalcCoA);
     pTemp_Int->SetModifyData( 0, 255, 16, 1);
     pInt_CalcCoA = pTemp_Int;
 
@@ -1400,12 +1430,12 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     x1 += 72;
     xx2 = 40;
 
-    pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Combine_TabA19=Gain"));
+    pFloatTemp = new IqeFl_Float_Input( x1, y, xx2, yy, LANGDEF_GAIN);
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_Combine_TabA19a=Gain\nMultiplier"));
     pFloatTemp->SetFormat( YAIPS_FILTER_FORMAT_MULT);
-    pFloatTemp->SetValue( pToolData->CalcCoResMult);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->CalcCoResMult);
+    pFloatTemp->SetValue( pToolDataParam->CalcCoResMult);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->CalcCoResMult);
     pFloatTemp->SetModifyData( 0.1, 8.0, 0.5, 0.1);
 
     x1 += xx2;
@@ -1413,8 +1443,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Combine_TabA20=Offs."));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Combine_TabA20a=Offset\nAddition"));
-    pTemp_Int->SetValue( pToolData->CalcCoOffset);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->CalcCoOffset);
+    pTemp_Int->SetValue( pToolDataParam->CalcCoOffset);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->CalcCoOffset);
     pTemp_Int->SetModifyData( -256, 256, 16, 1);
 
     x1 += xx2;
@@ -1454,8 +1484,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_Combine_TabB3a=1. Gain Multiplier\nfor 1. input image"));
     pFloatTemp->SetFormat( YAIPS_FILTER_FORMAT_MULT);
-    pFloatTemp->SetValue( pToolData->WAddMult1);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->WAddMult1);
+    pFloatTemp->SetValue( pToolDataParam->WAddMult1);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->WAddMult1);
     pFloatTemp->SetModifyData( -4.0, 4.0, 0.5, 0.1);
 
     x1 += xx2;
@@ -1466,8 +1496,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_Combine_TabB4a=2. Gain Multiplier\nfor 2. input image"));
     pFloatTemp->SetFormat( YAIPS_FILTER_FORMAT_MULT);
-    pFloatTemp->SetValue( pToolData->WAddMult2);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->WAddMult2);
+    pFloatTemp->SetValue( pToolDataParam->WAddMult2);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->WAddMult2);
     pFloatTemp->SetModifyData( -4.0, 4.0, 0.5, 0.1);
 
     x1 += xx2;
@@ -1475,8 +1505,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Combine_TabB5=Offs."));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Combine_TabB5a=Offset\nAddition"));
-    pTemp_Int->SetValue( pToolData->WAddOffset);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->WAddOffset);
+    pTemp_Int->SetValue( pToolDataParam->WAddOffset);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->WAddOffset);
     pTemp_Int->SetModifyData( -256, 256, 16, 1);
 
     // Next line
@@ -1503,8 +1533,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Slider->tooltip( LangStringLookup( "&GUI_Combine_TabB6a=Crossfade between two images"));
     pTemp_Slider->type( FL_HOR_NICE_SLIDER);
     pTemp_Slider->bounds( 0.0, 1.0);
-    pTemp_Slider->value( pToolData->Fade);
-    pTemp_Slider->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->Fade);
+    pTemp_Slider->value( pToolDataParam->Fade);
+    pTemp_Slider->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->Fade);
     pTemp_Slider->color( 40);
 
     // Next line
@@ -1557,7 +1587,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pMergeImg_Box->copy_label( "---");
 
     // Legend
-    //x/pTemp_Box = new Fl_Box( x1 - 80, y, 80, yy + 2, LangStringLookup( "&GUI_Color_TabF3=Alpha"));
+    //x/pTemp_Box = new Fl_Box( x1 - 80, y, 80, yy + 2, LANGDEF_COLOR_ALPHA);
     //x/pTemp_Box->box( FL_NO_BOX);
     //x/pTemp_Box->align( FL_ALIGN_RIGHT | FL_ALIGN_INSIDE | FL_ALIGN_CLIP);
     //x/pTemp_Box->labelsize( 10);
@@ -1567,7 +1597,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     xx2 = yy;
 
     pMergeImg_But = new Fl_Button( x1, y, xx2, yy + 2, "@2>");
-    pMergeImg_But->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->FadeImg_WinIdNr);
+    pMergeImg_But->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->FadeImg_WinIdNr);
     pMergeImg_But->tooltip( LangStringLookup( "&GUI_Combine_TabB9a=Select merge input image"));
     pMergeImg_But->labelcolor( YAIPS_BCOL_BUTTON);
     pMergeImg_But->box( FL_BORDER_BOX);
@@ -1606,8 +1636,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
       pTemp_Int->tooltip( LangStringLookup( "&GUI_Combine_TabC3a="
                           "Target brightness.\n"
                           "Roughly brightest spot in the shading image."));
-      pTemp_Int->SetValue( pToolData->ShadingRefBright);
-      pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->ShadingRefBright);
+      pTemp_Int->SetValue( pToolDataParam->ShadingRefBright);
+      pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->ShadingRefBright);
       pTemp_Int->SetModifyData( 128, 256, 5, 1);
 
       // Next line
@@ -1634,7 +1664,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
       yy = yyDefault + 4;     // Make buttons higher
 
       pTemp_Button = new Fl_Button( x1, y, xx2, yy, LANGDEF_BUTTON_RESET);
-      pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->ShadingAverageCount);
+      pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->ShadingAverageCount);
       pTemp_Button->tooltip( LangStringLookup( "&GUI_Combine_TabC5a="
                                                "Image 'Input 2' is reset.\n"
                                                "The average count is set to 0."));
@@ -1643,7 +1673,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
       x1 = pMyParWin->w() - xx2 - 8;
 
       pTemp_Button = new Fl_Button( x1, y, xx2, yy, LangStringLookup( "&GUI_Combine_TabC6=Average"));
-      pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->ShadingAverageCount);
+      pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->ShadingAverageCount);
       pTemp_Button->tooltip( LangStringLookup( "&GUI_Combine_TabC6a="
                                                "Image 'Input 1' is added to the image 'Input 2'\n"
                                                "weighting. The average count is increased by 1."));
@@ -1661,8 +1691,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
       pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Combine_TabC7=Average count"));
       pTemp_Int->tooltip( LangStringLookup( "&GUI_Combine_TabC7a="
                           "Number of averaged images."));
-      pTemp_Int->SetValue( pToolData->ShadingAverageCount);
-      pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->ShadingAverageCount);
+      pTemp_Int->SetValue( pToolDataParam->ShadingAverageCount);
+      pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->ShadingAverageCount);
       pTemp_Int->color( FL_LIGHT1 + 1);
       pTemp_Int->set_output();        // Only show value
       pInt_ShadAvgCount = pTemp_Int;
@@ -1676,12 +1706,16 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
   pTemp_Tabs->end();
 
-  pTemp_Tabs->SetTabGroup( pToolData->Tab_Group_Selected);    // Select tab group from last session
+  pTemp_Tabs->SetTabGroup( pToolDataParam->Tab_Group_Selected);    // Select tab group from last session
 
   // finish up
 
   pMyParWin->end();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  pMyParWin->set_non_modal();
+#else
   pMyParWin->set_modal();
+#endif
   pMyParWin->callback( close_Par_cb, &pMyParWin);
   pMyParWin->show();
 
@@ -1921,6 +1955,10 @@ static void close_cb( Fl_Widget *w, long int iToolData)
     return;
   }
 
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckClose( close_Par_cb, &pMyParWin, iToolData);   // Check to close specific associated parameter dialog
+#endif
+
   YaIPS_ImageDispReleaseBeforeClose( &pToolData->YaIPS_ImageDisp);
 
   pToolData->IsOpen = false;               // Flag info data is not in use
@@ -2071,6 +2109,9 @@ static void MyWinUpdate( int iToolData, int DoEnable)
                              DoEnable &&                                    // Enable GUI elements
                              pToolData->YaIPS_ImageDisp.pImage_Img != NULL); // and have an image loaded
 
+  IqeB_GUI_WidgetActivate( pMyToolWin->pGUI_Parameter,
+                            (pMyParWin == NULL || pToolDataParam->iToolData != iToolData) && // Parameter dialog is closed
+                             DoEnable);                             // Enable GUI elements
 
   // Check input image and visualize state
   YaIPS_ToolWinInputCheck( MY_WIN_ID + iToolData, pToolData->Input1_WinIdNr, pMyToolWin->pBox_Input1);

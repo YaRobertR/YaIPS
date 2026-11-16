@@ -4,7 +4,13 @@
 
   Image compare.
 
- 16.09.2025 RR: First edition of this file.
+  16.09.2025 RR: First edition of this file.
+  09.11.2026 RR: * Added support for check masks in image comparison.
+                   See: one of the defines YAIPS_INSP_COMP_FLAG_MASK,
+                        YAIPS_REFMASK_CHECK_MASK_ or YAIPS_NOALPHADISP_MASK_
+  11.11.2026 RR: * MyWinUpdate()
+                   Parameter dialog button is disabled if the parameter dialog
+                   is open.
 
 *****************************************************************************
 */
@@ -177,7 +183,7 @@ static int compareTPass1( YaIPS_RGB_ImgD_t *pInputAOI,
                           YaIPS_RGB_ImgD_t *pRefAOI,
                           Tvector *vRLC, Tvector *vRowIdxTab, int GWToleranceLo, int GWToleranceHi,
                           int *numLightErrPix, int *numDarkErrPix, int *numErrPix,
-                          int maxNumErrPix)
+                          int maxNumErrPix, int maskCheck, int maskNot)
 {
   uchar  *pi, *pi2, *pr, *pr2, *pis, *prs;
   int    help, minmax;
@@ -265,8 +271,14 @@ static int compareTPass1( YaIPS_RGB_ImgD_t *pInputAOI,
 
     for( x = 1L; x < xxd; x++, pr += pRefAOI->d, pi += pInputAOI->d)  {
 
+      if( ! RefHasNoAlpha &&                                      // Have an alpha mask
+          ((pr[ nColors] ^ maskNot) & maskCheck) != maskCheck) {  // All mask are set
+
+        continue;
+      }
+
       if( RefHasNoAlpha ||                               // No alpha mask
-          (pr[ nColors] & YAIPS_REFMASK_CONTOUR) != 0) { // Contour bit is set
+          (pr[ nColors] & YAIPS_REFMASK_CONTOUR) == 0) { // Contour bit is NOT set
 
         /* Area */
 
@@ -1981,7 +1993,7 @@ int YaIPS_ImageCompare_Inspect( Fl_RGB_Image **ppOut,     // Output image
   YaIPS_RGB_ImgD_t iSrc, iRef, iOut, iSrcAOI, iRefAOI, iOutAOI;
   Tsip_winC0  *pSip;             // pointer to sip structure
   Fl_YaIPS_AOI_t *pAoi;
-  int numErrPix;
+  int numErrPix, maskCheck, maskNot;
   int32 minBlobArea, minLargeBlobArea;
   double minBlobAreaD, minLargeBlobAreaD;
   int32 numS, numB, numL;
@@ -2043,7 +2055,7 @@ int YaIPS_ImageCompare_Inspect( Fl_RGB_Image **ppOut,     // Output image
   // The color values are reduced to 3/4 of original value.
   // ==> This makes colored error blobs better visible.
 
-  ierr = YaIPS_ImageCompare_CopyImage( ppOut, pSrc, pWin->FlagDarken);
+  ierr = YaIPS_ImageCompare_CopyImage( ppOut, pSrc, (pWin->Flags & YAIPS_INSP_COMP_FLAG_DARKEN) != 0);
 
   pOut = *ppOut;                              // Get pointer to destination image
 
@@ -2138,12 +2150,42 @@ int YaIPS_ImageCompare_Inspect( Fl_RGB_Image **ppOut,     // Output image
   pWin->maxLBErrArea = 0;
   pWin->maxSErrArea = 0;
 
+  // Prepare don't check mask bits
+
+  maskCheck = 0;
+
+  if( pWin->Flags & YAIPS_INSP_COMP_FLAG_MASK1) {
+    maskCheck |= YAIPS_REFMASK_CHECK_MASK_1;
+  }
+
+  if( pWin->Flags & YAIPS_INSP_COMP_FLAG_MASK2) {
+    maskCheck |= YAIPS_REFMASK_CHECK_MASK_2;
+  }
+
+  if( pWin->Flags & YAIPS_INSP_COMP_FLAG_MASK3) {
+    maskCheck |= YAIPS_REFMASK_CHECK_MASK_3;
+  }
+
+  maskNot   = 0;
+
+  if( pWin->Flags & YAIPS_INSP_COMP_FLAG_MASK1_N) {
+    maskNot |= YAIPS_REFMASK_CHECK_MASK_1;
+  }
+
+  if( pWin->Flags & YAIPS_INSP_COMP_FLAG_MASK2_N) {
+    maskNot |= YAIPS_REFMASK_CHECK_MASK_2;
+  }
+
+  if( pWin->Flags & YAIPS_INSP_COMP_FLAG_MASK3_N) {
+    maskNot |= YAIPS_REFMASK_CHECK_MASK_3;
+  }
+
   // Pass 1 ...
 
   ierr = compareTPass1( &iSrcAOI, &iRefAOI,
                         pSip->vRLC, pSip->vRowIdxTab, pWin->GWToleranceLo, pWin->GWToleranceHi,
                         &pWin->numLightErrPix, &pWin->numDarkErrPix, &numErrPix,
-                        MaxNumCompareErrors);
+                        MaxNumCompareErrors, maskCheck, maskNot);
 
   if (ierr) {
     //x/sysstate_setsyserr(MY_SYSERR_MODULE, SE_COMPAREP1, 0, "error %d in compareTPass1_bw()");

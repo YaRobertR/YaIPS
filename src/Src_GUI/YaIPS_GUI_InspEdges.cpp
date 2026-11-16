@@ -5,6 +5,12 @@
   Measure distance of edges.
 
   01.07.2025 RR: First edition of this file.
+  18.10.2026 RR: * Reworked behavior of tool window parameter dialogs.
+                   See functions IqeB_GUI_ToolParCheckOpen(),
+                   IqeB_GUI_ToolParCheckReset() and IqeB_GUI_ToolParCheckClose().
+  11.11.2026 RR: * MyWinUpdate()
+                   Parameter dialog button is disabled if the parameter dialog
+                   is open.
 
 *****************************************************************************
 */
@@ -193,7 +199,7 @@ static IqeB_PreferencesGroup MyPreferencesAdd( MY_WIN_PREF_NAME, MyPreferences, 
 // ...
 
 static  Fl_Window *pMyParWin;
-static  YaIPS_ToolData_info_t *pToolData;     // NOTE: Is used by all parameter dialog functions
+static  YaIPS_ToolData_info_t *pToolDataParam;     // NOTE: Is used by all parameter dialog functions
 
 static IqeFl_Int_Input *pAOI_1_X, *pAOI_1_Y, *pAOI_1_XX, *pAOI_1_YY;
 static IqeFl_Int_Input *pAOI_2_X, *pAOI_2_Y, *pAOI_2_XX, *pAOI_2_YY;
@@ -219,50 +225,50 @@ static void MyParWinUpdate()
   pCurrFocus = Fl::focus();
 
   // Enable orientation radio buttons
-  IqeB_GUI_WidgetActivate( pOrientHor, pToolData->Teach_mode);
-  IqeB_GUI_WidgetActivate( pOrientVert, pToolData->Teach_mode);
-  IqeB_GUI_WidgetActivate( pOrientFree, pToolData->Teach_mode);
+  IqeB_GUI_WidgetActivate( pOrientHor, pToolDataParam->Teach_mode);
+  IqeB_GUI_WidgetActivate( pOrientVert, pToolDataParam->Teach_mode);
+  IqeB_GUI_WidgetActivate( pOrientFree, pToolDataParam->Teach_mode);
 
   // Enable orientation angle
-  IqeB_GUI_WidgetActivate( pOrientAngle, pToolData->Teach_mode && pToolData->DM.orientation == 2);
+  IqeB_GUI_WidgetActivate( pOrientAngle, pToolDataParam->Teach_mode && pToolDataParam->DM.orientation == 2);
 
   // Enable AOI pos/size input buttons
-  IqeB_GUI_WidgetActivate( pAOI_1_X, pToolData->Teach_mode);
-  IqeB_GUI_WidgetActivate( pAOI_1_Y, pToolData->Teach_mode);
-  IqeB_GUI_WidgetActivate( pAOI_1_XX, pToolData->Teach_mode);
-  IqeB_GUI_WidgetActivate( pAOI_1_YY, pToolData->Teach_mode);
-  IqeB_GUI_WidgetActivate( pAOI_2_X, pToolData->Teach_mode);
-  IqeB_GUI_WidgetActivate( pAOI_2_Y, pToolData->Teach_mode);
-  IqeB_GUI_WidgetActivate( pAOI_2_XX, pToolData->Teach_mode);
-  IqeB_GUI_WidgetActivate( pAOI_2_YY, pToolData->Teach_mode);
+  IqeB_GUI_WidgetActivate( pAOI_1_X, pToolDataParam->Teach_mode);
+  IqeB_GUI_WidgetActivate( pAOI_1_Y, pToolDataParam->Teach_mode);
+  IqeB_GUI_WidgetActivate( pAOI_1_XX, pToolDataParam->Teach_mode);
+  IqeB_GUI_WidgetActivate( pAOI_1_YY, pToolDataParam->Teach_mode);
+  IqeB_GUI_WidgetActivate( pAOI_2_X, pToolDataParam->Teach_mode);
+  IqeB_GUI_WidgetActivate( pAOI_2_Y, pToolDataParam->Teach_mode);
+  IqeB_GUI_WidgetActivate( pAOI_2_XX, pToolDataParam->Teach_mode);
+  IqeB_GUI_WidgetActivate( pAOI_2_YY, pToolDataParam->Teach_mode);
 
   // Enable search direction change direction check box
 
-  IqeB_GUI_WidgetActivate( pR2l_b2t_1, pToolData->Teach_mode);
-  IqeB_GUI_WidgetActivate( pR2l_b2t_2, pToolData->Teach_mode);
+  IqeB_GUI_WidgetActivate( pR2l_b2t_1, pToolDataParam->Teach_mode);
+  IqeB_GUI_WidgetActivate( pR2l_b2t_2, pToolDataParam->Teach_mode);
 
   // Enable nominal distance value
-  IqeB_GUI_WidgetActivate( pNomVal, ! pToolData->DM.nomOutOfRef);
+  IqeB_GUI_WidgetActivate( pNomVal, ! pToolDataParam->DM.nomOutOfRef);
 
   // Keep nominal value up to date
 
-  if( pToolData->DM.nomOutOfRef != 0) {                   // Nominal value from mesured value is on
+  if( pToolDataParam->DM.nomOutOfRef != 0) {                   // Nominal value from mesured value is on
 
-    if( pToolData->DM.CheckError == 0) {                  // Have a reference value
+    if( pToolDataParam->DM.CheckError == 0) {                  // Have a reference value
 
-      pNomVal->SetValue( pToolData->DM.nomVal);           // Keep GUI updated
+      pNomVal->SetValue( pToolDataParam->DM.nomVal);           // Keep GUI updated
     }
   }
 
   // Color teach toggle button
 
-  IqeB_GUI_WidgetLabelColor( pTeachToggle, pToolData->Teach_mode ? FL_GREEN : YAIPS_BCOL_BUTTON);
+  IqeB_GUI_WidgetLabelColor( pTeachToggle, pToolDataParam->Teach_mode ? FL_GREEN : YAIPS_BCOL_BUTTON);
 
   // Check Scene input
 
   pImgIn1 = NULL;       // Will be set if there is a valid scene image
 
-  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolData->iToolData, pToolData->Input1_WinIdNr,
+  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolDataParam->iToolData, pToolDataParam->Input1_WinIdNr,
                            NULL, &pImgIn1, NULL);
 
   if( pImgIn1 != NULL) {
@@ -281,7 +287,7 @@ static void MyParWinUpdate()
   if( pCurrFocus != pAOI_1_X  && pCurrFocus != pAOI_1_Y &&               // Input element has keyboard focus ?
       pCurrFocus != pAOI_1_XX && pCurrFocus != pAOI_1_YY) {
 
-    if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolData->DM.SW_1.AOI, ImgXX, ImgYY,
+    if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolDataParam->DM.SW_1.AOI, ImgXX, ImgYY,
                                         pAOI_1_X, pAOI_1_Y, pAOI_1_XX, pAOI_1_YY) > 0) {
 
       RedrawOnExit = true;                                 // Redraw on exit
@@ -293,7 +299,7 @@ static void MyParWinUpdate()
   if( pCurrFocus != pAOI_2_X  && pCurrFocus != pAOI_2_Y &&               // Input element has keyboard focus ?
       pCurrFocus != pAOI_2_XX && pCurrFocus != pAOI_2_YY) {
 
-    if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolData->DM.SW_2.AOI, ImgXX, ImgYY,
+    if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolDataParam->DM.SW_2.AOI, ImgXX, ImgYY,
                                         pAOI_2_X, pAOI_2_Y, pAOI_2_XX, pAOI_2_YY) > 0) {
 
       RedrawOnExit = true;                                 // Redraw on exit
@@ -304,7 +310,7 @@ static void MyParWinUpdate()
 
   if( RedrawOnExit) {                                           // Redraw on exit
 
-    pToolData->Input1_Change = 0;                // Reset image change check
+    pToolDataParam->Input1_Change = 0;                // Reset image change check
   }
 }
 
@@ -357,8 +363,12 @@ static void IqeB_GUI_ParIdleAction( void *)
 static void close_Par_cb( Fl_Widget *w, void *pValueArg)
 {
 
-  pToolData->MyParPosX = pMyParWin->x();
-  pToolData->MyParPosY = pMyParWin->y();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckReset();   // The one and only open tool window parameter dialog is closed
+#endif
+
+  pToolDataParam->MyParPosX = pMyParWin->x();
+  pToolDataParam->MyParPosY = pMyParWin->y();
 
 #ifdef YAIPS_IDLE_CALLBACK_USE  // Use the idle callbacks in tool windows
   Fl::remove_idle( IqeB_GUI_ParIdleAction);      // Redraw window during idle
@@ -382,17 +392,17 @@ static void YaIPS_DifferenceMeas_Callback( Fl_Widget *w, void *data)
 
   Value = (long long)(data);                          // get value to set
 
-  if( pToolData->DM.DifferenceMeas == Value) {        // Value will not change
+  if( pToolDataParam->DM.DifferenceMeas == Value) {        // Value will not change
 
     return;                                           // Exit, nothing to do
   }
 
-  pToolData->DM.DifferenceMeas = Value;               // Set new value
+  pToolDataParam->DM.DifferenceMeas = Value;               // Set new value
 
   // ...
 
-  pToolData->Input1_Change = 0;                       // Force recalculation output
-  pToolData->Input2_Change = 0;                       // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                       // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                       // Force recalculation output
 }
 
 /************************************************************************************
@@ -409,17 +419,17 @@ static void YaIPS_Orientation_Callback( Fl_Widget *w, void *data)
 
   Value = (long long)(data);                          // get value to set
 
-  if( pToolData->DM.orientation == Value) {           // Value will not change
+  if( pToolDataParam->DM.orientation == Value) {           // Value will not change
 
     return;                                           // Exit, nothing to do
   }
 
-  pToolData->DM.orientation = Value;                  // Set new value
+  pToolDataParam->DM.orientation = Value;                  // Set new value
 
   // ...
 
-  pToolData->Input1_Change = 0;                       // Force recalculation output
-  pToolData->Input2_Change = 0;                       // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                       // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                       // Force recalculation output
 }
 
 /************************************************************************************
@@ -468,8 +478,8 @@ static void IqeB_GUI_Float_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   // ...
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -520,8 +530,8 @@ static void IqeB_GUI_Int_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   // ...
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -544,9 +554,9 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   if( w == pTeachToggle) {                   // Toggle Teach / Inspection button
 
-    pToolData->Teach_mode = ! pToolData->Teach_mode;
+    pToolDataParam->Teach_mode = ! pToolDataParam->Teach_mode;
 
-  } else if( pValue == &pToolData->DM.nomOutOfRef) {  // Check box nominal value from reference value
+  } else if( pValue == &pToolDataParam->DM.nomOutOfRef) {  // Check box nominal value from reference value
 
     Fl_Button *pThis;
 
@@ -555,11 +565,11 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
     if( *pValue != 0) {                      // Switched to on
 
-      if( pToolData->DM.CheckError == 0) {   // Have a reference value
+      if( pToolDataParam->DM.CheckError == 0) {   // Have a reference value
 
-        pToolData->DM.nomVal = pToolData->DM.refDist; // Copy measured distance to nominal value
+        pToolDataParam->DM.nomVal = pToolDataParam->DM.refDist; // Copy measured distance to nominal value
 
-        pNomVal->SetValue( pToolData->DM.nomVal);     // Update GUI
+        pNomVal->SetValue( pToolDataParam->DM.nomVal);     // Update GUI
       }
     }
 
@@ -571,8 +581,8 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     *pValue = pThis->value();                // update the variable
   }
 
-  pToolData->Input1_Change = 0;          // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;          // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -585,10 +595,20 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 {
   int xPos, yPos;
+  Fl_Double_Window *pMyToolWin;
+
+  // Check parameter dialog is allowed to open
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  if( IqeB_GUI_ToolParCheckOpen( close_Par_cb, &pMyParWin, iToolData) < 0) {    // Allowed to open parameter dialog
+
+    return;
+  }
+#endif
 
   // Get pointer to tool data
 
-  pToolData = YaIPS_ToolData_info + iToolData;             // Point to info data
+  pToolDataParam = YaIPS_ToolData_info + iToolData;             // Point to info data
 
   //
   // creation of window on first call
@@ -597,18 +617,28 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   xPos = xLeft;
   yPos = yTop;
 
-  if( pToolData->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolData->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
+  if( pToolDataParam->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolDataParam->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
 
-    xPos = pToolData->MyParPosX;
-    yPos = pToolData->MyParPosY;
+    xPos = pToolDataParam->MyParPosX;
+    yPos = pToolDataParam->MyParPosY;
   }
 
-  pMyParWin = new Fl_Window( xPos, yPos, 297 /*IQE_GUI_TOOLS_STD_WITDH*/, 241 /* 162 */, LANGDEF_SETTINGS);
+  pMyParWin = new Fl_Window( xPos, yPos, 297 /*IQE_GUI_TOOLS_STD_WITDH*/, 241 /* 162 */);
 
   if( pMyParWin == NULL) {  // security test
 
     return;
   }
+
+  // Set window title
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+
+   pMyToolWin = (Fl_Double_Window *)pToolDataParam->pMyToolWin;  // Convert type of pointer
+
+   pMyParWin->copy_label( pMyToolWin->label());
+#else
+   pMyParWin->label( LANGDEF_SETTINGS);
+#endif
 
   //
   //  GUI things
@@ -656,7 +686,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                             "Absolute measurement.\n"
                             "Distance between the detected edges."));
     pRadioButTemp->callback( YaIPS_DifferenceMeas_Callback, (void *)0);
-    pRadioButTemp->value( pToolData->DM.DifferenceMeas == 0);   // Set value
+    pRadioButTemp->value( pToolDataParam->DM.DifferenceMeas == 0);   // Set value
 
     x1 += xx2;
     x1 += 2;
@@ -668,7 +698,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                             "Differential measurement.\n"
                             "Position 1. AOI - position 2. AOI."));
     pRadioButTemp->callback( YaIPS_DifferenceMeas_Callback, (void *)1);
-    pRadioButTemp->value( pToolData->DM.DifferenceMeas == 1);   // Set value
+    pRadioButTemp->value( pToolDataParam->DM.DifferenceMeas == 1);   // Set value
 
     pTemp_Group2->end();
 
@@ -694,7 +724,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                             "Edges are searched in the\n"
                             "horizontal direction."));
     pRadioButTemp->callback( YaIPS_Orientation_Callback, (void *)0);
-    pRadioButTemp->value( pToolData->DM.orientation == 0);   // Set value
+    pRadioButTemp->value( pToolDataParam->DM.orientation == 0);   // Set value
     pOrientHor = pRadioButTemp;
 
     x1 += xx2;
@@ -707,7 +737,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                             "Edges are searched in the\n"
                             "vertical direction."));
     pRadioButTemp->callback( YaIPS_Orientation_Callback, (void *)1);
-    pRadioButTemp->value( pToolData->DM.orientation == 1);   // Set value
+    pRadioButTemp->value( pToolDataParam->DM.orientation == 1);   // Set value
     pOrientVert = pRadioButTemp;
 
     x1 += xx2;
@@ -720,7 +750,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                             "Edges are searched for in a\n"
                             "freely selectable direction."));
     pRadioButTemp->callback( YaIPS_Orientation_Callback, (void *)2);
-    pRadioButTemp->value( pToolData->DM.orientation == 2);   // Set value
+    pRadioButTemp->value( pToolDataParam->DM.orientation == 2);   // Set value
     pOrientFree = pRadioButTemp;
 
     pTemp_Group2->end();
@@ -733,8 +763,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_Edges_GroupA8=°"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Edges_GroupA8a=Freely selectable angle direction."));
     pTemp_Int->align( FL_ALIGN_RIGHT);     // align for label
-    pTemp_Int->SetValue( pToolData->DM.OrientationAngle);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->DM.OrientationAngle);
+    pTemp_Int->SetValue( pToolDataParam->DM.OrientationAngle);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->DM.OrientationAngle);
     pTemp_Int->SetModifyData( -90, 90, 5, 1);
     pOrientAngle = pTemp_Int;
 
@@ -785,8 +815,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Edges_GroupB4a=Position left edge 1. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->DM.SW_1.AOI.XPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->DM.SW_1.AOI.XPos);
+    pTemp_Int->SetValue( pToolDataParam->DM.SW_1.AOI.XPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->DM.SW_1.AOI.XPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pAOI_1_X = pTemp_Int;
 
@@ -796,8 +826,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Edges_GroupB5a=Position upper edge 1. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->DM.SW_1.AOI.YPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->DM.SW_1.AOI.YPos);
+    pTemp_Int->SetValue( pToolDataParam->DM.SW_1.AOI.YPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->DM.SW_1.AOI.YPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pAOI_1_Y = pTemp_Int;
 
@@ -807,8 +837,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Edges_GroupB6a=Position left edge 2. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->DM.SW_2.AOI.XPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->DM.SW_2.AOI.XPos);
+    pTemp_Int->SetValue( pToolDataParam->DM.SW_2.AOI.XPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->DM.SW_2.AOI.XPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pAOI_2_X = pTemp_Int;
 
@@ -818,8 +848,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Edges_GroupB7a=Position upper edge 2. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->DM.SW_2.AOI.YPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->DM.SW_2.AOI.YPos);
+    pTemp_Int->SetValue( pToolDataParam->DM.SW_2.AOI.YPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->DM.SW_2.AOI.YPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pAOI_2_Y = pTemp_Int;
 
@@ -837,8 +867,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Edges_GroupB9a=Width of the 1. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->DM.SW_1.AOI.XSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->DM.SW_1.AOI.XSize);
+    pTemp_Int->SetValue( pToolDataParam->DM.SW_1.AOI.XSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->DM.SW_1.AOI.XSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pAOI_1_XX = pTemp_Int;
 
@@ -848,8 +878,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Edges_GroupB10a=Height of the 1. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->DM.SW_1.AOI.YSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->DM.SW_1.AOI.YSize);
+    pTemp_Int->SetValue( pToolDataParam->DM.SW_1.AOI.YSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->DM.SW_1.AOI.YSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pAOI_1_YY = pTemp_Int;
 
@@ -859,8 +889,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Edges_GroupB11a=Width of the 2. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->DM.SW_2.AOI.XSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->DM.SW_2.AOI.XSize);
+    pTemp_Int->SetValue( pToolDataParam->DM.SW_2.AOI.XSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->DM.SW_2.AOI.XSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pAOI_2_XX = pTemp_Int;
 
@@ -870,8 +900,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Edges_GroupB12a=Height of the 2. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->DM.SW_2.AOI.YSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->DM.SW_2.AOI.YSize);
+    pTemp_Int->SetValue( pToolDataParam->DM.SW_2.AOI.YSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->DM.SW_2.AOI.YSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pAOI_2_YY = pTemp_Int;
 
@@ -888,16 +918,16 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pCheckTemp = new Fl_Check_Button( x1, y, 86, yy, LANGDEF_REVERSE);
     pCheckTemp->tooltip( LangStringLookup( "&GUI_Edges_GroupB14a=Reverse direction of edge detection 1. AOI."));
-    pCheckTemp->value( pToolData->DM.SW_1.r2l_b2t);
-    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->DM.SW_1.r2l_b2t);
+    pCheckTemp->value( pToolDataParam->DM.SW_1.r2l_b2t);
+    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->DM.SW_1.r2l_b2t);
     pR2l_b2t_1 = pCheckTemp;
 
     x1 += xx2 + 4 + xx2 + 12;
 
     pCheckTemp = new Fl_Check_Button( x1, y, 86, yy, LANGDEF_REVERSE);
     pCheckTemp->tooltip( LangStringLookup( "&GUI_Edges_GroupB15a=Reverse direction of edge detection 2. AOI."));
-    pCheckTemp->value( pToolData->DM.SW_2.r2l_b2t);
-    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->DM.SW_2.r2l_b2t);
+    pCheckTemp->value( pToolDataParam->DM.SW_2.r2l_b2t);
+    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->DM.SW_2.r2l_b2t);
     pR2l_b2t_2 = pCheckTemp;
 
     // Next line
@@ -914,8 +944,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Edges_GroupB17a=Minimum contrast 1. AOI in %"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->DM.SW_1.minPeakConPerc);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->DM.SW_1.minPeakConPerc);
+    pTemp_Int->SetValue( pToolDataParam->DM.SW_1.minPeakConPerc);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->DM.SW_1.minPeakConPerc);
     pTemp_Int->SetModifyData( 0, 100, 10, 1);
 
     x1 += xx2 + 4 + xx2 + 12;
@@ -923,8 +953,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_Edges_GroupB18a=Minimum contrast 2. AOI in %"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->DM.SW_2.minPeakConPerc);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->DM.SW_2.minPeakConPerc);
+    pTemp_Int->SetValue( pToolDataParam->DM.SW_2.minPeakConPerc);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->DM.SW_2.minPeakConPerc);
     pTemp_Int->SetModifyData( 0, 100, 10, 1);
 
    // Finish things for this group
@@ -943,7 +973,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   x1 = pMyParWin->w() - 28 - 6;
 
   pTemp_Button = new Fl_Button( x1, y, 28, 28, "@+1pencil");
-  pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->Teach_mode);
+  pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->Teach_mode);
   pTemp_Button->tooltip( LANGDEF_SWITCH_TEACH_INSPECT);
   pTemp_Button->labelcolor( YAIPS_BCOL_BUTTON);
   pTemp_Button->shortcut( FL_COMMAND+'t');       // Short cut key
@@ -974,8 +1004,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                          "Error if the measured distance\n"
                          "is less than '- Tolerance'."));
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->DM.nTol);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->DM.nTol);
+    pFloatTemp->SetValue( pToolDataParam->DM.nTol);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->DM.nTol);
     pFloatTemp->SetModifyData( 0.0, 1000.0, 10.0, 1.0);
 
     // Next line
@@ -994,8 +1024,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_Edges_GroupC3a=Target distance between edges."));
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->DM.nomVal);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->DM.nomVal);
+    pFloatTemp->SetValue( pToolDataParam->DM.nomVal);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->DM.nomVal);
     pFloatTemp->SetModifyData( 0.0, 100.0, 1.0, 0.1);
     pNomVal = pFloatTemp;
 
@@ -1006,8 +1036,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pCheckTemp->tooltip( LangStringLookup( "&GUI_Edges_GroupC4a="
                          "During teach-in, a measured distance\n"
                          "is taken as the target distance."));
-    pCheckTemp->value( pToolData->DM.nomOutOfRef);
-    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->DM.nomOutOfRef);
+    pCheckTemp->value( pToolDataParam->DM.nomOutOfRef);
+    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->DM.nomOutOfRef);
 
     // Next line
 
@@ -1027,8 +1057,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                          "Error if the measured distance\n"
                          "is greater than '+ Tolerance'."));
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->DM.pTol);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->DM.pTol);
+    pFloatTemp->SetValue( pToolDataParam->DM.pTol);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->DM.pTol);
     pFloatTemp->SetModifyData( 0.0, 100.0, 1.0, 0.1);
 
   // Finish things for this group
@@ -1038,7 +1068,11 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     // finish up
 
   pMyParWin->end();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  pMyParWin->set_non_modal();
+#else
   pMyParWin->set_modal();
+#endif
   pMyParWin->callback( close_Par_cb, &pMyParWin);
   pMyParWin->show();
 
@@ -1295,6 +1329,10 @@ static void close_cb( Fl_Widget *w, long int iToolData)
     return;
   }
 
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckClose( close_Par_cb, &pMyParWin, iToolData);   // Check to close specific associated parameter dialog
+#endif
+
   YaIPS_ImageDispReleaseBeforeClose( &pToolData->YaIPS_ImageDisp);
 
   pToolData->IsOpen = false;               // Flag info data is not in use
@@ -1460,6 +1498,9 @@ static void MyWinUpdate( int iToolData, int DoEnable)
                              DoEnable &&                                    // Enable GUI elements
                              pToolData->YaIPS_ImageDisp.pImage_Img != NULL); // and have an image loaded
 
+  IqeB_GUI_WidgetActivate( pMyToolWin->pGUI_Parameter,
+                            (pMyParWin == NULL || pToolDataParam->iToolData != iToolData) && // Parameter dialog is closed
+                             DoEnable);                             // Enable GUI elements
 
   // Check input image and visualize state
   YaIPS_ToolWinInputCheck( MY_WIN_ID + iToolData, pToolData->Input1_WinIdNr, pMyToolWin->pBox_Input1);

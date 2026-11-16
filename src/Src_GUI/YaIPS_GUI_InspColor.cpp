@@ -5,6 +5,12 @@
   Inspecting/testing color.
 
   09.09.2025 RR: First edition of this file.
+  18.10.2026 RR: * Reworked behavior of tool window parameter dialogs.
+                   See functions IqeB_GUI_ToolParCheckOpen(),
+                   IqeB_GUI_ToolParCheckReset() and IqeB_GUI_ToolParCheckClose().
+  11.11.2026 RR: * MyWinUpdate()
+                   Parameter dialog button is disabled if the parameter dialog
+                   is open.
 
 *****************************************************************************
 */
@@ -229,7 +235,7 @@ static IqeB_PreferencesGroup MyPreferencesAdd( MY_WIN_PREF_NAME, MyPreferences, 
 // ...
 
 static  Fl_Window *pMyParWin;
-static  YaIPS_ToolData_info_t *pToolData;     // NOTE: Is used by all parameter dialog functions
+static  YaIPS_ToolData_info_t *pToolDataParam;     // NOTE: Is used by all parameter dialog functions
 
 static IqeFl_Tabs      *pTab_Groups;         // Point to tabulator GUI element
 
@@ -271,9 +277,9 @@ static void MyParWinUpdate()
 
   New_Tab_Group = pTab_Groups->GetTabGroup();
 
-  if( pToolData->Tab_Group_Selected != New_Tab_Group) {   // Tab group has changed
+  if( pToolDataParam->Tab_Group_Selected != New_Tab_Group) {   // Tab group has changed
 
-    pToolData->Tab_Group_Selected = New_Tab_Group;
+    pToolDataParam->Tab_Group_Selected = New_Tab_Group;
 
     RedrawOnExit = true;                                 // Redraw on exit
   }
@@ -284,7 +290,7 @@ static void MyParWinUpdate()
 
   pImgIn1 = NULL;       // Will be set if there is a valid scene image
 
-  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolData->iToolData, pToolData->Input1_WinIdNr,
+  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolDataParam->iToolData, pToolDataParam->Input1_WinIdNr,
                            NULL, &pImgIn1, NULL);
 
   if( pImgIn1 != NULL) {
@@ -306,9 +312,9 @@ static void MyParWinUpdate()
   // Enable group 'Brightness correction'
   //
 
-  IqeB_GUI_WidgetLabelColor( pBC_TeachBut, pToolData->Teach_mode ? FL_GREEN : YAIPS_BCOL_BUTTON);
+  IqeB_GUI_WidgetLabelColor( pBC_TeachBut, pToolDataParam->Teach_mode ? FL_GREEN : YAIPS_BCOL_BUTTON);
 
-  TempEnable = pToolData->Teach_mode;       // Teach mode
+  TempEnable = pToolDataParam->Teach_mode;       // Teach mode
 
   IqeB_GUI_WidgetActivate( pBC_AOI_X, TempEnable);
   IqeB_GUI_WidgetActivate( pBC_AOI_Y, TempEnable);
@@ -319,12 +325,12 @@ static void MyParWinUpdate()
   IqeB_GUI_WidgetActivate( pBC_Mode[ 1], TempEnable);
   IqeB_GUI_WidgetActivate( pBC_Mode[ 2], TempEnable);
 
-  IqeB_GUI_WidgetActivate( pBC_Percent, pToolData->BC_Mode != YAIPS_HISTO_MODE_MEAN);
+  IqeB_GUI_WidgetActivate( pBC_Percent, pToolDataParam->BC_Mode != YAIPS_HISTO_MODE_MEAN);
 
   if( pCurrFocus != pBC_AOI_X  && pCurrFocus != pBC_AOI_Y &&               // Input element has NO keyboard focus ?
       pCurrFocus != pBC_AOI_XX && pCurrFocus != pBC_AOI_YY) {
 
-    if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolData->BC_AOI, ImgXX, ImgYY,
+    if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolDataParam->BC_AOI, ImgXX, ImgYY,
                                         pBC_AOI_X, pBC_AOI_Y, pBC_AOI_XX, pBC_AOI_YY) > 0) {
 
       RedrawOnExit = true;                                 // Redraw on exit
@@ -335,9 +341,9 @@ static void MyParWinUpdate()
   // Enable group 'Brightness correction'
   //
 
-  IqeB_GUI_WidgetLabelColor( pBT_TeachBut, pToolData->Teach_mode ? FL_GREEN : YAIPS_BCOL_BUTTON);
+  IqeB_GUI_WidgetLabelColor( pBT_TeachBut, pToolDataParam->Teach_mode ? FL_GREEN : YAIPS_BCOL_BUTTON);
 
-  TempEnable = pToolData->Teach_mode;       // Teach mode
+  TempEnable = pToolDataParam->Teach_mode;       // Teach mode
 
   IqeB_GUI_WidgetActivate( pBT_AOI_X, TempEnable);
   IqeB_GUI_WidgetActivate( pBT_AOI_Y, TempEnable);
@@ -348,26 +354,26 @@ static void MyParWinUpdate()
   IqeB_GUI_WidgetActivate( pBT_Mode[ 1], TempEnable);
   IqeB_GUI_WidgetActivate( pBT_Mode[ 2], TempEnable);
 
-  IqeB_GUI_WidgetActivate( pBT_Percent, pToolData->BT_Mode != YAIPS_HISTO_MODE_MEAN);
+  IqeB_GUI_WidgetActivate( pBT_Percent, pToolDataParam->BT_Mode != YAIPS_HISTO_MODE_MEAN);
 
   IqeB_GUI_WidgetActivate( pBT_Thres1FA, IsColorImg);
 
-  TempEnable = pToolData->BT_UseLow;       // Use low thresholds
+  TempEnable = pToolDataParam->BT_UseLow;       // Use low thresholds
 
   IqeB_GUI_WidgetActivate( pBT_ThresLow[ 0], TempEnable);
-  IqeB_GUI_WidgetActivate( pBT_ThresLow[ 1], TempEnable && IsColorImg && pToolData->BT_Thres1FA == 0);
-  IqeB_GUI_WidgetActivate( pBT_ThresLow[ 2], TempEnable && IsColorImg && pToolData->BT_Thres1FA == 0);
+  IqeB_GUI_WidgetActivate( pBT_ThresLow[ 1], TempEnable && IsColorImg && pToolDataParam->BT_Thres1FA == 0);
+  IqeB_GUI_WidgetActivate( pBT_ThresLow[ 2], TempEnable && IsColorImg && pToolDataParam->BT_Thres1FA == 0);
 
-  TempEnable = pToolData->BT_UseHigh;       // Use low thresholds
+  TempEnable = pToolDataParam->BT_UseHigh;       // Use low thresholds
 
   IqeB_GUI_WidgetActivate( pBT_ThresHigh[ 0], TempEnable);
-  IqeB_GUI_WidgetActivate( pBT_ThresHigh[ 1], TempEnable && IsColorImg && pToolData->BT_Thres1FA == 0);
-  IqeB_GUI_WidgetActivate( pBT_ThresHigh[ 2], TempEnable && IsColorImg && pToolData->BT_Thres1FA == 0);
+  IqeB_GUI_WidgetActivate( pBT_ThresHigh[ 1], TempEnable && IsColorImg && pToolDataParam->BT_Thres1FA == 0);
+  IqeB_GUI_WidgetActivate( pBT_ThresHigh[ 2], TempEnable && IsColorImg && pToolDataParam->BT_Thres1FA == 0);
 
   if( pCurrFocus != pBT_AOI_X  && pCurrFocus != pBT_AOI_Y &&               // Input element has NO keyboard focus ?
       pCurrFocus != pBT_AOI_XX && pCurrFocus != pBT_AOI_YY) {
 
-    if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolData->BT_AOI, ImgXX, ImgYY,
+    if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolDataParam->BT_AOI, ImgXX, ImgYY,
                                         pBT_AOI_X, pBT_AOI_Y, pBT_AOI_XX, pBT_AOI_YY) > 0) {
 
       RedrawOnExit = true;                                 // Redraw on exit
@@ -378,7 +384,7 @@ static void MyParWinUpdate()
 
   if( RedrawOnExit) {                                    // Redraw on exit
 
-    pToolData->Input1_Change = 0;                        // Reset image change check
+    pToolDataParam->Input1_Change = 0;                        // Reset image change check
   }
 }
 
@@ -431,8 +437,12 @@ static void IqeB_GUI_ParIdleAction( void *)
 static void close_Par_cb( Fl_Widget *w, void *pValueArg)
 {
 
-  pToolData->MyParPosX = pMyParWin->x();
-  pToolData->MyParPosY = pMyParWin->y();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckReset();   // The one and only open tool window parameter dialog is closed
+#endif
+
+  pToolDataParam->MyParPosX = pMyParWin->x();
+  pToolDataParam->MyParPosY = pMyParWin->y();
 
 #ifdef YAIPS_IDLE_CALLBACK_USE  // Use the idle callbacks in tool windows
   Fl::remove_idle( IqeB_GUI_ParIdleAction);      // Redraw window during idle
@@ -456,17 +466,17 @@ static void YaIPS_BC_Mode_Callback( Fl_Widget *w, void *data)
 
   Value = (long long)(data);                       // get value to set
 
-  if( pToolData->BC_Mode == Value) {               // Value will not change
+  if( pToolDataParam->BC_Mode == Value) {               // Value will not change
 
     return;                                        // Exit, nothing to do
   }
 
-  pToolData->BC_Mode = Value;                      // Set new value
+  pToolDataParam->BC_Mode = Value;                      // Set new value
 
   // Try to redisplay changed output without new image correlation
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -483,17 +493,17 @@ static void YaIPS_BC_ThresMode_Callback( Fl_Widget *w, void *data)
 
   Value = (long long)(data);                       // get value to set
 
-  if( pToolData->BT_ThresMode == Value) {          // Value will not change
+  if( pToolDataParam->BT_ThresMode == Value) {          // Value will not change
 
     return;                                        // Exit, nothing to do
   }
 
-  pToolData->BT_ThresMode = Value;                 // Set new value
+  pToolDataParam->BT_ThresMode = Value;                 // Set new value
 
   // Try to redisplay changed output without new image correlation
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -510,17 +520,17 @@ static void YaIPS_BT_Mode_Callback( Fl_Widget *w, void *data)
 
   Value = (long long)(data);                       // get value to set
 
-  if( pToolData->BT_Mode == Value) {               // Value will not change
+  if( pToolDataParam->BT_Mode == Value) {               // Value will not change
 
     return;                                        // Exit, nothing to do
   }
 
-  pToolData->BT_Mode = Value;                      // Set new value
+  pToolDataParam->BT_Mode = Value;                      // Set new value
 
   // Try to redisplay changed output without new image correlation
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -575,8 +585,8 @@ static void IqeB_GUI_Float_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   *(float *)pValue = Value;
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
 }
 #endif
 
@@ -626,28 +636,28 @@ static void IqeB_GUI_Int_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   *pValue = Value;                         // update the variable
 
-  if( pValue == &pToolData->BT_ThresLow[ 0] &&      // Red dark threshold and 'one for all' checkbox is set
-      pToolData->BT_Thres1FA != 0) {
+  if( pValue == &pToolDataParam->BT_ThresLow[ 0] &&      // Red dark threshold and 'one for all' checkbox is set
+      pToolDataParam->BT_Thres1FA != 0) {
 
-    pToolData->BT_ThresLow[ 1] = pToolData->BT_ThresLow[ 0];        // Copy red to green and blue
-    pToolData->BT_ThresLow[ 2] = pToolData->BT_ThresLow[ 0];
-    pBT_ThresLow[ 1]->SetValue( pToolData->BT_ThresLow[ 1]);  // and update GUI
-    pBT_ThresLow[ 2]->SetValue( pToolData->BT_ThresLow[ 2]);
+    pToolDataParam->BT_ThresLow[ 1] = pToolDataParam->BT_ThresLow[ 0];        // Copy red to green and blue
+    pToolDataParam->BT_ThresLow[ 2] = pToolDataParam->BT_ThresLow[ 0];
+    pBT_ThresLow[ 1]->SetValue( pToolDataParam->BT_ThresLow[ 1]);  // and update GUI
+    pBT_ThresLow[ 2]->SetValue( pToolDataParam->BT_ThresLow[ 2]);
   }
 
-  if( pValue == &pToolData->BT_ThresHigh[ 0] &&      // Red bright threshold and 'one for all' checkbox is set
-      pToolData->BT_Thres1FA != 0) {
+  if( pValue == &pToolDataParam->BT_ThresHigh[ 0] &&      // Red bright threshold and 'one for all' checkbox is set
+      pToolDataParam->BT_Thres1FA != 0) {
 
-    pToolData->BT_ThresHigh[ 1] = pToolData->BT_ThresHigh[ 0];        // Copy red to green and blue
-    pToolData->BT_ThresHigh[ 2] = pToolData->BT_ThresHigh[ 0];
-    pBT_ThresHigh[ 1]->SetValue( pToolData->BT_ThresHigh[ 1]);  // and update GUI
-    pBT_ThresHigh[ 2]->SetValue( pToolData->BT_ThresHigh[ 2]);
+    pToolDataParam->BT_ThresHigh[ 1] = pToolDataParam->BT_ThresHigh[ 0];        // Copy red to green and blue
+    pToolDataParam->BT_ThresHigh[ 2] = pToolDataParam->BT_ThresHigh[ 0];
+    pBT_ThresHigh[ 1]->SetValue( pToolDataParam->BT_ThresHigh[ 1]);  // and update GUI
+    pBT_ThresHigh[ 2]->SetValue( pToolDataParam->BT_ThresHigh[ 2]);
   }
 
   // Force recalculation of processing
 
-  pToolData->Input1_Change = 0;          // Force recalculation output
-  pToolData->Input2_Change = 0;          // Force recalculation output
+  pToolDataParam->Input1_Change = 0;          // Force recalculation output
+  pToolDataParam->Input2_Change = 0;          // Force recalculation output
 }
 
 /************************************************************************************
@@ -668,9 +678,9 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     return;
   }
 
-  if( pValueArg == &pToolData->Teach_mode) {  // Toggle Teach / Inspection button
+  if( pValueArg == &pToolDataParam->Teach_mode) {  // Toggle Teach / Inspection button
 
-    pToolData->Teach_mode = ! pToolData->Teach_mode;
+    pToolDataParam->Teach_mode = ! pToolDataParam->Teach_mode;
 
   } else {
 
@@ -679,25 +689,25 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     pThis  = (Fl_Check_Button *)w;
     *pValue = pThis->value();                // update the variable
 
-    if( pValue == &pToolData->BT_Thres1FA) {    // 'one for all' checkbox
+    if( pValue == &pToolDataParam->BT_Thres1FA) {    // 'one for all' checkbox
 
-      if( pToolData->BT_Thres1FA != 0) {        // 'one for all' checkbox is set
+      if( pToolDataParam->BT_Thres1FA != 0) {        // 'one for all' checkbox is set
 
-        pToolData->BT_ThresLow[ 1] = pToolData->BT_ThresLow[ 0];        // Copy red to green and blue
-        pToolData->BT_ThresLow[ 2] = pToolData->BT_ThresLow[ 0];
-        pBT_ThresLow[ 1]->SetValue( pToolData->BT_ThresLow[ 1]);  // and update GUI
-        pBT_ThresLow[ 2]->SetValue( pToolData->BT_ThresLow[ 2]);
+        pToolDataParam->BT_ThresLow[ 1] = pToolDataParam->BT_ThresLow[ 0];        // Copy red to green and blue
+        pToolDataParam->BT_ThresLow[ 2] = pToolDataParam->BT_ThresLow[ 0];
+        pBT_ThresLow[ 1]->SetValue( pToolDataParam->BT_ThresLow[ 1]);  // and update GUI
+        pBT_ThresLow[ 2]->SetValue( pToolDataParam->BT_ThresLow[ 2]);
 
-        pToolData->BT_ThresHigh[ 1] = pToolData->BT_ThresHigh[ 0];        // Copy red to green and blue
-        pToolData->BT_ThresHigh[ 2] = pToolData->BT_ThresHigh[ 0];
-        pBT_ThresHigh[ 1]->SetValue( pToolData->BT_ThresHigh[ 1]);  // and update GUI
-        pBT_ThresHigh[ 2]->SetValue( pToolData->BT_ThresHigh[ 2]);
+        pToolDataParam->BT_ThresHigh[ 1] = pToolDataParam->BT_ThresHigh[ 0];        // Copy red to green and blue
+        pToolDataParam->BT_ThresHigh[ 2] = pToolDataParam->BT_ThresHigh[ 0];
+        pBT_ThresHigh[ 1]->SetValue( pToolDataParam->BT_ThresHigh[ 1]);  // and update GUI
+        pBT_ThresHigh[ 2]->SetValue( pToolDataParam->BT_ThresHigh[ 2]);
       }
     }
   }
 
-  pToolData->Input1_Change = 0;          // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;          // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -710,10 +720,20 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 {
   int xPos, yPos;
+  Fl_Double_Window *pMyToolWin;
+
+  // Check parameter dialog is allowed to open
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  if( IqeB_GUI_ToolParCheckOpen( close_Par_cb, &pMyParWin, iToolData) < 0) {    // Allowed to open parameter dialog
+
+    return;
+  }
+#endif
 
   // Get pointer to tool data
 
-  pToolData = YaIPS_ToolData_info + iToolData;             // Point to info data
+  pToolDataParam = YaIPS_ToolData_info + iToolData;             // Point to info data
 
   //
   // creation of window on first call
@@ -722,18 +742,28 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   xPos = xLeft;
   yPos = yTop;
 
-  if( pToolData->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolData->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
+  if( pToolDataParam->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolDataParam->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
 
-    xPos = pToolData->MyParPosX;
-    yPos = pToolData->MyParPosY;
+    xPos = pToolDataParam->MyParPosX;
+    yPos = pToolDataParam->MyParPosY;
   }
 
-  pMyParWin = new Fl_Window( xPos, yPos, 355 /*IQE_GUI_TOOLS_STD_WITDH*/, 170, LANGDEF_SETTINGS);
+  pMyParWin = new Fl_Window( xPos, yPos, 355 /*IQE_GUI_TOOLS_STD_WITDH*/, 170);
 
   if( pMyParWin == NULL) {  // security test
 
     return;
   }
+
+  // Set window title
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+
+   pMyToolWin = (Fl_Double_Window *)pToolDataParam->pMyToolWin;  // Convert type of pointer
+
+   pMyParWin->copy_label( pMyToolWin->label());
+#else
+   pMyParWin->label( LANGDEF_SETTINGS);
+#endif
 
   //
   //  GUI things
@@ -790,7 +820,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     x1 = pMyParWin->w() - 28 - 9;
 
     pTemp_Button = new Fl_Button( x1, y, 28, 28, "@+1pencil");
-    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->Teach_mode);
+    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->Teach_mode);
     pTemp_Button->tooltip( LANGDEF_AOI_TEACH_TOOLTIP);
     pTemp_Button->labelcolor( YAIPS_BCOL_BUTTON);
     pTemp_Button->shortcut( FL_COMMAND+'t');       // Short cut key
@@ -812,8 +842,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_X);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspColor_TabA3a=Position left edge AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BT_AOI.XPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BT_AOI.XPos);
+    pTemp_Int->SetValue( pToolDataParam->BT_AOI.XPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BT_AOI.XPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pBT_AOI_X = pTemp_Int;
 
@@ -823,8 +853,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_Y);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspColor_TabA4a=Position upper edge AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BT_AOI.YPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BT_AOI.YPos);
+    pTemp_Int->SetValue( pToolDataParam->BT_AOI.YPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BT_AOI.YPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pBT_AOI_Y = pTemp_Int;
 
@@ -834,8 +864,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_InspColor_TabA5=W"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspColor_TabA5a=Width of the AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BT_AOI.XSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BT_AOI.XSize);
+    pTemp_Int->SetValue( pToolDataParam->BT_AOI.XSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BT_AOI.XSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pBT_AOI_XX = pTemp_Int;
 
@@ -845,8 +875,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_InspColor_TabA6=H"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspColor_TabA6a=Height of the AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BT_AOI.YSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BT_AOI.YSize);
+    pTemp_Int->SetValue( pToolDataParam->BT_AOI.YSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BT_AOI.YSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pBT_AOI_YY = pTemp_Int;
 
@@ -868,7 +898,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp = new Fl_Radio_Round_Button( x1, y + 2, xx1 - 2, yy - 4, LangStringLookup( "&GUI_InspColor_TabA8=Average"));
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_InspColor_TabA8a="
                            "Compute average gray values in the AOI."));
-    pRadioButTemp->value( pToolData->BT_Mode == YAIPS_HISTO_MODE_MEAN);
+    pRadioButTemp->value( pToolDataParam->BT_Mode == YAIPS_HISTO_MODE_MEAN);
     pRadioButTemp->callback( YaIPS_BT_Mode_Callback, (void *)YAIPS_HISTO_MODE_MEAN);
     pBT_Mode[ 0] = pRadioButTemp;
 
@@ -880,7 +910,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp = new Fl_Radio_Round_Button( x1, y + 2, xx1 - 2, yy - 4, LangStringLookup( "&GUI_InspColor_TabA9=Min"));
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_InspColor_TabA9a="
                            "Compute % minimum gray values in the AOI."));
-    pRadioButTemp->value( pToolData->BT_Mode == YAIPS_HISTO_MODE_MIN);
+    pRadioButTemp->value( pToolDataParam->BT_Mode == YAIPS_HISTO_MODE_MIN);
     pRadioButTemp->callback( YaIPS_BT_Mode_Callback, (void *)YAIPS_HISTO_MODE_MIN);
     pBT_Mode[ 1] = pRadioButTemp;
 
@@ -890,7 +920,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp = new Fl_Radio_Round_Button( x1, y + 2, xx1 - 2, yy - 4, LangStringLookup( "&GUI_InspColor_TabA10=Max"));
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_InspColor_TabA10a="
                            "Compute % maximum gray values in the AOI."));
-    pRadioButTemp->value( pToolData->BT_Mode == YAIPS_HISTO_MODE_MAX);
+    pRadioButTemp->value( pToolDataParam->BT_Mode == YAIPS_HISTO_MODE_MAX);
     pRadioButTemp->callback( YaIPS_BT_Mode_Callback, (void *)YAIPS_HISTO_MODE_MAX);
     pBT_Mode[ 2] = pRadioButTemp;
 
@@ -906,8 +936,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_InspColor_TabA11=n%Value"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspColor_TabA11a=% value for min/max mode."));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BT_Percent);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BT_Percent);
+    pTemp_Int->SetValue( pToolDataParam->BT_Percent);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BT_Percent);
     pTemp_Int->SetModifyData( 0, 100, 10, 1);
     pBT_Percent = pTemp_Int;
 
@@ -931,7 +961,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                             "Selecting this computes the deviation from the\n"
                             "related value out of the reference image and\n"
                             "checks this deviation against the given thresholds."));
-    pRadioButTemp->value( pToolData->BT_ThresMode == 0);
+    pRadioButTemp->value( pToolDataParam->BT_ThresMode == 0);
     pRadioButTemp->callback( YaIPS_BC_ThresMode_Callback, (void *)0);
     pBT_ThresMode[ 0] = pRadioButTemp;
 
@@ -943,7 +973,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                             "Selecting this leads to a bad inspection result,\n"
                             "if the computed value is higher than 'Bright Threshold'\n"
                             "or lower than 'Dark Threshold'."));
-    pRadioButTemp->value( pToolData->BT_ThresMode == 1);
+    pRadioButTemp->value( pToolDataParam->BT_ThresMode == 1);
     pRadioButTemp->callback( YaIPS_BC_ThresMode_Callback, (void *)1);
     pBT_ThresMode[ 1] = pRadioButTemp;
 
@@ -957,8 +987,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pCheckTemp = new Fl_Check_Button( x1, y, xx1, yy, LANGDEF_ALL);
     pCheckTemp->tooltip( LANGDEF_COLOR_RED_FOR_ALL);
-    pCheckTemp->value( pToolData->BT_Thres1FA);
-    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->BT_Thres1FA);
+    pCheckTemp->value( pToolDataParam->BT_Thres1FA);
+    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->BT_Thres1FA);
     pBT_Thres1FA = pCheckTemp;
 
     // Next line
@@ -977,8 +1007,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_R);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspColor_TabA17=Dark threshold for BW or red color component."));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BT_ThresLow[ 0]);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BT_ThresLow[ 0]);
+    pTemp_Int->SetValue( pToolDataParam->BT_ThresLow[ 0]);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BT_ThresLow[ 0]);
     pTemp_Int->SetModifyData( 0, 255, 10, 1);
     pBT_ThresLow[ 0] = pTemp_Int;
 
@@ -988,8 +1018,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_G);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspColor_TabA18a=Dark threshold for green color component."));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BT_ThresLow[ 1]);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BT_ThresLow[ 1]);
+    pTemp_Int->SetValue( pToolDataParam->BT_ThresLow[ 1]);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BT_ThresLow[ 1]);
     pTemp_Int->SetModifyData( 0, 255, 10, 1);
     pBT_ThresLow[ 1] = pTemp_Int;
 
@@ -999,8 +1029,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_B);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspColor_TabA19a=Dark threshold for blue color component."));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BT_ThresLow[ 2]);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BT_ThresLow[ 2]);
+    pTemp_Int->SetValue( pToolDataParam->BT_ThresLow[ 2]);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BT_ThresLow[ 2]);
     pTemp_Int->SetModifyData( 0, 255, 10, 1);
     pBT_ThresLow[ 2] = pTemp_Int;
 
@@ -1012,8 +1042,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pCheckTemp = new Fl_Check_Button( x1, y, xx1, yy, LangStringLookup( "&GUI_InspColor_TabA19=Use"));
     pCheckTemp->tooltip( LangStringLookup( "&GUI_InspColor_TabA20a="
                                            "If set, test against dark thresholds."));
-    pCheckTemp->value( pToolData->BT_UseLow);
-    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->BT_UseLow);
+    pCheckTemp->value( pToolDataParam->BT_UseLow);
+    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->BT_UseLow);
 
     // Next line
 
@@ -1031,8 +1061,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_R);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspColor_TabA22a=Bright threshold for BW or red color component."));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BT_ThresHigh[ 0]);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BT_ThresHigh[ 0]);
+    pTemp_Int->SetValue( pToolDataParam->BT_ThresHigh[ 0]);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BT_ThresHigh[ 0]);
     pTemp_Int->SetModifyData( 0, 255, 10, 1);
     pBT_ThresHigh[ 0] = pTemp_Int;
 
@@ -1042,8 +1072,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_G);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspColor_TabA23a=Bright threshold for green color component."));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BT_ThresHigh[ 1]);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BT_ThresHigh[ 1]);
+    pTemp_Int->SetValue( pToolDataParam->BT_ThresHigh[ 1]);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BT_ThresHigh[ 1]);
     pTemp_Int->SetModifyData( 0, 255, 10, 1);
     pBT_ThresHigh[ 1] = pTemp_Int;
 
@@ -1053,8 +1083,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_COLOR_B);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspColor_TabA24a=Bright threshold for blue color component."));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BT_ThresHigh[ 2]);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BT_ThresHigh[ 2]);
+    pTemp_Int->SetValue( pToolDataParam->BT_ThresHigh[ 2]);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BT_ThresHigh[ 2]);
     pTemp_Int->SetModifyData( 0, 255, 10, 1);
     pBT_ThresHigh[ 2] = pTemp_Int;
 
@@ -1066,8 +1096,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pCheckTemp = new Fl_Check_Button( x1, y, xx1, yy, LangStringLookup( "&GUI_InspColor_TabA25=Use"));
     pCheckTemp->tooltip( LangStringLookup( "&GUI_InspColor_TabA25a="
                                            "If set, test against bright thresholds."));
-    pCheckTemp->value( pToolData->BT_UseHigh);
-    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->BT_UseHigh);
+    pCheckTemp->value( pToolDataParam->BT_UseHigh);
+    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->BT_UseHigh);
 
 
     // Finish things for this group
@@ -1091,7 +1121,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     x1 = pMyParWin->w() - 28 - 9;
 
     pTemp_Button = new Fl_Button( x1, y, 28, 28, "@+1pencil");
-    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->Teach_mode);
+    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->Teach_mode);
     pTemp_Button->tooltip( LANGDEF_AOI_TEACH_TOOLTIP);
     pTemp_Button->labelcolor( YAIPS_BCOL_BUTTON);
     pTemp_Button->shortcut( FL_COMMAND+'t');       // Short cut key
@@ -1113,8 +1143,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_X);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspColor_TabA3a=Position left edge AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BC_AOI.XPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BC_AOI.XPos);
+    pTemp_Int->SetValue( pToolDataParam->BC_AOI.XPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BC_AOI.XPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pBC_AOI_X = pTemp_Int;
 
@@ -1124,8 +1154,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_Y);
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspColor_TabA4a=Position upper edge AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BC_AOI.YPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BC_AOI.YPos);
+    pTemp_Int->SetValue( pToolDataParam->BC_AOI.YPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BC_AOI.YPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pBC_AOI_Y = pTemp_Int;
 
@@ -1135,8 +1165,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_InspColor_TabA5=W"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspColor_TabA5a=Width of the AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BC_AOI.XSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BC_AOI.XSize);
+    pTemp_Int->SetValue( pToolDataParam->BC_AOI.XSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BC_AOI.XSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pBC_AOI_XX = pTemp_Int;
 
@@ -1146,8 +1176,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_InspColor_TabA6=H"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspColor_TabA6a=Height of the AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BC_AOI.YSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BC_AOI.YSize);
+    pTemp_Int->SetValue( pToolDataParam->BC_AOI.YSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BC_AOI.YSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pBC_AOI_YY = pTemp_Int;
 
@@ -1168,7 +1198,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp = new Fl_Radio_Round_Button( x1, y + 2, xx1 - 2, yy - 4, LangStringLookup( "&GUI_InspColor_TabA8=Average"));
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_InspColor_TabA8a="
                            "Compute average gray values in the AOI."));
-    pRadioButTemp->value( pToolData->BC_Mode == YAIPS_HISTO_MODE_MEAN);
+    pRadioButTemp->value( pToolDataParam->BC_Mode == YAIPS_HISTO_MODE_MEAN);
     pRadioButTemp->callback( YaIPS_BC_Mode_Callback, (void *)YAIPS_HISTO_MODE_MEAN);
     pBC_Mode[ 0] = pRadioButTemp;
 
@@ -1180,7 +1210,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp = new Fl_Radio_Round_Button( x1, y + 2, xx1 - 2, yy - 4, LangStringLookup( "&GUI_InspColor_TabA9=Min"));
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_InspColor_TabA9a="
                            "Compute % minimum gray values in the AOI."));
-    pRadioButTemp->value( pToolData->BC_Mode == YAIPS_HISTO_MODE_MIN);
+    pRadioButTemp->value( pToolDataParam->BC_Mode == YAIPS_HISTO_MODE_MIN);
     pRadioButTemp->callback( YaIPS_BC_Mode_Callback, (void *)YAIPS_HISTO_MODE_MIN);
     pBC_Mode[ 1] = pRadioButTemp;
 
@@ -1190,7 +1220,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp = new Fl_Radio_Round_Button( x1, y + 2, xx1 - 2, yy - 4, LangStringLookup( "&GUI_InspColor_TabA10=Max"));
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_InspColor_TabA10a="
                            "Compute % maximum gray values in the AOI."));
-    pRadioButTemp->value( pToolData->BC_Mode == YAIPS_HISTO_MODE_MAX);
+    pRadioButTemp->value( pToolDataParam->BC_Mode == YAIPS_HISTO_MODE_MAX);
     pRadioButTemp->callback( YaIPS_BC_Mode_Callback, (void *)YAIPS_HISTO_MODE_MAX);
     pBC_Mode[ 2] = pRadioButTemp;
 
@@ -1206,8 +1236,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_InspColor_TabA11=n%Value"));
     pTemp_Int->tooltip( LangStringLookup( "&GUI_InspColor_TabA11a=% value for min/max mode."));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BC_Percent);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BC_Percent);
+    pTemp_Int->SetValue( pToolDataParam->BC_Percent);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BC_Percent);
     pTemp_Int->SetModifyData( 0, 100, 10, 1);
     pBC_Percent = pTemp_Int;
 
@@ -1226,8 +1256,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                                           "Exceeding the given tolerance results\n"
                                           "in a bad inspection result."));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->BC_Tolerance);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->BC_Tolerance);
+    pTemp_Int->SetValue( pToolDataParam->BC_Tolerance);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->BC_Tolerance);
     pTemp_Int->SetModifyData( 0, 255, 10, 1);
 
     // Finish things for this group
@@ -1238,12 +1268,16 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
   pTemp_Tabs->end();
 
-  pTemp_Tabs->SetTabGroup( pToolData->Tab_Group_Selected);    // Select tab group from last session
+  pTemp_Tabs->SetTabGroup( pToolDataParam->Tab_Group_Selected);    // Select tab group from last session
 
     // finish up
 
   pMyParWin->end();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  pMyParWin->set_non_modal();
+#else
   pMyParWin->set_modal();
+#endif
   pMyParWin->callback( close_Par_cb, &pMyParWin);
   pMyParWin->show();
 
@@ -1501,6 +1535,10 @@ static void close_cb( Fl_Widget *w, long int iToolData)
     return;
   }
 
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckClose( close_Par_cb, &pMyParWin, iToolData);   // Check to close specific associated parameter dialog
+#endif
+
   YaIPS_ImageDispReleaseBeforeClose( &pToolData->YaIPS_ImageDisp);
 
   pToolData->IsOpen = false;               // Flag info data is not in use
@@ -1665,6 +1703,9 @@ static void MyWinUpdate( int iToolData, int DoEnable)
                              DoEnable &&                                    // Enable GUI elements
                              pToolData->YaIPS_ImageDisp.pImage_Img != NULL); // and have an image loaded
 
+  IqeB_GUI_WidgetActivate( pMyToolWin->pGUI_Parameter,
+                            (pMyParWin == NULL || pToolDataParam->iToolData != iToolData) && // Parameter dialog is closed
+                             DoEnable);                             // Enable GUI elements
 
   // Check input image and visualize state
   YaIPS_ToolWinInputCheck( MY_WIN_ID + iToolData, pToolData->Input1_WinIdNr, pMyToolWin->pBox_Input1);

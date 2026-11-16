@@ -2,7 +2,7 @@
 ; YaIPS_LanguageStrings.h
 ;-------------------------------------------------------
 ;
-; 122 entries
+; 128 entries
 ;
 Button_Close                       "Close"
 
@@ -42,6 +42,14 @@ Text_Pixel_UCF                     "Pixel"
 
 Text_Pixel_LC                      "pixel"
 
+Text_Edges                         "Edges"
+
+Text_Size                          "Size"
+
+Text_Gain                          "Gain"
+
+Text_Fade_Short                    "F"
+
 Text_Color                         "Color"
 
 Text_ColorR                        "R"
@@ -55,6 +63,10 @@ Text_ColorA                        "A"
 Text_ColorBW                       "BW"
 
 Text_ColorAlpha                    "Alpha"
+
+Text_ColorRGB                      "RGB"
+
+Text_ColorIHS                      "IHS"
 
 Text_ColorRedForAll                "If set, the red value is used\nfor all three channels."
 

@@ -6,6 +6,11 @@
   Color things
 
  01.06.2025 RR: First edition of this file.
+ 14.10.2026 RR: * Bugfix YaIPS_RGB_Color_IHS2RGB()
+                  Accessing the tables YaIPS_ColMod_sintab and YaIPS_ColMod_costab
+                  with a value of ch = 64 us an index of 64 (A180 - 64 = 128 - 64 = 64)
+                  access one element after then end of the tables.
+                  HACK: Added one element to the tables replicating the last element.
 
 *****************************************************************************
 */
@@ -41,13 +46,13 @@
 #define A180       128             /* 180 degrees */
 #define A270       192             /* -90 degrees */
 
-#define lbclip(inval,outptr)  {if ((inval) > 255L)                      \
-                               *(outptr) = 255L; else if ((inval) < 0L) \
-                               *(outptr) = 0L;   else *(outptr)=(inval); }
-
 #define lmclip(inval,outptr)  {if ((inval) > 127L)                          \
                                *(outptr) = 127L;  else if ((inval) < -128L) \
                                *(outptr) = -128L; else *(outptr)=(inval); }
+
+#define lbclip(inval,outptr)  {if ((inval) > 255L)                      \
+                               *(outptr) = 255L; else if ((inval) < 0L) \
+                               *(outptr) = 0L;   else *(outptr)=(inval); }
 
 #define abs(x)                ( ((x) < 0)  ?  -(x) : (x) )
 
@@ -72,7 +77,7 @@ uchar YaIPS_ColMod_atantab[256] = {
    61,   61,   61,   61,   61,   61,   61,   61
 };
 
-uchar YaIPS_ColMod_sintab[64] = {
+uchar YaIPS_ColMod_sintab[64 + 1] = {
      0,    6,   12,   18,   25,   31,   37,   43,
     49,   56,   62,   68,   74,   80,   86,   92,
     97,  103,  109,  115,  120,  126,  131,  136,
@@ -81,9 +86,10 @@ uchar YaIPS_ColMod_sintab[64] = {
    212,  216,  219,  222,  225,  228,  231,  234,
    236,  238,  241,  243,  244,  246,  248,  249,
    251,  252,  253,  254,  254,  255,  255,  255,
+   255,
 };
 
-uchar YaIPS_ColMod_costab[64] = {
+uchar YaIPS_ColMod_costab[64 + 1] = {
    255,  255,  255,  254,  254,  253,  252,  251,
    249,  248,  246,  244,  243,  241,  238,  236,
    234,  231,  228,  225,  222,  219,  216,  212,
@@ -92,6 +98,7 @@ uchar YaIPS_ColMod_costab[64] = {
    136,  131,  126,  120,  115,  109,  103,   97,
     92,   86,   80,   74,   68,   62,   56,   49,
     43,   37,   31,   25,   18,   12,    6,    0,
+     0,
 };
 
 /************************************************************************************

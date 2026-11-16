@@ -1,0 +1,11 @@
+YaIPS main: TP 1
+YaIPS main: TP 1a Mapfile Error
+YaIPS main: TP 2
+YaIPS main: TP 3
+YaIPS main: TP 4
+YaIPS main: TP 5
+YaIPS main: TP 6
+YaIPS main: TP 7, WDir E:\Robert\RRGameTools\Eclipse_IDE\eclipse-workspace\YaIPS
+YaIPS main: TP 8
+YaIPS main: TP 9
+YaIPS main: TP 99, before GUI loop

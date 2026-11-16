@@ -22,11 +22,46 @@
                    Added 'Reset' button into right upper corner of
                    the windows left area.
                    Pressing the button resets the display settings.
+  09.10.2026 RR: * YaIPS_GUI_DiffUsesCalcThings()
+                   To call of YaIPS_ColRowSum_Measure() at the current selected
+                   color channel to the arguments.
+                   If a brightness profile is shown, the measured profiles
+                   depends from the color channel selection.
+                 * MyWinUpdate()
+                   Enables for color channel selection depends from image
+                   type. Only for color images the color channels are
+                   enabled.
+  15.10.2026 RR: * YaIPS_GUI_pMouseContext_cb()
+                   New call back function. This function pops up a menu
+                   to change features for pixel value, brightness profiles,
+                   histograms an thick line drawings.
+                   This can be called either as a context menu when the
+                   mouse pointer is positioned over a selection rectangle
+                   within the image in the central area, or by clicking
+                   the button in the 'Info/Measurement' group.
+  18.10.2026 RR: * Reworked behavior of tool window parameter dialogs.
+                   New functions to allow tool window parameter dialogs
+                   to be operable side by side with other tool window dialogs
+                   and the main window.
+                   Only one tool window parameter dialog can be open at
+                   a time.
+                   * IqeB_GUI_ToolParCheckOpen()
+                     Called at begin of the function to create a tool window
+                     parameter dialog.
+                     This close an other open tool window parameter dialog.
+                   * IqeB_GUI_ToolParCheckReset()
+                     Called at the begin of a tool window parameter dialog
+                     close function.
+                     Marks no tool window parameter dialog is open.
+                   * IqeB_GUI_ToolParCheckClose()
+                     This is called from the close function of a tool windows.
+                     Closes a parameter dialog associated with this
+                     tool window.
 
 *****************************************************************************
 */
 
-//x/#define USE_LOGFILE   1          // Define this to use a log file for startup testing
+#define USE_LOGFILE   1          // Define this to use a log file for startup testing
 
 #include <windows.h>
 #include <winbase.h>
@@ -120,7 +155,89 @@ static void Logfile_Open()
 #endif
 
 /************************************************************************************
+ * IqeB_GUI_ToolParCheckOpen
+ *
+ * Check tool window parameter dialog is allowed to open
+ *
+ * return:   0  OK
+ *         < 0  Not allowed to open
+ */
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+
+static Fl_Callback *pCheckOpenToolPar_close_cb;
+static void *pCheckOpenToolPar_Arg;
+static int  CheckOpenToolPar_iToolData;
+
+int IqeB_GUI_ToolParCheckOpen( Fl_Callback *close_cb, void *pValueArg, int iToolData)
+{
+
+  // Is an other parameter dialog opened
+
+  if( pCheckOpenToolPar_close_cb != NULL) {
+
+    // Close this parameter dialog
+    pCheckOpenToolPar_close_cb( NULL, pCheckOpenToolPar_Arg);
+  }
+
+  // Set parameter for next close
+
+  pCheckOpenToolPar_close_cb = close_cb;
+  pCheckOpenToolPar_Arg = pValueArg;
+  CheckOpenToolPar_iToolData = iToolData;
+
+  return( 0);     // Return OK
+}
+
+/************************************************************************************
+ * IqeB_GUI_ToolParCheckReset
+ *
+ * The one and only open tool window parameter dialog is closed
+ *
+ * This is called from the close function of an tool window
+ * parameter dialog.
+ */
+
+void IqeB_GUI_ToolParCheckReset()
+{
+
+  // A tool parameter dialog was closed. Can reset this.
+
+  pCheckOpenToolPar_close_cb = NULL;
+  pCheckOpenToolPar_Arg = NULL;
+  CheckOpenToolPar_iToolData = -4711;
+}
+
+/************************************************************************************
+ * IqeB_GUI_ToolParCheckClose
+ *
+ * Check to close specific tool window parameter dialog
+ *
+ * This is called from the close function of an tool window to close
+ * an associated open parameter dialog.
+ */
+
+void IqeB_GUI_ToolParCheckClose( Fl_Callback *close_cb, void *pValueArg, int iToolData)
+{
+
+  if( pCheckOpenToolPar_close_cb == close_cb &&
+      pCheckOpenToolPar_Arg == pValueArg &&
+      CheckOpenToolPar_iToolData == iToolData) {
+
+    // Close this parameter dialog
+    pCheckOpenToolPar_close_cb( NULL, pCheckOpenToolPar_Arg);
+
+    // A tool parameter dialog was closed. Can reset this.
+
+    IqeB_GUI_ToolParCheckReset();
+  }
+}
+#endif
+
+/************************************************************************************
  * IqeB_GUI_CloseToolWindow
+ *
+ * Close tool or parameter dialogs.
  *
  * * Updates tool windows positions to preferences cache
  * * Close tool window dialog
@@ -142,7 +259,7 @@ void IqeB_GUI_CloseToolWindow( void **ppMyToolWin)
 
   pThisWin = (Fl_Double_Window *)*ppMyToolWin; // get pointer to tool
 
-  WasModal = pThisWin->modal();                // Was this window modal
+  WasModal = pThisWin->modal() != 0 || pThisWin->non_modal();  // Was this window modal
 
   delete pThisWin;
 
@@ -154,11 +271,22 @@ void IqeB_GUI_CloseToolWindow( void **ppMyToolWin)
   pGUI_Main->show();
 #else
 
-  // 15.04.2025 RR: Hack to restore hidden windows if one of the tool windows is closed
+  if( WasModal) {
 
-  if( ! WasModal) {
+#ifdef use_again
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+
+    // A tool parameter dialog was closed. Can reset this.
+
+    IqeB_GUI_ToolParCheckReset();
+#endif
+#endif
+  } else {
+
+    // 15.04.2025 RR: Hack to restore hidden windows if one of the tool windows is closed
 
     //x/YaIPS_ToolWinTestAction( YAIPS_TWIN_ACTION_HIDE_SHOW_ALL, true);
+
   }
 #endif
 }
@@ -339,7 +467,7 @@ static Fl_Radio_Round_Button * ColModButtons[ YAIPS_DISP_COLMOD_MAX + 1]; // Tab
 
 // Image overlay
 static Fl_Radio_Round_Button * OverlayButtons[ YAIPS_OVERLAY_MAX + 1]; // Table of resolution buttons
-static Fl_Button *pBut_OverlayColor;                 // Button to select ovelay color
+static Fl_Button *pBut_OverlayColor;                 // Button to select overlay color
 // --- Image overlay
 static int OverlayStyle = 0;                         // Current selected image overlay
 static int OverlayColor = FL_YELLOW;                 // Color used for overlay drawing
@@ -358,9 +486,14 @@ static Fl_Check_Button *pCBox_3D_Inverted;           // Check box 3D inverted
 
 // Show measurement/info
 static Fl_Radio_Round_Button * ShowButtons[ YAIPS_SHOW_INFO_MAX + 1];  // Table of show buttons
+static Fl_Button  *pBut_ShowOptions;
 
 // Different uses. Histogram, ..
+
+#define YAIPS_DUSE_FLAG_CU_VAL_IHS     0x0001         // If set pixel values also show IHS values
+
 static YaIPS_Fl_Box *pGUI_Box_DiffUses;               // Display used for different uses
+static int YaIPS_DUses_Flags = 0;                     // Flag bits for 'different uses'
 static int DUseDataChange = -1;                       // Monitor source image change
 Fl_YaIPS_Histo_RGB_t YaIPS_Main_Histo;                // Histogram of current big image for YAIPS_SHOW_INFO_RE_HISTO_ALL / YAIPS_SHOW_INFO_RE_HISTO_AOI
 static Fl_YaIPS_ColRowSum_RGB_t ShowColRowSumInfo;    // Hold info about column / row profiles
@@ -618,8 +751,8 @@ static void YaIPS_GUI_BigDrawAfter_cb( Fl_Widget *pW,
           (pYaIPS_ImageDisp->Flags & YAIPS_IDISP_FLAG_MOUSE_BUTT_ANY) == 0) {  // and NOT any mouse button pressed
 
         int SrcX, SrcY, OffX, OffY, Src_d, Src_ld;
-        uchar *pDataSrc;
-        int mw, mh;
+        uchar *pDataSrc, IHS[ 3];
+        int mw, mh, mh2, xBase;
         char TempString[256];
 
         // Get position in image
@@ -697,6 +830,14 @@ static void YaIPS_GUI_BigDrawAfter_cb( Fl_Widget *pW,
           x1 += 6;
         }
 
+        mh2 = mh;
+
+        if (Src_d >= 3 &&        // Have an color image
+           (YaIPS_DUses_Flags & YAIPS_DUSE_FLAG_CU_VAL_IHS) != 0) {   // and also show IHS value
+
+          mh2 += 22;
+        }
+
         if (y1 + mh + 6
             >= pYaIPS_ImageDisp->BigImage_sy + pYaIPS_ImageDisp->BigImage_sh) {
 
@@ -707,31 +848,33 @@ static void YaIPS_GUI_BigDrawAfter_cb( Fl_Widget *pW,
           y1 += 6;
         }
 
+        xBase = x1;
+
         fl_color(FL_WHITE);
-        fl_rectf(x1, y1, mw, mh);
+        fl_rectf(x1, y1, mw, mh2);
         fl_color(FL_BLACK);
-        fl_rect(x1, y1, mw, mh);
+        fl_rect(x1, y1, mw, mh2);
 
         if (Src_d >= 3) {     // Have an color image
 
           sprintf(TempString, "%3d", pDataSrc[0]);
-          fl_color(FL_RED);
+          fl_color( YAIPS_COLOR_CURVE_R);
           fl_draw(TempString, x1 + 4, y1 + mh - 4);
 
           x1 += 40;
           sprintf(TempString, "%3d", pDataSrc[1]);
-          fl_color(FL_GREEN - 2);
+          fl_color( YAIPS_COLOR_CURVE_G);
           fl_draw(TempString, x1 + 4, y1 + mh - 4);
 
           x1 += 40;
           sprintf(TempString, "%3d", pDataSrc[2]);
-          fl_color(FL_BLUE);
+          fl_color( YAIPS_COLOR_CURVE_B);
           fl_draw(TempString, x1 + 4, y1 + mh - 4);
 
         } else {               // Have a BW image
 
           sprintf(TempString, "%3d", pDataSrc[0]);
-          fl_color(FL_BLACK);
+          fl_color( FL_BLACK);
           fl_draw(TempString, x1 + 4, y1 + mh - 4);
         }
 
@@ -739,10 +882,34 @@ static void YaIPS_GUI_BigDrawAfter_cb( Fl_Widget *pW,
 
           x1 += 40;
           sprintf(TempString, "+%3d", Src_d == 2 ? pDataSrc[1] : pDataSrc[3]);
-          fl_color(FL_DARK3 - 2);
+          fl_color( YAIPS_COLOR_CURVE_A);
           fl_draw(TempString, x1 + 4, y1 + mh - 4);
         }
-       }
+
+        if (Src_d >= 3 &&        // Have an color image
+           (YaIPS_DUses_Flags & YAIPS_DUSE_FLAG_CU_VAL_IHS) != 0) {   // and also show IHS value
+
+          x1 = xBase;
+
+          y1 += mh;
+
+          YaIPS_RGB_Color_RGB2IHS( IHS, pDataSrc);
+
+          sprintf(TempString, "%3d", IHS[0]);
+          fl_color( YAIPS_COLOR_CURVE_I);
+          fl_draw(TempString, x1 + 4, y1 + mh - 4);
+
+          x1 += 40;
+          sprintf(TempString, "%3d", IHS[1]);
+          fl_color( YAIPS_COLOR_CURVE_H);
+          fl_draw(TempString, x1 + 4, y1 + mh - 4);
+
+          x1 += 40;
+          sprintf(TempString, "%3d", IHS[2]);
+          fl_color( YAIPS_COLOR_CURVE_S);
+          fl_draw(TempString, x1 + 4, y1 + mh - 4);
+        }
+      }
 
       YaIPS_BigImageDisp.Flags |= YAIPS_IDISP_FLAG_MOUSE_AOI_CHA;     // Set AOI changed flag bit
       break;
@@ -858,9 +1025,9 @@ static void YaIPS_GUI_BigDrawAfter_cb( Fl_Widget *pW,
 #endif
 
           YaIPS_ColRowSum_Draw( &ShowColRowSumInfo,   // Pointer to RGB profiles
-                               x1, y2,               // Left upper drawing reference point
-                               AoiXX, 256,           // With / height of drawing box
-                               SizeFactor, LengthFirst);
+                                x1, y2,               // Left upper drawing reference point
+                                AoiXX, 256,           // With / height of drawing box
+                                SizeFactor, LengthFirst);
 
           fl_color( ColAOI);
 
@@ -909,9 +1076,9 @@ static void YaIPS_GUI_BigDrawAfter_cb( Fl_Widget *pW,
 #endif
 
           YaIPS_ColRowSum_Draw( &ShowColRowSumInfo,   // Pointer to RGB profiles
-                               x2, y1,               // Left upper drawing reference point
-                               256, AoiYY,           // With / height of drawing box
-                               SizeFactor, LengthFirst);
+                                x2, y1,               // Left upper drawing reference point
+                                256, AoiYY,           // With / height of drawing box
+                                SizeFactor, LengthFirst);
 
           fl_color( ColAOI);
 
@@ -1158,6 +1325,161 @@ ExitPoint:
   YaIPS_ImageDispDrawAfter_Common( pYaIPS_ImageDisp, 0, true);  // handle clipping of draw region
 }
 
+/************************************************************************************
+ * YaIPS_GUI_pMouseContext_cb
+ *
+ * Call after left button press
+ *
+ */
+static void YaIPS_GUI_pMouseContext_cb( Fl_Widget *pW,
+                                        void *pArg)          // Optional pointer to argument
+{
+  Fl_YaIPS_ImageDisp_t *pYaIPS_ImageDisp;
+  const Fl_Menu_Item *m;
+  int Flags;
+  char TempString[ 256];
+
+  pYaIPS_ImageDisp = &YaIPS_BigImageDisp;
+
+  if( pYaIPS_ImageDisp->Plot3D_Active) {                    // 3D plot active
+
+    return;
+  }
+
+  if( pArg != NULL) {            // Called as mouse callback
+
+    if( pYaIPS_ImageDisp->ShowInfoMode != YAIPS_SHOW_INFO_CU_VAL) {         // Is other than at cursor show pixel value
+
+      // Only process over a selected AOI frame
+      if( (pYaIPS_ImageDisp->Flags & YAIPS_IDISP_FLAG_MOUSE_AOI_SEL) == 0) {
+
+        return;
+      }
+
+      // Check for none supported callback
+      if( pYaIPS_ImageDisp->ShowInfoMode != YAIPS_SHOW_INFO_RE_COLSUM &&
+          pYaIPS_ImageDisp->ShowInfoMode != YAIPS_SHOW_INFO_RE_ROWSUM &&
+          pYaIPS_ImageDisp->ShowInfoMode != YAIPS_SHOW_INFO_RE_HISTO_AOI &&
+          pYaIPS_ImageDisp->ShowInfoMode != YAIPS_SHOW_INFO_2P_DIST_VER &&
+          pYaIPS_ImageDisp->ShowInfoMode != YAIPS_SHOW_INFO_2P_DIST_HOR ) {
+
+        return;
+      }
+    }
+  }
+
+  Fl_Menu_Button popup( Fl::event_x(), Fl::event_y(), 80, 1);
+
+  // Thick lines
+
+  // Always
+
+  Flags = FL_MENU_TOGGLE;
+  if( YaIPS_Setting_Wide_Graphic_Lines) Flags |= FL_MENU_VALUE;
+  strcpy( TempString, LangStringLookup( "&GUI_Main_InfMeas_Lines=Thick lines"));
+  popup.add( TempString, 0, NULL, (void*)1, Flags);
+
+  // At cursor show pixel value
+
+  if( pArg == NULL ||
+     pYaIPS_ImageDisp->ShowInfoMode == YAIPS_SHOW_INFO_CU_VAL) {  // At cursor show pixel value
+
+    Flags = FL_MENU_TOGGLE;
+    if( YaIPS_DUses_Flags & YAIPS_DUSE_FLAG_CU_VAL_IHS) Flags |= FL_MENU_VALUE;
+    if( pArg == NULL) {
+      strcpy( TempString, LangStringLookup( "&GUI_Main_InfMeas_P=Pixel"));
+      strcat( TempString, "/");
+    } else {
+      TempString[ 0] = '\0';
+    }
+    strcat( TempString, LangStringLookup( "&UI_Main_InfMeas_P_IHS_mode=IHS mode"));
+    popup.add( TempString, 0, NULL, (void*)10, Flags);
+  }
+
+  // Histograms
+
+  if( pArg == NULL ||
+     pYaIPS_ImageDisp->ShowInfoMode == YAIPS_SHOW_INFO_RE_HISTO_AOI) {  // In rectangle histogram
+
+    Flags = FL_MENU_TOGGLE;
+    if( YaIPS_Main_Histo.Flags & YAIPS_HISTO_FLAG_IHS) Flags |= FL_MENU_VALUE;
+    if( pArg == NULL) {
+      strcpy( TempString, LangStringLookup( "&GUI_Main_InfMeas_H=Histogram"));
+      strcat( TempString, "/");
+    } else {
+      TempString[ 0] = '\0';
+    }
+    strcat( TempString, LangStringLookup( "&UI_Main_InfMeas_H_IHS_mode=IHS mode"));
+    popup.add( TempString, 0, NULL, (void*)20, Flags);
+  }
+
+  // Column/Row sum brightness profiles
+
+  if( pArg == NULL ||
+      pYaIPS_ImageDisp->ShowInfoMode == YAIPS_SHOW_INFO_RE_COLSUM ||     // In rectangle show column sum
+      pYaIPS_ImageDisp->ShowInfoMode == YAIPS_SHOW_INFO_RE_ROWSUM) {     // In rectangle show row sum
+
+    Flags = FL_MENU_TOGGLE;
+    if( ShowColRowSumInfo.Flags & YAIPS_CRSUM_FLAG_DISP_SMOOTH) Flags |= FL_MENU_VALUE;
+    if( pArg == NULL) {
+      strcpy( TempString, LangStringLookup( "&GUI_Main_InfMeas_Su=Brightness profiles"));
+      strcat( TempString, "/");
+    } else {
+      TempString[ 0] = '\0';
+    }
+    strcat( TempString, LangStringLookup( "&UI_Main_InfMeas_Su_Smooth=Smooth profile"));
+    popup.add( TempString, 0, NULL, (void*)30, Flags);
+
+    Flags = FL_MENU_TOGGLE;
+    if( ShowColRowSumInfo.Flags & YAIPS_CRSUM_FLAG_DISP_SLOPE) Flags |= FL_MENU_VALUE;
+    if( pArg == NULL) {
+      strcpy( TempString, LangStringLookup( "&UI_Main_InfMeas_Su=Brightness profiles"));
+      strcat( TempString, "/");
+    } else {
+      TempString[ 0] = '\0';
+    }
+    strcat( TempString, LangStringLookup( "&UI_Main_InfMeas_Su_Diff=Show Slope"));
+    popup.add( TempString, 0, NULL, (void*)31, Flags);
+  }
+
+  m = popup.popup();
+  if( m!= NULL) {
+
+    switch( (long long)m->user_data()) {
+
+    case 1:   // Thick lines
+
+      YaIPS_Setting_Wide_Graphic_Lines = ! YaIPS_Setting_Wide_Graphic_Lines;
+      break;
+
+    case 10: // At cursor show pixel value
+
+      YaIPS_DUses_Flags ^= YAIPS_DUSE_FLAG_CU_VAL_IHS;
+      break;
+
+    case 20: // Toggle histogram IHS
+
+      YaIPS_Main_Histo.Flags ^= YAIPS_HISTO_FLAG_IHS;
+      break;
+
+    case 30: // Toggle smooth profile
+
+      ShowColRowSumInfo.Flags ^= YAIPS_CRSUM_FLAG_DISP_SMOOTH;
+      break;
+
+    case 31: // Toggle show slop
+
+      ShowColRowSumInfo.Flags ^= YAIPS_CRSUM_FLAG_DISP_SLOPE;
+      break;
+    }
+
+    // Force update
+
+    DUseDataChange                 = -1;                          // Reset monitor source image change
+    YaIPS_BigImageDisp.Flags |= YAIPS_IDISP_FLAG_MOUSE_AOI_CHA;     // Set AOI changed flag bit
+  }
+}
+
 //-----------------------------------------------------------------------------------
 //
 // Functions working with big display for different uses
@@ -1241,7 +1563,9 @@ static int YaIPS_GUI_DiffUsesCalcThings()
 
     // Get histograms and statistical data
 
-    YaIPS_Histo_Measure( pYaIPS_ImageDisp->pImage_Img, &YaIPS_Main_Histo, 0, 0, 0, 0);
+    YaIPS_Histo_Measure( pYaIPS_ImageDisp->pImage_Img, &YaIPS_Main_Histo,
+                         YaIPS_Main_Histo.Flags & YAIPS_HISTO_FLAG_DISP_MASK,
+                         0, 0, 0, 0);
 
     break;
 
@@ -1267,7 +1591,9 @@ static int YaIPS_GUI_DiffUsesCalcThings()
       AoiXX = (int) ((AoiXX / pYaIPS_ImageDisp->PixelImageToScreen) + 0.5);
       AoiYY = (int) ((AoiYY / pYaIPS_ImageDisp->PixelImageToScreen) + 0.5);
 
-      YaIPS_Histo_Measure( pYaIPS_ImageDisp->pImage_Img, &YaIPS_Main_Histo, p1x, p1y, AoiXX, AoiYY);
+      YaIPS_Histo_Measure( pYaIPS_ImageDisp->pImage_Img, &YaIPS_Main_Histo,
+                           YaIPS_Main_Histo.Flags & YAIPS_HISTO_FLAG_DISP_MASK,
+                           p1x, p1y, AoiXX, AoiYY);
     }
     break;
 
@@ -1312,7 +1638,10 @@ static int YaIPS_GUI_DiffUsesCalcThings()
       AoiXX = (int) ( ceil((AoiXX + LengthFirst) / pYaIPS_ImageDisp->PixelImageToScreen));
       AoiYY = (int) ((AoiYY / pYaIPS_ImageDisp->PixelImageToScreen) + 0.5);
 
-      YaIPS_ColRowSum_Measure( pYaIPS_ImageDisp->pImage_Img, &ShowColRowSumInfo, YAIPS_CRSUM_FLAG_COLSUM | YAIPS_CRSUM_FLAG_NORMALIZE, p1x, p1y, AoiXX, AoiYY);
+      YaIPS_ColRowSum_Measure( pYaIPS_ImageDisp->pImage_Img, &ShowColRowSumInfo,
+                               YAIPS_CRSUM_FLAG_COLSUM | YAIPS_CRSUM_FLAG_NORMALIZE | (ShowColRowSumInfo.Flags & YAIPS_CRSUM_FLAG_DISP_MASK),
+                               YaIPS_BigImageDisp.DisplayColMod.Style,
+                               p1x, p1y, AoiXX, AoiYY);
     }
     break;
 
@@ -1357,7 +1686,10 @@ static int YaIPS_GUI_DiffUsesCalcThings()
       AoiXX = (int) ((AoiXX / pYaIPS_ImageDisp->PixelImageToScreen) + 0.5);
       AoiYY = (int) ( ceil((AoiYY + LengthFirst) / pYaIPS_ImageDisp->PixelImageToScreen));
 
-      YaIPS_ColRowSum_Measure( pYaIPS_ImageDisp->pImage_Img, &ShowColRowSumInfo, YAIPS_CRSUM_FLAG_ROWSUM | YAIPS_CRSUM_FLAG_NORMALIZE, p1x, p1y, AoiXX, AoiYY);
+      YaIPS_ColRowSum_Measure( pYaIPS_ImageDisp->pImage_Img, &ShowColRowSumInfo,
+                               YAIPS_CRSUM_FLAG_ROWSUM | YAIPS_CRSUM_FLAG_NORMALIZE | (ShowColRowSumInfo.Flags & YAIPS_CRSUM_FLAG_DISP_MASK),
+                               YaIPS_BigImageDisp.DisplayColMod.Style,
+                               p1x, p1y, AoiXX, AoiYY);
     }
     break;
 
@@ -2388,6 +2720,10 @@ static void IqeB_Main_Reset_Display( Fl_Widget *pWidget, void *pValueArg)
 
   YaIPS_BigImageDisp.ShowInfoMode = 0;
 
+  YaIPS_DUses_Flags = 0;
+  YaIPS_Main_Histo.Flags = 0;
+  ShowColRowSumInfo.Flags = 0;
+
   //  Update display settings of the main menu after changes.
 
   IqeB_Main_Update_Display_Settings();
@@ -2909,13 +3245,17 @@ static void Main_Menu_AddItems( Fl_Menu_Bar *pM)
   { PREF_T_INT, "YaIPS_BigImagePlot3D_Inverted", "0",  &YaIPS_BigImageDisp.Plot3D_Inverted},           // Default: false gray value inversion
   { PREF_T_INT, "YaIPS_BigImagePlot3D_Azim",     "0",  &YaIPS_BigImageDisp.Plot3D_Azimuth},            // Default:
   { PREF_T_INT, "YaIPS_BigImagePlot3D_Elev",    "45",  &YaIPS_BigImageDisp.Plot3D_Elevation},          // Default:
-  { PREF_T_INT, "YaIPS_BigImageOverlayStyle" ,   "0",  &OverlayStyle},                                // Default: Off
-  { PREF_T_INT, "YaIPS_BigImageOverlayColor" ,  "95",  &OverlayColor},                                // Default: Yellow
+  { PREF_T_INT, "YaIPS_BigImageOverlayStyle" ,   "0",  &OverlayStyle},                                 // Default: Off
+  { PREF_T_INT, "YaIPS_BigImageOverlayColor" ,  "95",  &OverlayColor},                                 // Default: Yellow
   { PREF_T_INT, "YaIPS_BigImageShowInfoMode",    "0",  &YaIPS_BigImageDisp.ShowInfoMode},              // Default: Off
   { PREF_T_INT, "YaIPS_BigImageAoiP1x",         "10",  &YaIPS_BigImageDisp.AoiP1x},                    // Default:
   { PREF_T_INT, "YaIPS_BigImageAoiP1y",         "10",  &YaIPS_BigImageDisp.AoiP1y},                    // Default:
   { PREF_T_INT, "YaIPS_BigImageAoiP2x",        "110",  &YaIPS_BigImageDisp.AoiP2x},                    // Default:
   { PREF_T_INT, "YaIPS_BigImageAoiP2y",        "110",  &YaIPS_BigImageDisp.AoiP2y},                    // Default:
+
+  { PREF_T_INT, "DiffUses_Flags",                "0",  &YaIPS_DUses_Flags},                            // Default: Flags for 'different uses'
+  { PREF_T_INT, "Histgram_Flags",                "0",  &YaIPS_Main_Histo.Flags},                       // Default: Flags for histogram display
+  { PREF_T_INT, "ShowColRowSumInfo_Flags",       "0",  &ShowColRowSumInfo.Flags},                      // Default: Flags for row/colsum display
 };
 
 // Automatic add this preference settings at startup of the program.
@@ -3419,14 +3759,14 @@ static void IqeB_MainWindow_GUI_Setup( Fl_Double_Window *pWin)
   y += yy + 4;
 
   pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 0, yy, LangStringLookup( "&GUI_Main_InfMeas6=Su |"));
-  pRadioButTemp->tooltip( LangStringLookup( "&GUI_Main_InfMeas6h=Profile of column sum in a rectangle"));
+  pRadioButTemp->tooltip( LangStringLookup( "&GUI_Main_InfMeas6h=Brightness profile (column sum) in a rectangle"));
   pRadioButTemp->callback( YaIPS_BigImageSowInfo_Callback, (void *)YAIPS_SHOW_INFO_RE_COLSUM);
   ShowButtons[ YAIPS_SHOW_INFO_RE_COLSUM] = pRadioButTemp;
 
   x1 += xx2 - 2;
 
   pRadioButTemp = new Fl_Radio_Round_Button( x1, y, xx2 - 0, yy, LangStringLookup( "&GUI_Main_InfMeas7=Su -"));
-  pRadioButTemp->tooltip( LangStringLookup( "&GUI_Main_InfMeas7h=Profile of row sum in a rectangle"));
+  pRadioButTemp->tooltip( LangStringLookup( "&GUI_Main_InfMeas7h=Brightness profile (row sum) in a rectangle"));
   pRadioButTemp->callback( YaIPS_BigImageSowInfo_Callback, (void *)YAIPS_SHOW_INFO_RE_ROWSUM);
   ShowButtons[ YAIPS_SHOW_INFO_RE_ROWSUM] = pRadioButTemp;
 
@@ -3446,8 +3786,15 @@ static void IqeB_MainWindow_GUI_Setup( Fl_Double_Window *pWin)
 
   pGroupTemp->end();
 
-  y = yBox + pBoxTemp->h();
+  x1 += xx2 - 2;
 
+  pBut_ShowOptions = new Fl_Button( x1 + 4, y, xx2 - 4, yy, "@-22>");
+  pBut_ShowOptions->tooltip( LangStringLookup( "&GUI_Main_InfMeasOpt1a="
+                                               "Options."));
+  pBut_ShowOptions->align( FL_ALIGN_INSIDE | FL_ALIGN_RIGHT);     // align for label
+  pBut_ShowOptions->callback( YaIPS_GUI_pMouseContext_cb, NULL);
+
+  y = yBox + pBoxTemp->h();
 
   //
   // Histogram drawing area
@@ -3538,6 +3885,7 @@ static void IqeB_MainWindow_GUI_Setup( Fl_Double_Window *pWin)
 
   YaIPS_BigImageDisp.pImage_Box->pMouseCallback       = YaIPS_ImageDispMouse_cb;      // Common mouse event callback
   YaIPS_BigImageDisp.pImage_Box->MouseCallbackArg1    = &YaIPS_BigImageDisp;          // Pointer to Fl_YaIPS_ImageDisp_t
+  YaIPS_BigImageDisp.pImage_Box->pMouseContextCallback = YaIPS_GUI_pMouseContext_cb;  // Call on left mouse button press
 
   pTile_RightSide->size_range( YaIPS_BigImageDisp.pImage_Box, WITH_MIN_IMAGE_BOX, 256);
 
@@ -3681,6 +4029,13 @@ int main(int argc, char **argv)
 
   // Pick background color, is used by OpenGL view.
   GUI_BackgroundColor = Fl::get_color(FL_BACKGROUND_COLOR);
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+
+  // Reset tool parameter dialog is open
+
+  IqeB_GUI_ToolParCheckReset();
+#endif
 
   // load preference data from file
 
@@ -4227,6 +4582,54 @@ static void MyWinUpdate()
     }
   }
 
+  // Image type and color modification button settings must fit together
+
+  if( YaIPS_BigImageDisp.pImage_Img != NULL &&      // Have any image
+      YaIPS_BigImageDisp.pImage_Img->d() > 0) {     // with minimum one byte per pixel
+
+    int d, HaveAlpha;
+
+    IqeB_GUI_WidgetActivate( ColModButtons[ YAIPS_DISP_COLMOD_NORMAL], true);  // Always enable this
+
+    // Enables depends from image type
+
+    d = YaIPS_BigImageDisp.pImage_Img->d();
+
+    HaveAlpha = d == 2 || d == 4;
+
+    IqeB_GUI_WidgetActivate( ColModButtons[ YAIPS_DISP_COLMOD_A], HaveAlpha); // Alpha color channel
+
+    if( YaIPS_BigImageDisp.DisplayColMod.Style == YAIPS_DISP_COLMOD_A &&      // Alpha channel is selected
+        ! HaveAlpha) {                                                        // and have no alpha in image
+
+      YaIPS_BigImageDisp.DisplayColMod.Style = YAIPS_DISP_COLMOD_NORMAL;      // Fall back
+    }
+
+    // Channel selections for color images
+    IqeB_GUI_WidgetActivate( ColModButtons[ YAIPS_DISP_COLMOD_BW], d >= 3);
+    IqeB_GUI_WidgetActivate( ColModButtons[ YAIPS_DISP_COLMOD_R], d >= 3);
+    IqeB_GUI_WidgetActivate( ColModButtons[ YAIPS_DISP_COLMOD_G], d >= 3);
+    IqeB_GUI_WidgetActivate( ColModButtons[ YAIPS_DISP_COLMOD_B], d >= 3);
+
+    if( d < 3) {                                    // Have a BW image
+
+      if( YaIPS_BigImageDisp.DisplayColMod.Style >= YAIPS_DISP_COLMOD_BW &&  // Any of the color channels selected
+          YaIPS_BigImageDisp.DisplayColMod.Style <= YAIPS_DISP_COLMOD_B) {
+
+        YaIPS_BigImageDisp.DisplayColMod.Style = YAIPS_DISP_COLMOD_NORMAL;      // Fall back
+      }
+    }
+
+  } else {                                          // No image
+
+    // Update all buttons
+    for( i = 0; i < YAIPS_DISP_COLMOD_MAX + 1; i++) {
+
+      IqeB_GUI_WidgetActivate( ColModButtons[ i], true);    // Enable the buttons
+    }
+  }
+
+
   // Update color modification button
   // Current selection must be set
 
@@ -4286,6 +4689,8 @@ static void MyWinUpdate()
       ShowButtons[ i]->value( i == YaIPS_BigImageDisp.ShowInfoMode);   // Set value
       AnyWidgetChanged |= IqeB_GUI_WidgetActivate( ShowButtons[ i], !Plot3D_Active);
     }
+
+    AnyWidgetChanged |= IqeB_GUI_WidgetActivate( pBut_ShowOptions, !Plot3D_Active);
   }
 
   // Update teach symbol for first button

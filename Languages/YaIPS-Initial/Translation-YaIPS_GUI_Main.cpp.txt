@@ -2,7 +2,7 @@
 ; YaIPS_GUI_Main.cpp
 ;-------------------------------------------------------
 ;
-; 125 entries
+; 135 entries
 ;
 GUI_Main_Menu_Color_Copy           "Copy color to clipboard"
 
@@ -13,6 +13,24 @@ GUI_Main_Menu_Color_Histo          "Get color from histogram"
 GUI_Main_Disp_Dist_Pix             "%d Pixel"
 
 GUI_Main_Disp_Dist                 "%.3f %s/%d Pixel"
+
+GUI_Main_InfMeas_Lines             "Thick lines"
+
+GUI_Main_InfMeas_P                 "Pixel"
+
+UI_Main_InfMeas_P_IHS_mode         "IHS mode"
+
+GUI_Main_InfMeas_H                 "Histogram"
+
+UI_Main_InfMeas_H_IHS_mode         "IHS mode"
+
+GUI_Main_InfMeas_Su                "Brightness profiles"
+
+UI_Main_InfMeas_Su_Smooth          "Smooth profile"
+
+UI_Main_InfMeas_Su                 "Brightness profiles"
+
+UI_Main_InfMeas_Su_Diff            "Show Slope"
 
 GUI_Main_Info_ISize1a              "%d x %d %s, %d bytes/pixel"
 
@@ -248,11 +266,11 @@ GUI_Main_InfMeas5bh                "Histogram of pixel values in a rectangle/AOI
 
 GUI_Main_InfMeas6                  "Su |"
 
-GUI_Main_InfMeas6h                 "Profile of column sum in a rectangle"
+GUI_Main_InfMeas6h                 "Brightness profile (column sum) in a rectangle"
 
 GUI_Main_InfMeas7                  "Su -"
 
-GUI_Main_InfMeas7h                 "Profile of row sum in a rectangle"
+GUI_Main_InfMeas7h                 "Brightness profile (row sum) in a rectangle"
 
 GUI_Main_InfMeas8                  "Di |"
 
@@ -261,6 +279,8 @@ GUI_Main_InfMeas8h                 "Measures vertical distance"
 GUI_Main_InfMeas9                  "Di -"
 
 GUI_Main_InfMeas9h                 "Measures horizontal distance"
+
+GUI_Main_InfMeasOpt1a              "Options."
 
 GUI_Main_InfBox1                   "Info"
 

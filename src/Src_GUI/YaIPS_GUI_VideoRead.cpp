@@ -8,6 +8,12 @@
   03.09.2026 RR: * Function VideoLoadFile()
                    Ensure normalized path characters and working directory
                    for last loaded file.
+  18.10.2026 RR: * Reworked behavior of tool window parameter dialogs.
+                   See functions IqeB_GUI_ToolParCheckOpen(),
+                   IqeB_GUI_ToolParCheckReset() and IqeB_GUI_ToolParCheckClose().
+  11.11.2026 RR: * MyWinUpdate()
+                   Parameter dialog button is disabled if the parameter dialog
+                   is open.
 
 *****************************************************************************
 */
@@ -88,6 +94,7 @@ static void YaIPS_GUI_MyDrawAfter_cb( Fl_Widget *pW, void *pArg1, void *pArg2);
 typedef struct {
 
   // Parameters
+  int iToolData;                        // Sub window number
   int IsOpen;                           // True if this window is open.
   void *pMyToolWin;                     // Pointer to window data ( is pointer to CLASS_WIN_TOOL)
 
@@ -276,7 +283,7 @@ static int ccap_error_test()
 // ...
 
 static  Fl_Window *pMyParWin;
-static  YaIPS_ToolData_info_t *pToolData;     // NOTE: Is used by all parameter dialog functions
+static  YaIPS_ToolData_info_t *pToolDataParam;     // NOTE: Is used by all parameter dialog functions
 
 static IqeFl_Int_Input *pInt_Video_BufferSize;    // Video buffer size
 
@@ -288,7 +295,7 @@ static IqeFl_Int_Input *pInt_Video_BufferSize;    // Video buffer size
 static void MyParWinUpdate()
 {
 
-  IqeB_GUI_WidgetActivate( pInt_Video_BufferSize, pToolData->Video_UseBuffer); // Set item activated/inactive
+  IqeB_GUI_WidgetActivate( pInt_Video_BufferSize, pToolDataParam->Video_UseBuffer); // Set item activated/inactive
 }
 
 /************************************************************************************
@@ -340,8 +347,12 @@ static void IqeB_GUI_ParIdleAction( void *)
 static void close_Par_cb( Fl_Widget *w, void *pValueArg)
 {
 
-  pToolData->MyParPosX = pMyParWin->x();
-  pToolData->MyParPosY = pMyParWin->y();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckReset();   // The one and only open tool window parameter dialog is closed
+#endif
+
+  pToolDataParam->MyParPosX = pMyParWin->x();
+  pToolDataParam->MyParPosY = pMyParWin->y();
 
 #ifdef YAIPS_IDLE_CALLBACK_USE  // Use the idle callbacks in tool windows
   Fl::remove_idle( IqeB_GUI_ParIdleAction);      // Redraw window during idle
@@ -353,8 +364,8 @@ static void close_Par_cb( Fl_Widget *w, void *pValueArg)
   IqeB_GUI_CloseToolWindow( (void **)&pMyParWin);
 
   // Parameter window has close. Check for change of parameters.
-  pToolData->VideoAction = VIDEO_ACTION_PAR_CHECK;
-  pToolData->VideoActionArg = 0;
+  pToolDataParam->VideoAction = VIDEO_ACTION_PAR_CHECK;
+  pToolDataParam->VideoActionArg = 0;
 }
 
 /************************************************************************************
@@ -488,10 +499,20 @@ static void IqeB_GUI_CBox_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 {
   int xPos, yPos;
+  Fl_Double_Window *pMyToolWin;
+
+  // Check parameter dialog is allowed to open
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  if( IqeB_GUI_ToolParCheckOpen( close_Par_cb, &pMyParWin, iToolData) < 0) {    // Allowed to open parameter dialog
+
+    return;
+  }
+#endif
 
   // Get pointer to tool data
 
-  pToolData = YaIPS_ToolData_info + iToolData;             // Point to info data
+  pToolDataParam = YaIPS_ToolData_info + iToolData;             // Point to info data
 
   //
   // creation of window on first call
@@ -500,18 +521,28 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   xPos = xLeft;
   yPos = yTop;
 
-  if( pToolData->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolData->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
+  if( pToolDataParam->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolDataParam->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
 
-    xPos = pToolData->MyParPosX;
-    yPos = pToolData->MyParPosY;
+    xPos = pToolDataParam->MyParPosX;
+    yPos = pToolDataParam->MyParPosY;
   }
 
-  pMyParWin = new Fl_Window( xPos, yPos, IQE_GUI_TOOLS_STD_WITDH, 58, LANGDEF_SETTINGS);
+  pMyParWin = new Fl_Window( xPos, yPos, IQE_GUI_TOOLS_STD_WITDH, 58);
 
   if( pMyParWin == NULL) {  // security test
 
     return;
   }
+
+  // Set window title
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+
+   pMyToolWin = (Fl_Double_Window *)pToolDataParam->pMyToolWin;  // Convert type of pointer
+
+   pMyParWin->copy_label( pMyToolWin->label());
+#else
+   pMyParWin->label( LANGDEF_SETTINGS);
+#endif
 
   //
   //  GUI things
@@ -547,8 +578,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   pCheckTemp->tooltip( LangStringLookup( "&GUI_VideoR_Par_Autoplaya="
                                          "A video automatically begins\n"
                                          "playing after loading."));
-  pCheckTemp->value( pToolData->Video_Autoplay);
-  pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolData->Video_Autoplay);
+  pCheckTemp->value( pToolDataParam->Video_Autoplay);
+  pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolDataParam->Video_Autoplay);
 
   y += yy + 4;
 
@@ -559,19 +590,19 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                                          "If set, a backtracking buffer is used.\n"
                                          "When playing forward, video frames are buffered.\n"
                                          "When paused, these past frames can be viewed."));
-  pCheckTemp->value( pToolData->Video_UseBuffer);
-  pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolData->Video_UseBuffer);
+  pCheckTemp->value( pToolDataParam->Video_UseBuffer);
+  pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolDataParam->Video_UseBuffer);
 
   xx2 = 48;
   x1 += xx1 - xx2;
 
-  pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LangStringLookup( "&GUI_VideoR_Par_VideoBufSize=Size"));
+  pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, LANGDEF_SIZE);
   pTemp_Int->tooltip( LangStringLookup( "&GUI_VideoR_Par_VideoBufSizea="
                                         "Backtracking buffer size.\n"
                                         "Range: 50 to 500 megabytes.\n"
                                         "Recommended value: 100"));
-  pTemp_Int->SetValue( pToolData->Video_BufferSize);
-  pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Video_BufferSize);
+  pTemp_Int->SetValue( pToolDataParam->Video_BufferSize);
+  pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Video_BufferSize);
   pTemp_Int->SetModifyData( VIDEO_BUFFER_ALLOC_MIN, VIDEO_BUFFER_ALLOC_MAX, 50);
   pInt_Video_BufferSize = pTemp_Int;
 
@@ -580,7 +611,11 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   // finish up
 
   pMyParWin->end();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  pMyParWin->set_non_modal();
+#else
   pMyParWin->set_modal();
+#endif
   pMyParWin->callback( close_Par_cb, &pMyParWin);
   pMyParWin->show();
 
@@ -1336,6 +1371,10 @@ static void close_cb( Fl_Widget *w, long int iToolData)
     return;
   }
 
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckClose( close_Par_cb, &pMyParWin, iToolData);   // Check to close specific associated parameter dialog
+#endif
+
   // ...
 
   VideoBufferClose( pToolData);  // Close video buffer on exit of window. Frees all data
@@ -2034,6 +2073,7 @@ static void MyWinUpdate( int iToolData, int DoEnable)
                            TempEnable);
 
   IqeB_GUI_WidgetActivate( pMyToolWin->pGUI_Parameter,                       // Enable GUI elements
+                           (pMyParWin == NULL || pToolDataParam->iToolData != iToolData) && // Parameter dialog is
                            TempEnable);
 
   IqeB_GUI_WidgetActivate( pMyToolWin->pGUI_Repeat,                          // Enable GUI elements
@@ -2684,6 +2724,8 @@ static void IqeB_GUI_VideoReadWinIntern( int xLeft, int xRight, int yTop, int yB
   //
   // Prepare info data element
   //
+
+  pToolData->iToolData = iToolData;                        // Set sub window number
 
   pToolData->IsOpen = true;           // Flag image as open
 

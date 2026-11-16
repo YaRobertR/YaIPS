@@ -2,7 +2,7 @@
 ; YaIPS_GUI_Filter.cpp
 ;-------------------------------------------------------
 ;
-; 69 entries
+; 66 entries
 ;
 GUI_Filter_Title                   "Filter"
 
@@ -27,8 +27,6 @@ GUI_Filter_TabA7a                  "XY Box filter"
 GUI_Filter_TabA8                   "Filter size"
 
 GUI_Filter_TabA8a                  "Filter size must be odd and >= 3."
-
-GUI_Filter_TabB1                   "Edges"
 
 GUI_Filter_TabB2                   "Difference:"
 
@@ -57,8 +55,6 @@ GUI_Filter_TabB7a                  "Sobel filter\n"
                                    " d  e  f     (  | (a+2b+c)-(g+2h+i) |\n"
                                    " g  h  i      + | (a+2d+g)-(c+2f+i) | ) * G"
 
-GUI_Filter_TabB8                   "Gain"
-
 GUI_Filter_TabB8a                  "Gain\nMultiplier of the filter result"
 
 GUI_Filter_TabB9                   "Offs."
@@ -73,8 +69,6 @@ GUI_Filter_TabB10a                 "When set, the edge filter\n"
 GUI_Filter_TabB11                  "Canny"
 
 GUI_Filter_TabB11a                 "Canny edge filter"
-
-GUI_Filter_TabB12                  "Gain"
 
 GUI_Filter_TabB12a                 "Gain\nMultiplier of the filter result"
 

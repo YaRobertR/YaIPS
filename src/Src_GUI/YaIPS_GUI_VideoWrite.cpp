@@ -8,6 +8,12 @@
   03.09.2026 RR: * Function VideoWriteFileOpen()
                    Ensure normalized path characters and working directory
                    for last written file.
+  18.10.2026 RR: * Reworked behavior of tool window parameter dialogs.
+                   See functions IqeB_GUI_ToolParCheckOpen(),
+                   IqeB_GUI_ToolParCheckReset() and IqeB_GUI_ToolParCheckClose().
+  11.11.2026 RR: * MyWinUpdate()
+                   Parameter dialog button is disabled if the parameter dialog
+                   is open.
 
 *****************************************************************************
 */
@@ -82,6 +88,7 @@ static void IqeB_GUI_ToolsMyIdleAction( void *);
 typedef struct {
 
   // Parameters
+  int iToolData;                        // Sub window number
   int IsOpen;                           // True if this window is open.
   void *pMyToolWin;                     // Pointer to window data ( is pointer to CLASS_WIN_TOOL)
 
@@ -204,7 +211,7 @@ static IqeB_PreferencesGroup MyPreferencesAdd( MY_WIN_PREF_NAME, MyPreferences, 
 // ...
 
 static  Fl_Window *pMyParWin;
-static  YaIPS_ToolData_info_t *pToolData;     // NOTE: Is used by all parameter dialog functions
+static  YaIPS_ToolData_info_t *pToolDataParam;     // NOTE: Is used by all parameter dialog functions
 static IqeFl_Int_Input *pInt_VideoWidth, *pInt_VideoHeight, *pInt_VideoFPS;
 static Fl_Menu_Button  *pMBut_Sizes;
 static Fl_Choice *pChoice_VideoCodec;
@@ -354,7 +361,7 @@ static int VideoWriteFileOpen( YaIPS_ToolData_info_t *pToolData)
 
   if( ccap_video_writer_is_opened( pToolData->pCcapVideoWriter)) { // Device is open
 
-    ccap_video_writer_close( pToolData->pCcapVideoWriter);
+    ccap_video_writer_close( pToolDataParam->pCcapVideoWriter);
   }
 
   // Initialize the file chooser. Only can save png images
@@ -543,8 +550,8 @@ static void MyParWin_NewSizes_SetResultingSize()
 
   // New size settings
 
-  bitRate   = computeAutoBitRate( pToolData->VideoWidth, pToolData->VideoHeight, pToolData->VideoFPS,
-                                  (CcapVideoCodec)pToolData->VideoCodec, pToolData->VideoQuality);
+  bitRate   = computeAutoBitRate( pToolDataParam->VideoWidth, pToolDataParam->VideoHeight, pToolDataParam->VideoFPS,
+                                  (CcapVideoCodec)pToolDataParam->VideoCodec, pToolDataParam->VideoQuality);
 
   // Convert to bytes per hour.
 
@@ -568,7 +575,7 @@ static void MyParWinUpdate()
 {
   int TempEnable;
 
-  TempEnable = (pToolData->VideoState & VIDEO_STATE_RECORD_ON) == 0;    // Enabled if NOT recording
+  TempEnable = (pToolDataParam->VideoState & VIDEO_STATE_RECORD_ON) == 0;    // Enabled if NOT recording
 
   IqeB_GUI_WidgetActivate( pInt_VideoWidth, TempEnable); // Set item activated/inactive
   IqeB_GUI_WidgetActivate( pInt_VideoHeight, TempEnable); // Set item activated/inactive
@@ -633,8 +640,12 @@ static void IqeB_GUI_ParIdleAction( void *)
 static void close_Par_cb( Fl_Widget *w, void *pValueArg)
 {
 
-  pToolData->MyParPosX = pMyParWin->x();
-  pToolData->MyParPosY = pMyParWin->y();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckReset();   // The one and only open tool window parameter dialog is closed
+#endif
+
+  pToolDataParam->MyParPosX = pMyParWin->x();
+  pToolDataParam->MyParPosY = pMyParWin->y();
 
 #ifdef YAIPS_IDLE_CALLBACK_USE  // Use the idle callbacks in tool windows
   Fl::remove_idle( IqeB_GUI_ParIdleAction);      // Redraw window during idle
@@ -728,8 +739,8 @@ static void IqeB_GUI_Int_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     }
   }
 
-  if( pValue == &pToolData->VideoWidth ||  // Video with or height
-      pValue == &pToolData->VideoHeight) {
+  if( pValue == &pToolDataParam->VideoWidth ||  // Video with or height
+      pValue == &pToolDataParam->VideoHeight) {
 
     if( (Value & 1) != 0) {                // Have an odd value
 
@@ -792,12 +803,12 @@ static void IqeB_GUI_But_Color_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     pThis->parent()->redraw();
 
     // Hack to change colored background image
-    if( (pToolData->VideoState & VIDEO_STATE_BGND_BLACK) != 0) { // Image is NOT set to black
+    if( (pToolDataParam->VideoState & VIDEO_STATE_BGND_BLACK) != 0) { // Image is NOT set to black
 
-      pToolData->VideoState &= ~VIDEO_STATE_BGND_BLACK;      // will set new output image so can reset black
+      pToolDataParam->VideoState &= ~VIDEO_STATE_BGND_BLACK;      // will set new output image so can reset black
     }
 
-    //x/pToolData->Input1_Change = 0;                // Reset image change check
+    //x/pToolDataParam->Input1_Change = 0;                // Reset image change check
   }
 }
 
@@ -822,11 +833,11 @@ static void IqeB_Sizes_PresetButton_Callback( Fl_Widget *w)
     xx   = ((int)(uintptr_t)(m->user_data_) >> 16) & 0x7fff;
     yy   = ((int)(uintptr_t)(m->user_data_) >>  0) & 0x7fff;
 
-    pToolData->VideoWidth  = xx;
-    pToolData->VideoHeight = yy;
+    pToolDataParam->VideoWidth  = xx;
+    pToolDataParam->VideoHeight = yy;
 
-    pInt_VideoWidth->SetValue( pToolData->VideoWidth);
-    pInt_VideoHeight->SetValue( pToolData->VideoHeight);
+    pInt_VideoWidth->SetValue( pToolDataParam->VideoWidth);
+    pInt_VideoHeight->SetValue( pToolDataParam->VideoHeight);
 
     // Update resulting new size in pixel
     MyParWin_NewSizes_SetResultingSize();
@@ -848,7 +859,7 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     return;
   }
 
-  if( pValueArg == &pToolData->VideoCodec) {    // Changed video codec
+  if( pValueArg == &pToolDataParam->VideoCodec) {    // Changed video codec
 
     // Fl_Choice
 
@@ -888,10 +899,20 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 {
   int xPos, yPos;
+  Fl_Double_Window *pMyToolWin;
+
+  // Check parameter dialog is allowed to open
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  if( IqeB_GUI_ToolParCheckOpen( close_Par_cb, &pMyParWin, iToolData) < 0) {    // Allowed to open parameter dialog
+
+    return;
+  }
+#endif
 
   // Get pointer to tool data
 
-  pToolData = YaIPS_ToolData_info + iToolData;             // Point to info data
+  pToolDataParam = YaIPS_ToolData_info + iToolData;             // Point to info data
 
   //
   // creation of window on first call
@@ -900,18 +921,28 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   xPos = xLeft;
   yPos = yTop;
 
-  if( pToolData->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolData->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
+  if( pToolDataParam->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolDataParam->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
 
-    xPos = pToolData->MyParPosX;
-    yPos = pToolData->MyParPosY;
+    xPos = pToolDataParam->MyParPosX;
+    yPos = pToolDataParam->MyParPosY;
   }
 
-  pMyParWin = new Fl_Window( xPos, yPos, 178 /*IQE_GUI_TOOLS_STD_WITDH*/, 218, LANGDEF_SETTINGS);
+  pMyParWin = new Fl_Window( xPos, yPos, 178 /*IQE_GUI_TOOLS_STD_WITDH*/, 218);
 
   if( pMyParWin == NULL) {  // security test
 
     return;
   }
+
+  // Set window title
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+
+   pMyToolWin = (Fl_Double_Window *)pToolDataParam->pMyToolWin;  // Convert type of pointer
+
+   pMyParWin->copy_label( pMyToolWin->label());
+#else
+   pMyParWin->label( LANGDEF_SETTINGS);
+#endif
 
   //
   //  GUI things
@@ -955,8 +986,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                                         "Range: 240 to 2160 pixel."));
   pTemp_Int->align( FL_ALIGN_TOP_LEFT);     // align for label
   pTemp_Int->labelsize( 10);
-  pTemp_Int->SetValue( pToolData->VideoWidth);
-  pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->VideoWidth);
+  pTemp_Int->SetValue( pToolDataParam->VideoWidth);
+  pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->VideoWidth);
   pTemp_Int->SetModifyData( 240, 2160, 100, 10);
   pInt_VideoWidth = pTemp_Int;
 
@@ -968,8 +999,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                                         "Range: 240 to 2160 pixel."));
   pTemp_Int->align( FL_ALIGN_TOP_LEFT);     // align for label
   pTemp_Int->labelsize( 10);
-  pTemp_Int->SetValue( pToolData->VideoHeight);
-  pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->VideoHeight);
+  pTemp_Int->SetValue( pToolDataParam->VideoHeight);
+  pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->VideoHeight);
   pTemp_Int->SetModifyData( 240, 2160, 100, 10);
   pInt_VideoHeight = pTemp_Int;
 
@@ -1007,8 +1038,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                                         "Range: 24 to 60."));
   pTemp_Int->align( FL_ALIGN_TOP_LEFT);     // align for label
   pTemp_Int->labelsize( 10);
-  pTemp_Int->SetValue( pToolData->VideoFPS);
-  pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->VideoFPS);
+  pTemp_Int->SetValue( pToolDataParam->VideoFPS);
+  pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->VideoFPS);
   pTemp_Int->SetModifyData( 24, 60, 10, 1);
   pInt_VideoFPS = pTemp_Int;
 
@@ -1028,8 +1059,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   pFloatTemp->align( FL_ALIGN_TOP_LEFT);     // align for label
   pFloatTemp->labelsize( 10);
   pFloatTemp->SetFormat( "%.1f");
-  pFloatTemp->SetValue( pToolData->VideoQuality);
-  pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->VideoQuality);
+  pFloatTemp->SetValue( pToolDataParam->VideoQuality);
+  pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->VideoQuality);
   pFloatTemp->SetModifyData( 0.5, 2.0, 0.5, 0.1);  // Is modified later form MyParWinUpdateNewSizes()
   pFloat_VideoQuality = pFloatTemp;
 
@@ -1044,12 +1075,12 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                                            " H.265 / HEVC (better compression, less compatible)"));
   pChoice_VideoCodec->align( FL_ALIGN_TOP_LEFT);     // align for label
   pChoice_VideoCodec->labelsize( 10);
-  pChoice_VideoCodec->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->VideoCodec);
+  pChoice_VideoCodec->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->VideoCodec);
   pChoice_VideoCodec->menu_box( FL_BORDER_BOX);
 
   pChoice_VideoCodec->add( LangStringLookup( "&GUI_VideoW_VideoCodec1=H.264"), 0, NULL, (void *)(fl_intptr_t)CCAP_VIDEO_CODEC_H264);
   pChoice_VideoCodec->add( LangStringLookup( "&GUI_VideoW_VideoCodec2=H.265"), 0, NULL, (void *)(fl_intptr_t)CCAP_VIDEO_CODEC_HEVC);
-  pChoice_VideoCodec->value( pToolData->VideoCodec);
+  pChoice_VideoCodec->value( pToolDataParam->VideoCodec);
 
   x1 += xx2 + 26 + 8;
 
@@ -1096,8 +1127,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   pFloatTemp->align( FL_ALIGN_TOP_LEFT);     // align for label
   pFloatTemp->labelsize( 10);
   pFloatTemp->SetFormat( "%.1f");
-  pFloatTemp->SetValue( pToolData->TimeTransition);
-  pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->TimeTransition);
+  pFloatTemp->SetValue( pToolDataParam->TimeTransition);
+  pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->TimeTransition);
   pFloatTemp->SetModifyData( 0.0, 15.0, 1.0, 0.1);
 
   x1 += xx2 + 8;
@@ -1111,8 +1142,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   pFloatTemp->align( FL_ALIGN_TOP_LEFT);     // align for label
   pFloatTemp->labelsize( 10);
   pFloatTemp->SetFormat( "%.1f");
-  pFloatTemp->SetValue( pToolData->TimeAddImages);
-  pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->TimeAddImages);
+  pFloatTemp->SetValue( pToolDataParam->TimeAddImages);
+  pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->TimeAddImages);
   pFloatTemp->SetModifyData( 0.0, 60.0, 10.0, 1.0);
 
   // New line
@@ -1136,8 +1167,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   pTemp_Box->align( FL_ALIGN_RIGHT | FL_ALIGN_INSIDE | FL_ALIGN_CLIP);
 
   pTemp_Button = new Fl_Button( x1, y, xx2, yy, "");
-  pTemp_Button->color( pToolData->BGND_Color);
-  pTemp_Button->callback( IqeB_GUI_But_Color_SetValue_Callback, &pToolData->BGND_Color);
+  pTemp_Button->color( pToolDataParam->BGND_Color);
+  pTemp_Button->callback( IqeB_GUI_But_Color_SetValue_Callback, &pToolDataParam->BGND_Color);
   pTemp_Button->tooltip( LangStringLookup( "&GUI_VideoW_Par_BGND_Colora="
                                            "Color for background.\n"
                                            "The background is visible when images with an aspect\n"
@@ -1147,7 +1178,11 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   // finish up
 
   pMyParWin->end();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  pMyParWin->set_non_modal();
+#else
   pMyParWin->set_modal();
+#endif
   pMyParWin->callback( close_Par_cb, &pMyParWin);
   pMyParWin->show();
 
@@ -1476,6 +1511,10 @@ static void close_cb( Fl_Widget *w, long int iToolData)
 
     return;
   }
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckClose( close_Par_cb, &pMyParWin, iToolData);   // Check to close specific associated parameter dialog
+#endif
 
   if( pToolData->pImgTmpColConv != NULL) {   // Temporary image was used
 
@@ -1822,6 +1861,10 @@ static void MyWinUpdate( int iToolData, int DoEnable)
   IqeB_GUI_WidgetActivate( pMyToolWin->pGUI_Img_ShowOnBig,
                              DoEnable &&                                    // Enable GUI elements
                              pToolData->YaIPS_ImageDisp.pImage_Img != NULL); // and have an image loaded
+
+  IqeB_GUI_WidgetActivate( pMyToolWin->pGUI_Parameter,
+                            (pMyParWin == NULL || pToolDataParam->iToolData != iToolData) && // Parameter dialog is closed
+                             DoEnable);                             // Enable GUI elements
 
   // Button: Toggle record start / stop
 
@@ -2429,6 +2472,8 @@ static void IqeB_GUI_VideoWriteWinIntern( int xLeft, int xRight, int yTop, int y
   //
   // Prepare info data element
   //
+
+  pToolData->iToolData = iToolData;                        // Set sub window number
 
   pToolData->IsOpen = true;           // Flag image as open
 

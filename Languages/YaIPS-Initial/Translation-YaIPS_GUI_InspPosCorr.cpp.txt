@@ -2,7 +2,7 @@
 ; YaIPS_GUI_InspPosCorr.cpp
 ;-------------------------------------------------------
 ;
-; 79 entries
+; 78 entries
 ;
 GUI_PosCorr_Title                  "Position correction"
 
@@ -25,8 +25,6 @@ GUI_PosCorr_TabA4                  "Hide outside area"
 GUI_PosCorr_TabA4a                 "Hide outside area.\n"
                                    "If enabled, the area outside the image is hidden.\n"
                                    "Otherwise, the area outside is visible."
-
-GUI_PosCorr_TabB1                  "Edges"
 
 GUI_PosCorr_TabB1a                 "Position correction with edge finding"
 

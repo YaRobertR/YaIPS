@@ -248,9 +248,11 @@ int YaIPS_RGB_Canny( Fl_RGB_Image **ppDst, // Out: Destination (absolute amount)
 //--------------------------------------------------------------------------
 
 // IHS conversion tables may be used elsewhere
+#ifdef use_again
 extern uchar YaIPS_ColMod_atantab[256];
 extern uchar YaIPS_ColMod_sintab[64];
 extern uchar YaIPS_ColMod_costab[64];
+#endif
 
 // Convert color RGB to IHS
 void YaIPS_RGB_Color_RGB2IHS( uchar *pIHS,    // Out: Pointer to three Bytes for IHS value
@@ -429,7 +431,8 @@ int YaIPS_RGB_ChromaKey( Fl_RGB_Image **ppDst,            // Out: Pointer to poi
 int YaIPS_RGB_Contour( Fl_RGB_Image **ppDst, // Out: Pointer to pointer to RGB image
                        Fl_RGB_Image *pSrc,   // Source image
                        int PlaneThres,       // Plane threshold
-                       int ContourOp);       // Type of operation
+                       int ContourOp,        // Type of operation
+                       Fl_RGB_Image *pAlpha = NULL); // Optional: Use alpha from this image YAIPS_RGB_CONTOUR_LP_ALPHA
 
 //--------------------------------------------------------------------------
 // YaIPS_RGB_Crcdf.cpp
@@ -786,6 +789,131 @@ int YaIPS_RGB_Geo_Transform( Fl_RGB_Image **ppDst,        // Out: Pointer to poi
                             int xxDst = -1, int yyDst = -1,      // Size for destination. Any 0: use size of source. Any < 0: adapt size.
                             float xps = -1.0, float yps = -1.0,  // Center of rotation in source image
                             float xpd = -1.0, float ypd = -1.0); // Center of rotations in destination image
+
+//--------------------------------------------------------------------------
+// YaIPS_RGB_Graphic_2D.cpp
+//--------------------------------------------------------------------------
+
+// Pixel write modes
+
+#define YAIPS_G2D_WMOD_SET   0   // Set value, is also default after YaIPS_G2D_init()
+#define YAIPS_G2D_WMOD_XOR   1   // Invert pixel with mask bits
+
+#define YAIPS_G2D_WMOD_FIRST 0   // First known write mode
+#define YAIPS_G2D_WMOD_LAST  1   // Last known write mode
+
+// Convert int to bytes and bytes to int
+// NOTE: Bytes must be unsigned char
+#define YAIPS_G2D_INT_2_BYTES( Bytes, IntVal) { Bytes[ 0] = IntVal; Bytes[ 1] = IntVal >> 8; Bytes[ 2] = IntVal >> 16; Bytes[ 3] = IntVal >> 24;}
+
+#define YAIPS_G2D_BYTES_2_INT( IntVal, Bytes) IntVal = Bytes[ 0]; IntVal |= Bytes[ 1] << 8; IntVal |= Bytes[ 2] << 16; IntVal |= Bytes[ 3] << 24;}
+
+// Some error codes
+
+#define YAIPS_G2D_ERR_NO_INIT  -200  // 2D graphic is not initialized
+#define YAIPS_G2D_ERR_WMOD     -201  // Unknown write mode
+#define YAIPS_G2D_ERR_XY_RANGE -202  // X or y coordinate out of range
+#define YAIPS_G2D_ERR_NO_UNDO  -203  // No undo FIFO initialized
+
+// Optional undo buffer and modes
+
+#define YAIPS_G2D_UNDO_MODE_BYTE  0  // Save all masked bytes
+#define YAIPS_G2D_UNDO_MODE_BIT   1  // Only on mask bit is set
+
+typedef struct {
+
+  uchar *pBuffer;         // Point to undo buffer
+
+  // Used to detect change of associated image
+  uchar *pImg_Data;       // Point to data of of associated image
+  int  Img_XX;            // With of associated image
+  int  Img_YY;            // Height of associated image
+  int  Img_NBytes;        // Number of bytes of associated image
+  int  Img_nBuffer;       // Buffer size memory factor
+  int  Img_Mask;          // Bit mask used
+
+  // Undo FIFO Handling
+
+  int  UnDoFIFO_Size;     // FIFO size of single undo level
+  int  UnDoFIFO_Max;      // FIFO max number of undo levels
+  int  UnDoFIFO_N;        // FIFO number of levels saved in FIFO
+  int  UnDoFIFO_Put;      // FIFO put pointer
+  int  UnDoFIFO_LastPut;  // FIFO info used for undo
+  int  UnDoFIFO_LastN;    // FIFO info used for undo
+
+  // Undo mask info for bit mode
+
+  int  UndoMode;          // Undo mode
+  int  BitShift;          // Undo mode bit: shift to used bit
+
+} YaIPS_G2D_UnDo_Buffer_t;
+
+// Setup drawing for a specific image and optional setup undo buffer
+int YaIPS_G2D_init( YaIPS_RGB_ImgD_t *pImgD, int Mask, YaIPS_G2D_UnDo_Buffer_t *pUnDo = NULL, int nBuffer = 8);
+
+// Setup drawing for a specific image and optional setup undo buffer
+int YaIPS_G2D_init( Fl_RGB_Image *pDst, int Mask, YaIPS_G2D_UnDo_Buffer_t *pUnDo = NULL, int nBuffer = 8);
+
+// End drawing into an image and release undo buffer
+void YaIPS_G2D_end();
+
+// Set write mode
+int YaIPS_G2D_swmod( int mode);
+
+// Write pixel
+int YaIPS_G2D_WPix( int x, int y, int Value);
+
+// Write horizontal line
+int YaIPS_G2D_WPixLineX( int x1, int x2, int y, int Value);
+
+// Write vertical line
+int YaIPS_G2D_WPixLineY( int x, int y1, int y2, int Value);
+
+// Draw line starting at the last point
+int YaIPS_G2D_LineTo( int x, int y, int Value);
+
+// Mark start of line chain
+int YaIPS_G2D_LineBegin();
+
+// Mark start of line chain for closed polygons
+int YaIPS_G2D_XLineBegin();
+
+// Set start point of line
+int YaIPS_G2D_MoveTo( int x, int y, int Value);
+
+// Set start point of line for closed polygons
+int YaIPS_G2D_XMoveTo( int x, int y, int Value);
+
+// Draw a line
+int YaIPS_G2D_Line( int x0, int y0, int x1, int y1, int Value);
+
+// Draw a thick line
+int YaIPS_G2D_Line( int x0, int y0, int x1, int y1, int width, int Value);
+
+// Draw a rectangle
+int YaIPS_G2D_Rectangle( int x1, int y1, int x2, int y2, int Value, int Fill);
+
+// Draw an ellipse
+int YaIPS_G2D_Ellipse( int x0, int y0, int xr, int yr, int Value, int Fill);
+
+// Fill a (closed) graphic object
+int YaIPS_G2D_Fill( int x0, int y0, int FillValue, int PickLimit = true, int LimitValue = 0);
+
+// Generate frame around image
+int YaIPS_G2D_Frame( int width,                // abs(width) = width of boundary
+                     int value);               // value to set if width has negative sign else dummy
+
+// Inplace 3*3 morphology filter
+int YaIPS_G2D_Morphology( int MorphOp);         // Morphology operator, see YAIPS_RGB_MORPH_XXX defines
+
+// Save the graphic from the image to the undo FIFO
+int YaIPS_G2D_UnDo_Save();
+
+// Move the pointer in the undo FIFO and restore image if pointer has moved
+int YaIPS_G2D_UnDo_NextPrev( int Direction);  // +1: move to next, -1: move to previous
+
+// Get info about enables for next and previous undo button
+int YaIPS_G2D_UnDo_Enables();
 
 //--------------------------------------------------------------------------
 // YaIPS_RGB_Linesum.cpp

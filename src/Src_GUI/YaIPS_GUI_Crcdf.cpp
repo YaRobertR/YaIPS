@@ -5,6 +5,12 @@
   Cross difference function of images
 
   26.05.2025 RR: First edition of this file.
+  18.10.2026 RR: * Reworked behavior of tool window parameter dialogs.
+                   See functions IqeB_GUI_ToolParCheckOpen(),
+                   IqeB_GUI_ToolParCheckReset() and IqeB_GUI_ToolParCheckClose().
+  11.11.2026 RR: * MyWinUpdate()
+                   Parameter dialog button is disabled if the parameter dialog
+                   is open.
 
 *****************************************************************************
 */
@@ -193,7 +199,7 @@ static IqeB_PreferencesGroup MyPreferencesAdd( MY_WIN_PREF_NAME, MyPreferences, 
 // ...
 
 static  Fl_Window *pMyParWin;
-static  YaIPS_ToolData_info_t *pToolData;     // NOTE: Is used by all parameter dialog functions
+static  YaIPS_ToolData_info_t *pToolDataParam;     // NOTE: Is used by all parameter dialog functions
 
 static IqeFl_Tabs      *pTab_Groups;         // Point to tabulator GUI element
 static IqeFl_Int_Input *pAOI_X, *pAOI_Y, *pAOI_XX, *pAOI_YY;
@@ -216,24 +222,24 @@ static void MyParWinUpdate()
 
   // Get last selected tab group
 
-  pToolData->Tab_Group_Selected = pTab_Groups->GetTabGroup();
+  pToolDataParam->Tab_Group_Selected = pTab_Groups->GetTabGroup();
 
   // Enables for AOI
 
-  IqeB_GUI_WidgetActivate( pAOI_X, pToolData->AOI_Teach);         // Enable GUI elements
-  IqeB_GUI_WidgetActivate( pAOI_Y, pToolData->AOI_Teach);         // Enable GUI elements
-  IqeB_GUI_WidgetActivate( pAOI_XX, pToolData->AOI_Teach);        // Enable GUI elements
-  IqeB_GUI_WidgetActivate( pAOI_YY, pToolData->AOI_Teach);        // Enable GUI elements
+  IqeB_GUI_WidgetActivate( pAOI_X, pToolDataParam->AOI_Teach);         // Enable GUI elements
+  IqeB_GUI_WidgetActivate( pAOI_Y, pToolDataParam->AOI_Teach);         // Enable GUI elements
+  IqeB_GUI_WidgetActivate( pAOI_XX, pToolDataParam->AOI_Teach);        // Enable GUI elements
+  IqeB_GUI_WidgetActivate( pAOI_YY, pToolDataParam->AOI_Teach);        // Enable GUI elements
 
   // Color teach toggle button
 
-  IqeB_GUI_WidgetLabelColor( pTeachToggle, pToolData->AOI_Teach ? FL_GREEN : YAIPS_BCOL_BUTTON);
+  IqeB_GUI_WidgetLabelColor( pTeachToggle, pToolDataParam->AOI_Teach ? FL_GREEN : YAIPS_BCOL_BUTTON);
 
   // Check Scene input
 
   pImgIn1 = NULL;       // Will be set if there is a valid scene image
 
-  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolData->iToolData, pToolData->Input1_WinIdNr,
+  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolDataParam->iToolData, pToolDataParam->Input1_WinIdNr,
                            NULL, &pImgIn1, NULL);
 
   if( pImgIn1 != NULL) {
@@ -252,7 +258,7 @@ static void MyParWinUpdate()
   if( pCurrFocus != pAOI_X  && pCurrFocus != pAOI_Y &&               // Input element has NO keyboard focus ?
       pCurrFocus != pAOI_XX && pCurrFocus != pAOI_YY) {
 
-    if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolData->M_AOI, ImgXX, ImgYY,
+    if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolDataParam->M_AOI, ImgXX, ImgYY,
                                           pAOI_X, pAOI_Y, pAOI_XX, pAOI_YY) > 0) {
 
       RedrawOnExit = true;                                 // Redraw on exit
@@ -263,13 +269,13 @@ static void MyParWinUpdate()
 
   if( RedrawOnExit) {                                          // Redraw on exit
 
-    if( pToolData->AOI_Teach) {                                // AOI is displayed on image
+    if( pToolDataParam->AOI_Teach) {                                // AOI is displayed on image
 
-      if( pToolData->YaIPS_ImageDisp.pImage_Box != NULL) {
-        pToolData->YaIPS_ImageDisp.pImage_Box->redraw();
+      if( pToolDataParam->YaIPS_ImageDisp.pImage_Box != NULL) {
+        pToolDataParam->YaIPS_ImageDisp.pImage_Box->redraw();
       }
 
-      if( YaIPS_BigImageDisp.ImageSourceID == MY_WIN_ID + pToolData->iToolData) {   // and display this on the big image
+      if( YaIPS_BigImageDisp.ImageSourceID == MY_WIN_ID + pToolDataParam->iToolData) {   // and display this on the big image
 
         if( YaIPS_BigImageDisp.pImage_Box != NULL) {
           YaIPS_BigImageDisp.pImage_Box->redraw();
@@ -328,8 +334,12 @@ static void IqeB_GUI_ParIdleAction( void *)
 static void close_Par_cb( Fl_Widget *w, void *pValueArg)
 {
 
-  pToolData->MyParPosX = pMyParWin->x();
-  pToolData->MyParPosY = pMyParWin->y();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckReset();   // The one and only open tool window parameter dialog is closed
+#endif
+
+  pToolDataParam->MyParPosX = pMyParWin->x();
+  pToolDataParam->MyParPosY = pMyParWin->y();
 
 #ifdef YAIPS_IDLE_CALLBACK_USE  // Use the idle callbacks in tool windows
   Fl::remove_idle( IqeB_GUI_ParIdleAction);      // Redraw window during idle
@@ -354,51 +364,51 @@ static void YaIPS_OutputImage_Callback( Fl_Widget *w, void *data)
 
   Value = (long long)(data);                       // get value to set
 
-  if( pToolData->OutputImage == Value) {           // Value will not change
+  if( pToolDataParam->OutputImage == Value) {           // Value will not change
 
     return;                                        // Exit, nothing to do
   }
 
-  pToolData->OutputImage = Value;                  // Set new value
+  pToolDataParam->OutputImage = Value;                  // Set new value
 
   // Try to redisplay changed output without new image correlation
 
-  iToolData = pToolData->iToolData;                // Get sub window number
+  iToolData = pToolDataParam->iToolData;                // Get sub window number
 
   // Check input image and visualize state
-  Input1_Check = YaIPS_ToolWinInputCheck( MY_WIN_ID + iToolData, pToolData->Input1_WinIdNr,
+  Input1_Check = YaIPS_ToolWinInputCheck( MY_WIN_ID + iToolData, pToolDataParam->Input1_WinIdNr,
                                          NULL, &pImgIn1, NULL);
 
 
-  if( pToolData->Res_Crcdf.Valid &&                // Test for a valid correlation result
+  if( pToolDataParam->Res_Crcdf.Valid &&                // Test for a valid correlation result
       Input1_Check == 0) {                         // and a valid scene image
 
     // Redisplay output image
 
-    if( pToolData->OutputImage == 1) {             // Show correlation image
+    if( pToolDataParam->OutputImage == 1) {             // Show correlation image
 
       // Convert the correlation image to a displayable format
-      YaIPS_RGB_Crcdf_Conv2BW( &pToolData->YaIPS_ImageDisp.pImage_Img, pToolData->pCorrImage, &pToolData->Res_Crcdf);
+      YaIPS_RGB_Crcdf_Conv2BW( &pToolDataParam->YaIPS_ImageDisp.pImage_Img, pToolDataParam->pCorrImage, &pToolDataParam->Res_Crcdf);
 
     } else {                                       // Show scene input image
 
       // Copy scene image to output image
-      YaIPS_RGB_CopyImg( &pToolData->YaIPS_ImageDisp.pImage_Img, pImgIn1);
+      YaIPS_RGB_CopyImg( &pToolDataParam->YaIPS_ImageDisp.pImage_Img, pImgIn1);
     }
 
     // Check an image display for size change and redisplay if size has changed.
-    YaIPS_ImageDispDrawUpdate( &pToolData->YaIPS_ImageDisp, true);
+    YaIPS_ImageDispDrawUpdate( &pToolDataParam->YaIPS_ImageDisp, true);
 
     if( YaIPS_BigImageDisp.ImageSourceID == MY_WIN_ID + iToolData) {   // and display this on the big image
 
-      YaIPS_ImageDispUpdateByNewImage( &YaIPS_BigImageDisp, pToolData->YaIPS_ImageDisp.pImage_Img,
-                                       MY_WIN_ID + iToolData, pToolData->YaIPS_ImageDisp.FileName);   // Load the image to the display
+      YaIPS_ImageDispUpdateByNewImage( &YaIPS_BigImageDisp, pToolDataParam->YaIPS_ImageDisp.pImage_Img,
+                                       MY_WIN_ID + iToolData, pToolDataParam->YaIPS_ImageDisp.FileName);   // Load the image to the display
     }
   } else {                                         // else for recalculation
 
-    pToolData->Input1_Change = 0;                  // Force recalculation output
-    pToolData->Input2_Change = 0;                  // Force recalculation output
-    pToolData->Res_Crcdf.Valid = false;            // Correlation results are NOT valid
+    pToolDataParam->Input1_Change = 0;                  // Force recalculation output
+    pToolDataParam->Input2_Change = 0;                  // Force recalculation output
+    pToolDataParam->Res_Crcdf.Valid = false;            // Correlation results are NOT valid
   }
 }
 
@@ -416,16 +426,16 @@ static void YaIPS_ColorChannel_Callback( Fl_Widget *w, void *data)
 
   Value = (long long)(data);                     // get value to set
 
-  if( pToolData->ColorChannel == Value) {        // Value will not change
+  if( pToolDataParam->ColorChannel == Value) {        // Value will not change
 
     return;                                      // Exit, nothing to do
   }
 
-  pToolData->ColorChannel = Value;               // Set new value
+  pToolDataParam->ColorChannel = Value;               // Set new value
 
-  pToolData->Input1_Change = 0;                  // Force recalculation output
-  pToolData->Input2_Change = 0;                  // Force recalculation output
-  pToolData->Res_Crcdf.Valid = false;            // Correlation results are NOT valid
+  pToolDataParam->Input1_Change = 0;                  // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                  // Force recalculation output
+  pToolDataParam->Res_Crcdf.Valid = false;            // Correlation results are NOT valid
 }
 
 /************************************************************************************
@@ -442,20 +452,20 @@ static void YaIPS_BinMode_Callback( Fl_Widget *w, void *data)
 
   Value = (long long)(data);                     // get value to set
 
-  if( pToolData->Obj_BinMode == Value) {         // Value will not change
+  if( pToolDataParam->Obj_BinMode == Value) {         // Value will not change
 
     return;                                      // Exit, nothing to do
   }
 
-  pToolData->Obj_BinMode = Value;                // Set new value
+  pToolDataParam->Obj_BinMode = Value;                // Set new value
 
-  if( pToolData->Obj_processing) {               // Object processing is on
+  if( pToolDataParam->Obj_processing) {               // Object processing is on
 
     // Force recalculation of processing
 
-    pToolData->Input1_Change = 0;                // Force recalculation output
-    pToolData->Input2_Change = 0;                // Force recalculation output
-    pToolData->Res_Crcdf.Valid = false;          // Correlation results are NOT valid
+    pToolDataParam->Input1_Change = 0;                // Force recalculation output
+    pToolDataParam->Input2_Change = 0;                // Force recalculation output
+    pToolDataParam->Res_Crcdf.Valid = false;          // Correlation results are NOT valid
   }
 }
 
@@ -511,9 +521,9 @@ static void IqeB_GUI_Float_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   *(float *)pValue = Value;
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
-  pToolData->Res_Crcdf.Valid = false;              // Correlation results are NOT valid
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Res_Crcdf.Valid = false;              // Correlation results are NOT valid
 #endif
 
 /************************************************************************************
@@ -563,44 +573,44 @@ static void IqeB_GUI_Int_SetValue_Callback( Fl_Widget *w, void *pValueArg)
   *pValue = Value;                         // update the variable
 
 
-  if( ! pToolData->Obj_processing ||       // Object processing is off
-      pValue == &pToolData->M_AOI.XPos ||       // or any none object processing variable
-      pValue == &pToolData->M_AOI.YPos ||
-      pValue == &pToolData->M_AOI.XSize ||
-      pValue == &pToolData->M_AOI.YSize) {
+  if( ! pToolDataParam->Obj_processing ||       // Object processing is off
+      pValue == &pToolDataParam->M_AOI.XPos ||       // or any none object processing variable
+      pValue == &pToolDataParam->M_AOI.YPos ||
+      pValue == &pToolDataParam->M_AOI.XSize ||
+      pValue == &pToolDataParam->M_AOI.YSize) {
 
     // Force recalculation of processing
 
-    pToolData->Input1_Change = 0;          // Force recalculation output
-    pToolData->Input2_Change = 0;          // Force recalculation output
-    pToolData->Res_Crcdf.Valid = false;    // Correlation results are NOT valid
+    pToolDataParam->Input1_Change = 0;          // Force recalculation output
+    pToolDataParam->Input2_Change = 0;          // Force recalculation output
+    pToolDataParam->Res_Crcdf.Valid = false;    // Correlation results are NOT valid
 
-  } if( pToolData->Obj_processing) {      // Object processing is on
+  } if( pToolDataParam->Obj_processing) {      // Object processing is on
 
-    if( pValue == &pToolData->Obj_QualityThres) {   // Quality threshold
+    if( pValue == &pToolDataParam->Obj_QualityThres) {   // Quality threshold
 
       // Redraw last results
 
-      if( pToolData->YaIPS_ImageDisp.pImage_Box != NULL) {
-        pToolData->YaIPS_ImageDisp.pImage_Box->redraw();
+      if( pToolDataParam->YaIPS_ImageDisp.pImage_Box != NULL) {
+        pToolDataParam->YaIPS_ImageDisp.pImage_Box->redraw();
       }
 
-      if( YaIPS_BigImageDisp.ImageSourceID == MY_WIN_ID + pToolData->iToolData) {   // and display this on the big image
+      if( YaIPS_BigImageDisp.ImageSourceID == MY_WIN_ID + pToolDataParam->iToolData) {   // and display this on the big image
 
         if( YaIPS_BigImageDisp.pImage_Box != NULL) {
           YaIPS_BigImageDisp.pImage_Box->redraw();
         }
       }
 
-    } else if( pValue == &pToolData->Obj_BinThres ||      // Binarization threshold
-               pValue == &pToolData->Obj_AreaMinSide ||   // Minimum area
-               pValue == &pToolData->Obj_AreaMaxSide) {   // Maximum area
+    } else if( pValue == &pToolDataParam->Obj_BinThres ||      // Binarization threshold
+               pValue == &pToolDataParam->Obj_AreaMinSide ||   // Minimum area
+               pValue == &pToolDataParam->Obj_AreaMaxSide) {   // Maximum area
 
       // Force recalculation of processing
 
-      pToolData->Input1_Change = 0;          // Force recalculation output
-      pToolData->Input2_Change = 0;          // Force recalculation output
-      pToolData->Res_Crcdf.Valid = false;    // Correlation results are NOT valid
+      pToolDataParam->Input1_Change = 0;          // Force recalculation output
+      pToolDataParam->Input2_Change = 0;          // Force recalculation output
+      pToolDataParam->Res_Crcdf.Valid = false;    // Correlation results are NOT valid
     }
   }
 }
@@ -625,13 +635,13 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   if( w == pTeachToggle) {                   // Toggle Teach / Inspection button
 
-    pToolData->AOI_Teach = ! pToolData->AOI_Teach;
+    pToolDataParam->AOI_Teach = ! pToolDataParam->AOI_Teach;
 
   }
 
-  pToolData->Input1_Change = 0;          // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
-  pToolData->Res_Crcdf.Valid = false;              // Correlation results are NOT valid
+  pToolDataParam->Input1_Change = 0;          // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Res_Crcdf.Valid = false;              // Correlation results are NOT valid
 }
 
 /************************************************************************************
@@ -656,9 +666,9 @@ static void IqeB_GUI_CBox_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   *pValue = pThis->value();              // update the variable
 
-  pToolData->Input1_Change = 0;          // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
-  pToolData->Res_Crcdf.Valid = false;              // Correlation results are NOT valid
+  pToolDataParam->Input1_Change = 0;          // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Res_Crcdf.Valid = false;              // Correlation results are NOT valid
 }
 
 /************************************************************************************
@@ -671,10 +681,20 @@ static void IqeB_GUI_CBox_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 {
   int xPos, yPos;
+  Fl_Double_Window *pMyToolWin;
+
+  // Check parameter dialog is allowed to open
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  if( IqeB_GUI_ToolParCheckOpen( close_Par_cb, &pMyParWin, iToolData) < 0) {    // Allowed to open parameter dialog
+
+    return;
+  }
+#endif
 
   // Get pointer to tool data
 
-  pToolData = YaIPS_ToolData_info + iToolData;             // Point to info data
+  pToolDataParam = YaIPS_ToolData_info + iToolData;             // Point to info data
 
   //
   // creation of window on first call
@@ -683,18 +703,28 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   xPos = xLeft;
   yPos = yTop;
 
-  if( pToolData->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolData->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
+  if( pToolDataParam->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolDataParam->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
 
-    xPos = pToolData->MyParPosX;
-    yPos = pToolData->MyParPosY;
+    xPos = pToolDataParam->MyParPosX;
+    yPos = pToolDataParam->MyParPosY;
   }
 
-  pMyParWin = new Fl_Window( xPos, yPos, 297 /*IQE_GUI_TOOLS_STD_WITDH*/, 138, LANGDEF_SETTINGS);
+  pMyParWin = new Fl_Window( xPos, yPos, 297 /*IQE_GUI_TOOLS_STD_WITDH*/, 138);
 
   if( pMyParWin == NULL) {  // security test
 
     return;
   }
+
+  // Set window title
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+
+   pMyToolWin = (Fl_Double_Window *)pToolDataParam->pMyToolWin;  // Convert type of pointer
+
+   pMyParWin->copy_label( pMyToolWin->label());
+#else
+   pMyParWin->label( LANGDEF_SETTINGS);
+#endif
 
   //
   //  GUI things
@@ -762,7 +792,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                            "The input image ‘Scene’ is\n"
                            "displayed as the output image."));
     pRadioButTemp->callback( YaIPS_OutputImage_Callback, (void *)0);
-    pRadioButTemp->value( pToolData->OutputImage == 0);   // Set value
+    pRadioButTemp->value( pToolDataParam->OutputImage == 0);   // Set value
 
     x1 += xx1;
     x1 += 2;
@@ -772,7 +802,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp = new Fl_Radio_Round_Button( x1, y + 2, xx1 - 2, yy - 4, LangStringLookup( "&GUI_Crcdf_TabA4=Correlation"));
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_Crcdf_TabA4a=The correlation field is displayed as the output image."));
     pRadioButTemp->callback( YaIPS_OutputImage_Callback, (void *)1);
-    pRadioButTemp->value( pToolData->OutputImage == 1);   // Set value
+    pRadioButTemp->value( pToolDataParam->OutputImage == 1);   // Set value
 
     pTemp_Group2->end();
 
@@ -797,7 +827,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                             "For a color image, the red color\n"
                             "channel is used for correlation."));
     pRadioButTemp->callback( YaIPS_ColorChannel_Callback, (void *)0);
-    pRadioButTemp->value( pToolData->ColorChannel == 0);   // Set value
+    pRadioButTemp->value( pToolDataParam->ColorChannel == 0);   // Set value
 
     x1 += xx1;
     x1 += 2;
@@ -807,7 +837,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                             "For a color image, the green color\n"
                             "channel is used for correlation."));
     pRadioButTemp->callback( YaIPS_ColorChannel_Callback, (void *)1);
-    pRadioButTemp->value( pToolData->ColorChannel == 1);   // Set value
+    pRadioButTemp->value( pToolDataParam->ColorChannel == 1);   // Set value
 
     x1 += xx1;
     x1 += 2;
@@ -817,7 +847,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                             "For a color image, the blue color\n"
                             "channel is used for correlation."));
     pRadioButTemp->callback( YaIPS_ColorChannel_Callback, (void *)2);
-    pRadioButTemp->value( pToolData->ColorChannel == 2);   // Set value
+    pRadioButTemp->value( pToolDataParam->ColorChannel == 2);   // Set value
 
     pTemp_Group2->end();
 
@@ -833,9 +863,9 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx1, yy, LANGDEF_AOI_LEFT);
     pTemp_Int->tooltip( LANGDEF_AOI_LEFT_TOOLTIP);
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->M_AOI.XPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->M_AOI.XPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
-    pTemp_Int->SetValue( pToolData->M_AOI.XPos);
+    pTemp_Int->SetValue( pToolDataParam->M_AOI.XPos);
     pAOI_X = pTemp_Int;
 
     x1 += xx1;
@@ -844,16 +874,16 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx1, yy, LANGDEF_AOI_TOP);
     pTemp_Int->tooltip( LANGDEF_AOI_TOP_TOOLTIP);
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->M_AOI.YPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->M_AOI.YPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
-    pTemp_Int->SetValue( pToolData->M_AOI.YPos);
+    pTemp_Int->SetValue( pToolDataParam->M_AOI.YPos);
     pAOI_Y = pTemp_Int;
 
     x1 += xx1;
     x1 += 8;
 
     pTemp_Button = new Fl_Button( x1, y, 28, 28, "@+1pencil");
-    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->AOI_Teach);
+    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->AOI_Teach);
     pTemp_Button->tooltip( LANGDEF_AOI_TEACH_TOOLTIP);
     pTemp_Button->labelcolor( YAIPS_BCOL_BUTTON);
     pTemp_Button->shortcut( FL_COMMAND+'t');       // Short cut key
@@ -871,9 +901,9 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx1, yy, LANGDEF_AOI_WIDTH);
     pTemp_Int->tooltip( LANGDEF_AOI_WIDTH_TOOLTIP);
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->M_AOI.XSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->M_AOI.XSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
-    pTemp_Int->SetValue( pToolData->M_AOI.XSize);
+    pTemp_Int->SetValue( pToolDataParam->M_AOI.XSize);
     pAOI_XX = pTemp_Int;
 
     x1 += xx1;
@@ -882,9 +912,9 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx1, yy, LANGDEF_AOI_HEIGHT);
     pTemp_Int->tooltip( LANGDEF_AOI_HEIGHT_TOOLTIP);
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->M_AOI.YSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->M_AOI.YSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
-    pTemp_Int->SetValue( pToolData->M_AOI.YSize);
+    pTemp_Int->SetValue( pToolDataParam->M_AOI.YSize);
     pAOI_YY = pTemp_Int;
 
     // Finish things for this group
@@ -910,8 +940,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pCheckTemp->tooltip( LangStringLookup( "&GUI_Crcdf_TabB2a="
                          "Objects are isolated in the scene.\n"
                          "Each object is correlated separately."));
-    pCheckTemp->value( pToolData->Obj_processing);
-    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolData->Obj_processing);
+    pCheckTemp->value( pToolDataParam->Obj_processing);
+    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolDataParam->Obj_processing);
 
     // Next line
 
@@ -932,7 +962,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp = new Fl_Radio_Round_Button( x1, y + 2, xx1 - 2, yy - 4, LangStringLookup( "&GUI_Crcdf_TabB4=bright"));
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_Crcdf_TabB4a=Objects are brighter than the threshold."));
     pRadioButTemp->callback( YaIPS_BinMode_Callback, (void *)0);
-    pRadioButTemp->value( pToolData->Obj_BinMode == 0);   // Set value
+    pRadioButTemp->value( pToolDataParam->Obj_BinMode == 0);   // Set value
 
     x1 += xx1;
     x1 += 2;
@@ -942,7 +972,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pRadioButTemp = new Fl_Radio_Round_Button( x1, y + 2, xx1 - 2, yy - 4, LangStringLookup( "&GUI_Crcdf_TabB5=dark"));
     pRadioButTemp->tooltip( LangStringLookup( "&GUI_Crcdf_TabB5a=Objects are darker than the threshold."));
     pRadioButTemp->callback( YaIPS_BinMode_Callback, (void *)1);
-    pRadioButTemp->value( pToolData->Obj_BinMode == 1);   // Set value
+    pRadioButTemp->value( pToolDataParam->Obj_BinMode == 1);   // Set value
 
     pTemp_Group2->end();
 
@@ -959,9 +989,9 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                         "Brightness threshold for binarization.\n"
                         "Separates objects from the background."));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Obj_BinThres);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Obj_BinThres);
     pTemp_Int->SetModifyData( 1, 254, 10, 1);
-    pTemp_Int->SetValue( pToolData->Obj_BinThres);
+    pTemp_Int->SetValue( pToolDataParam->Obj_BinThres);
 
     x1 = 296 - xx1 - 8;
 
@@ -970,9 +1000,9 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                         "Results with better quality are colored green,\n"
                         "results with poor quality are colored yellow to pink."));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Obj_QualityThres);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Obj_QualityThres);
     pTemp_Int->SetModifyData( 0, 100, 10, 1);
-    pTemp_Int->SetValue( pToolData->Obj_QualityThres);
+    pTemp_Int->SetValue( pToolDataParam->Obj_QualityThres);
 
     // Next line
 
@@ -988,9 +1018,9 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                         "The area of the square is the minimum\n"
                         "area of an object to be processed."));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Obj_AreaMinSide);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Obj_AreaMinSide);
     pTemp_Int->SetModifyData( 0, 200, 10, 1);
-    pTemp_Int->SetValue( pToolData->Obj_AreaMinSide);
+    pTemp_Int->SetValue( pToolDataParam->Obj_AreaMinSide);
 
     x1 = 296 - xx1 - 8;
 
@@ -1001,9 +1031,9 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                         "area of an object to be processed.\n"
                         "NOTE: must be greater than 'T small'."));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Obj_AreaMaxSide);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Obj_AreaMaxSide);
     pTemp_Int->SetModifyData( 0, 500, 10, 1);
-    pTemp_Int->SetValue( pToolData->Obj_AreaMaxSide);
+    pTemp_Int->SetValue( pToolDataParam->Obj_AreaMaxSide);
 
     // Finish things for this group
 
@@ -1014,12 +1044,16 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
   pTemp_Tabs->end();
 
-  pTemp_Tabs->SetTabGroup( pToolData->Tab_Group_Selected);    // Select tab group from last session
+  pTemp_Tabs->SetTabGroup( pToolDataParam->Tab_Group_Selected);    // Select tab group from last session
 
     // finish up
 
   pMyParWin->end();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  pMyParWin->set_non_modal();
+#else
   pMyParWin->set_modal();
+#endif
   pMyParWin->callback( close_Par_cb, &pMyParWin);
   pMyParWin->show();
 
@@ -1280,6 +1314,10 @@ static void close_cb( Fl_Widget *w, long int iToolData)
     return;
   }
 
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckClose( close_Par_cb, &pMyParWin, iToolData);   // Check to close specific associated parameter dialog
+#endif
+
   YaIPS_ImageDispReleaseBeforeClose( &pToolData->YaIPS_ImageDisp);
 
   if( pToolData->pCorrImage != NULL) {     // This image was used
@@ -1459,6 +1497,9 @@ static void MyWinUpdate( int iToolData, int DoEnable)
                              DoEnable &&                                    // Enable GUI elements
                              pToolData->YaIPS_ImageDisp.pImage_Img != NULL); // and have an image loaded
 
+  IqeB_GUI_WidgetActivate( pMyToolWin->pGUI_Parameter,
+                            (pMyParWin == NULL || pToolDataParam->iToolData != iToolData) && // Parameter dialog is closed
+                             DoEnable);                             // Enable GUI elements
 
   // Check input image and visualize state
   YaIPS_ToolWinInputCheck( MY_WIN_ID + iToolData, pToolData->Input1_WinIdNr, pMyToolWin->pBox_Input1);

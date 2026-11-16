@@ -2,7 +2,7 @@
 ; YaIPS_GUI_VideoRead.cpp
 ;-------------------------------------------------------
 ;
-; 15 entries
+; 14 entries
 ;
 GUI_VideoR_Title                   "Video viewer"
 
@@ -16,8 +16,6 @@ GUI_VideoR_Par_VideoBufOn          "Video buffer"
 GUI_VideoR_Par_VideoBufOna         "If set, a backtracking buffer is used.\n"
                                    "When playing forward, video frames are buffered.\n"
                                    "When paused, these past frames can be viewed."
-
-GUI_VideoR_Par_VideoBufSize        "Size"
 
 GUI_VideoR_Par_VideoBufSizea       "Backtracking buffer size.\n"
                                    "Range: 50 to 500 megabytes.\n"

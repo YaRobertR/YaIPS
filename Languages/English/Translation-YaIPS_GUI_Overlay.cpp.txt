@@ -2,7 +2,7 @@
 ; YaIPS_GUI_Overlay.cpp
 ;-------------------------------------------------------
 ;
-; 113 entries
+; 111 entries
 ;
 GUI_Overlay_Title                  "Overlay"
 
@@ -62,8 +62,6 @@ GUI_Overlay_2a                     "Name for this overlay"
 GUI_Overlay_3                      "Unit"
 
 GUI_Overlay_3a                     "Unit of position and size"
-
-GUI_Overlay_4                      "Rotation"
 
 GUI_Overlay_4a                     "Rotation angle of the overlay [Degree].\n"
                                    "NOTE: When the mouse wheel is pressed while\n"
@@ -125,12 +123,6 @@ GUI_Overlay_TabA10a                "Name of loaded image file.\n"
 
 GUI_Overlay_TabA11a                "Load an image file."
 
-GUI_Overlay_TabA12a                "Information about the image.\n"
-                                   "NOTE: is read only."
-
-GUI_Overlay_TabA13a                "Copy image size to\n"
-                                   "AOI width and height."
-
 GUI_Overlay_TabA2_2                "Tool window"
 
 GUI_Overlay_TabA2_2a               "Overlay background from tool window.\n"
@@ -138,6 +130,12 @@ GUI_Overlay_TabA2_2a               "Overlay background from tool window.\n"
                                    "output image of a tool window."
 
 GUI_Overlay_TabA20a                "Select window as background image."
+
+GUI_Overlay_TabA12a                "Information about the image.\n"
+                                   "NOTE: is read only."
+
+GUI_Overlay_TabA13a                "Copy image size to\n"
+                                   "AOI width and height."
 
 GUI_Overlay_TabB1                  "Shape"
 
@@ -177,8 +175,6 @@ GUI_Overlay_TabC2                  "Font"
 GUI_Overlay_TabC2a                 "Selected font"
 
 GUI_Overlay_TabC3a                 "Select an other font"
-
-GUI_Overlay_TabC4                  "Size"
 
 GUI_Overlay_TabC4a                 "Font size"
 

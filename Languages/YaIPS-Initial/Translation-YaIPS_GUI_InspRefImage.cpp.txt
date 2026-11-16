@@ -2,13 +2,17 @@
 ; YaIPS_GUI_InspRefImage.cpp
 ;-------------------------------------------------------
 ;
-; 5 entries
+; 46 entries
 ;
 GUI_InspRefImg_Title               "Reference image"
 
-GUI_InspRefImg_GroupA1             "Plane threshold"
+GUI_InspRefImg_TabA1a              "Edge mask.\n"
+                                   "Used to mark edges. These are processed\n"
+                                   "differently during image comparison."
 
-GUI_InspRefImg_GroupA1a            "Plane threshold.\n"
+GUI_InspRefImg_TabA2               "Plane threshold"
+
+GUI_InspRefImg_TabA2a              "Plane threshold.\n"
                                    "Used to prepare the reference image.\n"
                                    "Pixel values below this threshold are\n"
                                    "lowpass filtered. The contour pixels are\n"
@@ -16,6 +20,103 @@ GUI_InspRefImg_GroupA1a            "Plane threshold.\n"
                                    "the alpha part of the reference image."
                                    "This contour bit is used by the image"
                                    "compare window."
+
+GUI_InspRefImg_TabB1               "Mask"
+
+GUI_InspRefImg_TabB1a              "Editor to define check regions."
+
+GUI_InspRefImg_TabB2               "Draw functions"
+
+GUI_InspRefImg_TabB10              "Move"
+
+GUI_InspRefImg_TabB10a             "Move image with mouse.\n"
+                                   "Left mouse button pressed: Move image"
+
+GUI_InspRefImg_TabB12              "Rectangle"
+
+GUI_InspRefImg_TabB12a             "Draw a rectangle.\n"
+                                   "Left mouse button pressed: Change size\n"
+                                   "Left + right Mouse button pressed: Move\n"
+                                   "Right mouse button pressed: Move image"
+
+GUI_InspRefImg_TabB13              "Ellipse"
+
+GUI_InspRefImg_TabB13a             "Draw an ellipse.\n"
+                                   "Left mouse button pressed: Change size\n"
+                                   "Left + right Mouse button pressed: Move\n"
+                                   "Right mouse button pressed: Move image"
+
+GUI_InspRefImg_TabB14              "Polygon"
+
+GUI_InspRefImg_TabB14a             "Draw a polygon.\n"
+                                   "Left mouse button click: Set point\n"
+                                   "Right Mouse button click: Abort\n"
+                                   "Right mouse button pressed: Move image"
+
+GUI_InspRefImg_TabB15              "Fill"
+
+GUI_InspRefImg_TabB15a             "Fill area.\n"
+                                   "Click left mouse button in the area to be filled.\n"
+                                   "Right mouse button pressed: Move image"
+
+GUI_InspRefImg_TabB3               "Brushes"
+
+GUI_InspRefImg_TabB11              "Freehand"
+
+GUI_InspRefImg_TabB11a             "Draw free hand."
+
+GUI_InspRefImg_TabB20a             "Freehand brush width"
+
+GUI_InspRefImg_TabB4               "Mask"
+
+GUI_InspRefImg_TabB30              "Draw"
+
+GUI_InspRefImg_TabB30a             "Set mask bits"
+
+GUI_InspRefImg_TabB31              "Erase"
+
+GUI_InspRefImg_TabB31a             "Reset mask bits"
+
+GUI_InspRefImg_TabB5               "Other"
+
+GUI_InspRefImg_TabB40a             "Undo former draw."
+
+GUI_InspRefImg_TabB41a             "Redo former draw."
+
+GUI_InspRefImg_TabB42              "Clear"
+
+GUI_InspRefImg_TabB42a             "Clears the mask."
+
+GUI_InspRefImg_TabB43              "Dilat."
+
+GUI_InspRefImg_TabB43a             "The mask grows 1 pixel in all directions."
+
+GUI_InspRefImg_TabB44              "Eros."
+
+GUI_InspRefImg_TabB44a             "The mask shrinks 1 pixel in all directions."
+
+GUI_InspRefImg_TabB6               "Bin."
+
+GUI_InspRefImg_TabB6a              "Binarize image to mask."
+
+GUI_InspRefImg_TabB50              "Thr."
+
+GUI_InspRefImg_TabB50a             "Brightness threshold.\n"
+                                   "Binarize image to mask.\n"
+                                   "If 'Bright' is selected, all pixels brighter\n"
+                                   "then threshold are set as mask pixels.\n"
+                                   "If 'Dark' is selected, all pixels below\n"
+                                   "threshold are taken, respectively.\n"
+
+GUI_InspRefImg_TabB51a             "Selection of the binarization mode."
+
+GUI_InspRefImg_TabB51b             "Bright"
+
+GUI_InspRefImg_TabB51C             "Dark"
+
+GUI_InspRefImg_TabB52              "Apply"
+
+GUI_InspRefImg_TabB52a             "Apply binarization."
 
 GUI_InspRefImg_Tools2a             "Apply the reference image from input.\n"
                                    "Shortcut: Ctrl+A"

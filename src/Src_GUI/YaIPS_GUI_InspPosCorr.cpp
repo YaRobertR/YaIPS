@@ -5,6 +5,12 @@
   Position corrections.
 
   24.08.2025 RR: First edition of this file.
+  18.10.2026 RR: * Reworked behavior of tool window parameter dialogs.
+                   See functions IqeB_GUI_ToolParCheckOpen(),
+                   IqeB_GUI_ToolParCheckReset() and IqeB_GUI_ToolParCheckClose().
+  11.11.2026 RR: * MyWinUpdate()
+                   Parameter dialog button is disabled if the parameter dialog
+                   is open.
 
 *****************************************************************************
 */
@@ -305,7 +311,7 @@ static IqeB_PreferencesGroup MyPreferencesAdd( MY_WIN_PREF_NAME, MyPreferences, 
 // ...
 
 static  Fl_Window *pMyParWin;
-static  YaIPS_ToolData_info_t *pToolData;     // NOTE: Is used by all parameter dialog functions
+static  YaIPS_ToolData_info_t *pToolDataParam;     // NOTE: Is used by all parameter dialog functions
 
 static IqeFl_Tabs      *pTab_Groups;         // Point to tabulator GUI element
 static Fl_Radio_Round_Button *SelectionButtons[ YAIPS_SELECTION_BUTTON_MAX]; // Table of filter buttons
@@ -350,23 +356,23 @@ static void MyParWinUpdate()
 
   // Get last selected tab group
 
-  pToolData->Tab_Group_Selected = pTab_Groups->GetTabGroup();
+  pToolDataParam->Tab_Group_Selected = pTab_Groups->GetTabGroup();
 
   // Update filter button
   // Current selection must be set
 
   // Update all buttons
-  if( SelectionType_Last != pToolData->SelectionType) {                // Filter type has change
+  if( SelectionType_Last != pToolDataParam->SelectionType) {                // Filter type has change
 
-    SelectionType_Last = pToolData->SelectionType;
+    SelectionType_Last = pToolDataParam->SelectionType;
 
     for( i = 0; i < YAIPS_SELECTION_BUTTON_MAX; i++) {
 
       ValThis = SelectionButtons[ i]->value();
 
-      if( ValThis != (i == pToolData->SelectionType)) {             // Not what we expected
+      if( ValThis != (i == pToolDataParam->SelectionType)) {             // Not what we expected
 
-        SelectionButtons[ i]->value( i == pToolData->SelectionType);   // Set value
+        SelectionButtons[ i]->value( i == pToolDataParam->SelectionType);   // Set value
         SelectionButtons[ i]->redraw();
       }
     }
@@ -374,22 +380,22 @@ static void MyParWinUpdate()
 
   // Ensure section type dependent settings are up to data
 
-  if( pToolData->SelectionType >= YAIPS_SELECTION_EDGES_FIRST &&  // One of the edge search modes
-      pToolData->SelectionType <= YAIPS_SELECTION_EDGES_LAST) {
+  if( pToolDataParam->SelectionType >= YAIPS_SELECTION_EDGES_FIRST &&  // One of the edge search modes
+      pToolDataParam->SelectionType <= YAIPS_SELECTION_EDGES_LAST) {
 
-    pToolData->Edge_PM.MeasureMode = pToolData->SelectionType - YAIPS_SELECTION_EDGES_FIRST;  // Also update
+    pToolDataParam->Edge_PM.MeasureMode = pToolDataParam->SelectionType - YAIPS_SELECTION_EDGES_FIRST;  // Also update
 
-  } else if( pToolData->SelectionType >= YAIPS_SELECTION_PSEAR_FIRST &&  // One of the pattern search modes
-      pToolData->SelectionType <= YAIPS_SELECTION_PSEAR_LAST) {
+  } else if( pToolDataParam->SelectionType >= YAIPS_SELECTION_PSEAR_FIRST &&  // One of the pattern search modes
+      pToolDataParam->SelectionType <= YAIPS_SELECTION_PSEAR_LAST) {
 
-    pToolData->PSearch_XY.MeasureMode = pToolData->SelectionType - YAIPS_SELECTION_PSEAR_FIRST;  // Also update
+    pToolDataParam->PSearch_XY.MeasureMode = pToolDataParam->SelectionType - YAIPS_SELECTION_PSEAR_FIRST;  // Also update
   }
 
   //
   // Enable Tab group 'Base'
   //
 
-  TempEnable = pToolData->Base_InspCorrect;    // Perform position correction
+  TempEnable = pToolDataParam->Base_InspCorrect;    // Perform position correction
 
   IqeB_GUI_WidgetActivate( pBaseColor, TempEnable);
   IqeB_GUI_WidgetActivate( pBaseBlend, TempEnable);
@@ -398,13 +404,13 @@ static void MyParWinUpdate()
   // Enable group 'Pos Edges'
   //
 
-  TempEnable = pToolData->SelectionType >= YAIPS_SELECTION_EDGES_FIRST &&  // One of the edge search modes
-               pToolData->SelectionType <= YAIPS_SELECTION_EDGES_LAST;
+  TempEnable = pToolDataParam->SelectionType >= YAIPS_SELECTION_EDGES_FIRST &&  // One of the edge search modes
+               pToolDataParam->SelectionType <= YAIPS_SELECTION_EDGES_LAST;
 
   IqeB_GUI_WidgetActivate( pES_TeachBut, TempEnable);
-  IqeB_GUI_WidgetLabelColor( pES_TeachBut, pToolData->Teach_mode ? FL_GREEN : YAIPS_BCOL_BUTTON);
+  IqeB_GUI_WidgetLabelColor( pES_TeachBut, pToolDataParam->Teach_mode ? FL_GREEN : YAIPS_BCOL_BUTTON);
 
-  TempEnable = TempEnable && pToolData->Teach_mode;    // Teach mode
+  TempEnable = TempEnable && pToolDataParam->Teach_mode;    // Teach mode
 
   IqeB_GUI_WidgetActivate( pES_AOI_X[ 0], TempEnable);
   IqeB_GUI_WidgetActivate( pES_AOI_Y[ 0], TempEnable);
@@ -413,7 +419,7 @@ static void MyParWinUpdate()
   IqeB_GUI_WidgetActivate( pR2l_b2t_1, TempEnable);
   IqeB_GUI_WidgetActivate( pminPeak_1, TempEnable);
 
-  TempEnable2 = TempEnable && pToolData->Edge_PM.MeasureMode >= YAIPS_EDGEPM_MODE_XY;  // Use two ore more AOIs
+  TempEnable2 = TempEnable && pToolDataParam->Edge_PM.MeasureMode >= YAIPS_EDGEPM_MODE_XY;  // Use two ore more AOIs
 
   IqeB_GUI_WidgetActivate( pES_AOI_X[ 1], TempEnable2);
   IqeB_GUI_WidgetActivate( pES_AOI_Y[ 1], TempEnable2);
@@ -422,7 +428,7 @@ static void MyParWinUpdate()
   IqeB_GUI_WidgetActivate( pR2l_b2t_2, TempEnable2);
   IqeB_GUI_WidgetActivate( pminPeak_2, TempEnable2);
 
-  TempEnable2 = TempEnable && pToolData->Edge_PM.MeasureMode >= YAIPS_EDGEPM_MODE_XYY;  // Use three ore more AOIs
+  TempEnable2 = TempEnable && pToolDataParam->Edge_PM.MeasureMode >= YAIPS_EDGEPM_MODE_XYY;  // Use three ore more AOIs
 
   IqeB_GUI_WidgetActivate( pES_AOI_X[ 2], TempEnable2);
   IqeB_GUI_WidgetActivate( pES_AOI_Y[ 2], TempEnable2);
@@ -435,13 +441,13 @@ static void MyParWinUpdate()
   // Enable Tab group 'Pattern search'
   //
 
-  TempEnable = pToolData->SelectionType >= YAIPS_SELECTION_PSEAR_FIRST &&  // One of the pattern search modes
-               pToolData->SelectionType <= YAIPS_SELECTION_PSEAR_LAST;
+  TempEnable = pToolDataParam->SelectionType >= YAIPS_SELECTION_PSEAR_FIRST &&  // One of the pattern search modes
+               pToolDataParam->SelectionType <= YAIPS_SELECTION_PSEAR_LAST;
 
   IqeB_GUI_WidgetActivate( pPS_TeachBut, TempEnable);
-  IqeB_GUI_WidgetLabelColor( pPS_TeachBut, pToolData->Teach_mode ? FL_GREEN : YAIPS_BCOL_BUTTON);
+  IqeB_GUI_WidgetLabelColor( pPS_TeachBut, pToolDataParam->Teach_mode ? FL_GREEN : YAIPS_BCOL_BUTTON);
 
-  TempEnable = TempEnable && pToolData->Teach_mode;    // Teach mode
+  TempEnable = TempEnable && pToolDataParam->Teach_mode;    // Teach mode
 
   IqeB_GUI_WidgetActivate( pPS_AOI_X[ 0], TempEnable);
   IqeB_GUI_WidgetActivate( pPS_AOI_Y[ 0], TempEnable);
@@ -450,7 +456,7 @@ static void MyParWinUpdate()
   IqeB_GUI_WidgetActivate( pPS_SearchX[ 0], TempEnable);
   IqeB_GUI_WidgetActivate( pPS_SearchY[ 0], TempEnable);
 
-  TempEnable2 = TempEnable && pToolData->PSearch_XY.MeasureMode >= YAIPS_PSEARCH_MODE_3XY;  // Use two ore more AOIs
+  TempEnable2 = TempEnable && pToolDataParam->PSearch_XY.MeasureMode >= YAIPS_PSEARCH_MODE_3XY;  // Use two ore more AOIs
 
   IqeB_GUI_WidgetActivate( pPS_AOI_X[ 1], TempEnable2);
   IqeB_GUI_WidgetActivate( pPS_AOI_Y[ 1], TempEnable2);
@@ -472,7 +478,7 @@ static void MyParWinUpdate()
 
   pImgIn1 = NULL;       // Will be set if there is a valid scene image
 
-  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolData->iToolData, pToolData->Input1_WinIdNr,
+  YaIPS_ToolWinInputCheck( MY_WIN_ID + pToolDataParam->iToolData, pToolDataParam->Input1_WinIdNr,
                            NULL, &pImgIn1, NULL);
 
   if( pImgIn1 != NULL) {
@@ -486,10 +492,10 @@ static void MyParWinUpdate()
     ImgYY = 1024;
   }
 
-  if( pToolData->SelectionType >= YAIPS_SELECTION_EDGES_FIRST &&  // One of the edge search modes
-      pToolData->SelectionType <= YAIPS_SELECTION_EDGES_LAST) {
+  if( pToolDataParam->SelectionType >= YAIPS_SELECTION_EDGES_FIRST &&  // One of the edge search modes
+      pToolDataParam->SelectionType <= YAIPS_SELECTION_EDGES_LAST) {
 
-    nAOIs = (pToolData->Edge_PM.MeasureMode / 2) + 1;
+    nAOIs = (pToolDataParam->Edge_PM.MeasureMode / 2) + 1;
 
     for( i = 0; i < nAOIs; i++) {
 
@@ -499,17 +505,17 @@ static void MyParWinUpdate()
         continue;  // Skip test for this input elements
       }
 
-      if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolData->Edge_PM.Edges[ i].AOI, ImgXX, ImgYY,
+      if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolDataParam->Edge_PM.Edges[ i].AOI, ImgXX, ImgYY,
                                             pES_AOI_X[ i], pES_AOI_Y[ i], pES_AOI_XX[ i], pES_AOI_YY[ i]) > 0) {
 
         RedrawOnExit = true;                                 // Redraw on exit
       }
     }
 
-  } else if( pToolData->SelectionType >= YAIPS_SELECTION_PSEAR_FIRST &&  // One of the pattern search modes
-      pToolData->SelectionType <= YAIPS_SELECTION_PSEAR_LAST) {
+  } else if( pToolDataParam->SelectionType >= YAIPS_SELECTION_PSEAR_FIRST &&  // One of the pattern search modes
+      pToolDataParam->SelectionType <= YAIPS_SELECTION_PSEAR_LAST) {
 
-    nAOIs = (pToolData->PSearch_XY.MeasureMode / 2) + 1;
+    nAOIs = (pToolDataParam->PSearch_XY.MeasureMode / 2) + 1;
 
     for( i = 0; i < nAOIs; i++) {
 
@@ -519,7 +525,7 @@ static void MyParWinUpdate()
         continue;  // Skip test for this input elements
       }
 
-      if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolData->PSearch_XY.AOI[ i].AOI, ImgXX, ImgYY,
+      if( YaIPS_ImageDispAoiRectIGuiUpdate( &pToolDataParam->PSearch_XY.AOI[ i].AOI, ImgXX, ImgYY,
                                             pPS_AOI_X[ i], pPS_AOI_Y[ i], pPS_AOI_XX[ i], pPS_AOI_YY[ i]) > 0) {
 
         RedrawOnExit = true;                                 // Redraw on exit
@@ -531,7 +537,7 @@ static void MyParWinUpdate()
 
   if( RedrawOnExit) {                                           // Redraw on exit
 
-    pToolData->Input1_Change = 0;                // Reset image change check
+    pToolDataParam->Input1_Change = 0;                // Reset image change check
   }
 
 }
@@ -585,8 +591,12 @@ static void IqeB_GUI_ParIdleAction( void *)
 static void close_Par_cb( Fl_Widget *w, void *pValueArg)
 {
 
-  pToolData->MyParPosX = pMyParWin->x();
-  pToolData->MyParPosY = pMyParWin->y();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckReset();   // The one and only open tool window parameter dialog is closed
+#endif
+
+  pToolDataParam->MyParPosX = pMyParWin->x();
+  pToolDataParam->MyParPosY = pMyParWin->y();
 
 #ifdef YAIPS_IDLE_CALLBACK_USE  // Use the idle callbacks in tool windows
   Fl::remove_idle( IqeB_GUI_ParIdleAction);      // Redraw window during idle
@@ -610,28 +620,28 @@ static void YaIPS_SelectionType_Callback( Fl_Widget *w, void *data)
 
   Value = (long long)(data);                       // get value to set
 
-  if( pToolData->SelectionType == Value) {         // Value will not change
+  if( pToolDataParam->SelectionType == Value) {         // Value will not change
 
     return;                                        // Exit, nothing to do
   }
 
-  pToolData->SelectionType = Value;                // Set new value
+  pToolDataParam->SelectionType = Value;                // Set new value
 
-  if( pToolData->SelectionType >= YAIPS_SELECTION_EDGES_FIRST &&  // and one of the edge search modes
-      pToolData->SelectionType <= YAIPS_SELECTION_EDGES_LAST) {
+  if( pToolDataParam->SelectionType >= YAIPS_SELECTION_EDGES_FIRST &&  // and one of the edge search modes
+      pToolDataParam->SelectionType <= YAIPS_SELECTION_EDGES_LAST) {
 
-    pToolData->Edge_PM.MeasureMode = Value - YAIPS_SELECTION_EDGES_FIRST;  // Also update
+    pToolDataParam->Edge_PM.MeasureMode = Value - YAIPS_SELECTION_EDGES_FIRST;  // Also update
 
-  } else if( pToolData->SelectionType >= YAIPS_SELECTION_PSEAR_FIRST &&  // and one of the pattern search modes
-      pToolData->SelectionType <= YAIPS_SELECTION_PSEAR_LAST) {
+  } else if( pToolDataParam->SelectionType >= YAIPS_SELECTION_PSEAR_FIRST &&  // and one of the pattern search modes
+      pToolDataParam->SelectionType <= YAIPS_SELECTION_PSEAR_LAST) {
 
-    pToolData->PSearch_XY.MeasureMode = Value - YAIPS_SELECTION_PSEAR_FIRST;  // Also update
+    pToolDataParam->PSearch_XY.MeasureMode = Value - YAIPS_SELECTION_PSEAR_FIRST;  // Also update
   }
 
   // Try to redisplay changed output without new image correlation
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -658,8 +668,8 @@ static void IqeB_GUI_But_Color_Callback( Fl_Widget *w, void *pValueArg)
 
     // Update display
 
-    pToolData->Input1_Change = 0;                    // Force recalculation output
-    pToolData->Input2_Change = 0;                    // Force recalculation output
+    pToolDataParam->Input1_Change = 0;                    // Force recalculation output
+    pToolDataParam->Input2_Change = 0;                    // Force recalculation output
   }
 }
 
@@ -714,8 +724,8 @@ static void IqeB_GUI_Float_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   *(float *)pValue = Value;
 
-  pToolData->Input1_Change = 0;                    // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -766,8 +776,8 @@ static void IqeB_GUI_Int_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   // Force recalculation of processing
 
-  pToolData->Input1_Change = 0;          // Force recalculation output
-  pToolData->Input2_Change = 0;          // Force recalculation output
+  pToolDataParam->Input1_Change = 0;          // Force recalculation output
+  pToolDataParam->Input2_Change = 0;          // Force recalculation output
 }
 
 /************************************************************************************
@@ -788,9 +798,9 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     return;
   }
 
-  if( pValueArg == &pToolData->Teach_mode) {  // Toggle Teach / Inspection button
+  if( pValueArg == &pToolDataParam->Teach_mode) {  // Toggle Teach / Inspection button
 
-    pToolData->Teach_mode = ! pToolData->Teach_mode;
+    pToolDataParam->Teach_mode = ! pToolDataParam->Teach_mode;
 
   } else {
 
@@ -800,8 +810,8 @@ static void IqeB_GUI_Misc_SetValue_Callback( Fl_Widget *w, void *pValueArg)
     *pValue = pThis->value();                // update the variable
   }
 
-  pToolData->Input1_Change = 0;          // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;          // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -826,8 +836,8 @@ static void IqeB_GUI_CBox_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 
   *pValue = pThis->value();              // update the variable
 
-  pToolData->Input1_Change = 0;          // Force recalculation output
-  pToolData->Input2_Change = 0;                    // Force recalculation output
+  pToolDataParam->Input1_Change = 0;          // Force recalculation output
+  pToolDataParam->Input2_Change = 0;                    // Force recalculation output
 }
 
 /************************************************************************************
@@ -840,10 +850,20 @@ static void IqeB_GUI_CBox_SetValue_Callback( Fl_Widget *w, void *pValueArg)
 static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 {
   int xPos, yPos;
+  Fl_Double_Window *pMyToolWin;
+
+  // Check parameter dialog is allowed to open
+
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  if( IqeB_GUI_ToolParCheckOpen( close_Par_cb, &pMyParWin, iToolData) < 0) {    // Allowed to open parameter dialog
+
+    return;
+  }
+#endif
 
   // Get pointer to tool data
 
-  pToolData = YaIPS_ToolData_info + iToolData;             // Point to info data
+  pToolDataParam = YaIPS_ToolData_info + iToolData;             // Point to info data
 
   //
   // creation of window on first call
@@ -852,18 +872,28 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   xPos = xLeft;
   yPos = yTop;
 
-  if( pToolData->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolData->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
+  if( pToolDataParam->MyParPosX != IQE_GUI_NO_WINPOS_X && pToolDataParam->MyParPosY != IQE_GUI_NO_WINPOS_Y) { // have last window position
 
-    xPos = pToolData->MyParPosX;
-    yPos = pToolData->MyParPosY;
+    xPos = pToolDataParam->MyParPosX;
+    yPos = pToolDataParam->MyParPosY;
   }
 
-  pMyParWin = new Fl_Window( xPos, yPos, 405 /*IQE_GUI_TOOLS_STD_WITDH*/, 194, LANGDEF_SETTINGS);
+  pMyParWin = new Fl_Window( xPos, yPos, 405 /*IQE_GUI_TOOLS_STD_WITDH*/, 194);
 
   if( pMyParWin == NULL) {  // security test
 
     return;
   }
+
+  // Set window title
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+
+   pMyToolWin = (Fl_Double_Window *)pToolDataParam->pMyToolWin;  // Convert type of pointer
+
+   pMyParWin->copy_label( pMyToolWin->label());
+#else
+   pMyParWin->label( LANGDEF_SETTINGS);
+#endif
 
   SelectionType_Last = -1;         // Reset last filter type
 
@@ -926,8 +956,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pCheckTemp->tooltip( LangStringLookup( "&GUI_PosCorr_TabA2a="
                          "The position correction is performed in the inspection mode.\n"
                          "The input image is shifted and rotated accordingly."));
-    pCheckTemp->value( pToolData->Base_InspCorrect);
-    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolData->Base_InspCorrect);
+    pCheckTemp->value( pToolDataParam->Base_InspCorrect);
+    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolDataParam->Base_InspCorrect);
 
     // Next line
 
@@ -944,8 +974,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                            "Rotating an image or performing other transformations\n"
                            "creates areas outside the image. These are colored\n"
                            "accordingly."));
-    pTemp_Button->color( pToolData->Base_OutsiteColor);
-    pTemp_Button->callback( IqeB_GUI_But_Color_Callback, &pToolData->Base_OutsiteColor);
+    pTemp_Button->color( pToolDataParam->Base_OutsiteColor);
+    pTemp_Button->callback( IqeB_GUI_But_Color_Callback, &pToolDataParam->Base_OutsiteColor);
     pBaseColor = pTemp_Button;
 
     // Next line
@@ -960,8 +990,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                          "Hide outside area.\n"
                          "If enabled, the area outside the image is hidden.\n"
                          "Otherwise, the area outside is visible."));
-    pCheckTemp->value( pToolData->Base_OutsiteBlend);
-    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolData->Base_OutsiteBlend);
+    pCheckTemp->value( pToolDataParam->Base_OutsiteBlend);
+    pCheckTemp->callback( IqeB_GUI_CBox_SetValue_Callback, &pToolDataParam->Base_OutsiteBlend);
     pBaseBlend = pCheckTemp;
 
     // Finish things for this group
@@ -975,7 +1005,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
   y = yGroup;
   x1  = 4;
 
-  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LangStringLookup( "&GUI_PosCorr_TabB1=Edges"));
+  pTemp_Group = new Fl_Group( x1, y, pMyParWin->w() - x1 - 4, pMyParWin->h() - y - 4, LANGDEF_EDGES);
   pTemp_Group->tooltip( LangStringLookup( "&GUI_PosCorr_TabB1a=Position correction with edge finding"));
 
     y += 8;
@@ -1054,7 +1084,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     x1 = pMyParWin->w() - 28 - 9;
 
     pTemp_Button = new Fl_Button( x1, y, 28, 28, "@+1pencil");
-    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->Teach_mode);
+    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->Teach_mode);
     pTemp_Button->tooltip( LANGDEF_AOI_TEACH_TOOLTIP);
     pTemp_Button->labelcolor( YAIPS_BCOL_BUTTON);
     pTemp_Button->shortcut( FL_COMMAND+'t');       // Short cut key
@@ -1099,8 +1129,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupB11a=Position left edge 1. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->Edge_PM.Edges[ 0].AOI.XPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Edge_PM.Edges[ 0].AOI.XPos);
+    pTemp_Int->SetValue( pToolDataParam->Edge_PM.Edges[ 0].AOI.XPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Edge_PM.Edges[ 0].AOI.XPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pES_AOI_X[ 0] = pTemp_Int;
 
@@ -1110,8 +1140,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupB12a=Position upper edge 1. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->Edge_PM.Edges[ 0].AOI.YPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Edge_PM.Edges[ 0].AOI.YPos);
+    pTemp_Int->SetValue( pToolDataParam->Edge_PM.Edges[ 0].AOI.YPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Edge_PM.Edges[ 0].AOI.YPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pES_AOI_Y[ 0] = pTemp_Int;
 
@@ -1121,8 +1151,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupB13a=Position left edge 2. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->Edge_PM.Edges[ 1].AOI.XPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Edge_PM.Edges[ 1].AOI.XPos);
+    pTemp_Int->SetValue( pToolDataParam->Edge_PM.Edges[ 1].AOI.XPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Edge_PM.Edges[ 1].AOI.XPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pES_AOI_X[ 1] = pTemp_Int;
 
@@ -1132,8 +1162,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupB14a=Position upper edge 2. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->Edge_PM.Edges[ 1].AOI.YPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Edge_PM.Edges[ 1].AOI.YPos);
+    pTemp_Int->SetValue( pToolDataParam->Edge_PM.Edges[ 1].AOI.YPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Edge_PM.Edges[ 1].AOI.YPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pES_AOI_Y[ 1] = pTemp_Int;
 
@@ -1143,8 +1173,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupB15a=Position left edge 3. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->Edge_PM.Edges[ 2].AOI.XPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Edge_PM.Edges[ 2].AOI.XPos);
+    pTemp_Int->SetValue( pToolDataParam->Edge_PM.Edges[ 2].AOI.XPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Edge_PM.Edges[ 2].AOI.XPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pES_AOI_X[ 2] = pTemp_Int;
 
@@ -1154,8 +1184,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupB16a=Position upper edge 3. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->Edge_PM.Edges[ 2].AOI.YPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Edge_PM.Edges[ 2].AOI.YPos);
+    pTemp_Int->SetValue( pToolDataParam->Edge_PM.Edges[ 2].AOI.YPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Edge_PM.Edges[ 2].AOI.YPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pES_AOI_Y[ 2] = pTemp_Int;
 
@@ -1173,8 +1203,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupB18a=Width of the 1. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->Edge_PM.Edges[ 0].AOI.XSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Edge_PM.Edges[ 0].AOI.XSize);
+    pTemp_Int->SetValue( pToolDataParam->Edge_PM.Edges[ 0].AOI.XSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Edge_PM.Edges[ 0].AOI.XSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pES_AOI_XX[ 0] = pTemp_Int;
 
@@ -1184,8 +1214,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupB19a=Height of the 1. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->Edge_PM.Edges[ 0].AOI.YSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Edge_PM.Edges[ 0].AOI.YSize);
+    pTemp_Int->SetValue( pToolDataParam->Edge_PM.Edges[ 0].AOI.YSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Edge_PM.Edges[ 0].AOI.YSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pES_AOI_YY[ 0] = pTemp_Int;
 
@@ -1195,8 +1225,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupB20a=Width of the 2. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->Edge_PM.Edges[ 1].AOI.XSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Edge_PM.Edges[ 1].AOI.XSize);
+    pTemp_Int->SetValue( pToolDataParam->Edge_PM.Edges[ 1].AOI.XSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Edge_PM.Edges[ 1].AOI.XSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pES_AOI_XX[ 1] = pTemp_Int;
 
@@ -1206,8 +1236,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupB21a=Height of the 2. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->Edge_PM.Edges[ 1].AOI.YSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Edge_PM.Edges[ 1].AOI.YSize);
+    pTemp_Int->SetValue( pToolDataParam->Edge_PM.Edges[ 1].AOI.YSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Edge_PM.Edges[ 1].AOI.YSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pES_AOI_YY[ 1] = pTemp_Int;
 
@@ -1217,8 +1247,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupB22a=Width of the 3. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->Edge_PM.Edges[ 1].AOI.XSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Edge_PM.Edges[ 2].AOI.XSize);
+    pTemp_Int->SetValue( pToolDataParam->Edge_PM.Edges[ 1].AOI.XSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Edge_PM.Edges[ 2].AOI.XSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pES_AOI_XX[ 2] = pTemp_Int;
 
@@ -1228,8 +1258,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupB23a=Height of the 3. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->Edge_PM.Edges[ 1].AOI.YSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Edge_PM.Edges[ 2].AOI.YSize);
+    pTemp_Int->SetValue( pToolDataParam->Edge_PM.Edges[ 1].AOI.YSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Edge_PM.Edges[ 2].AOI.YSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pES_AOI_YY[ 2] = pTemp_Int;
 
@@ -1246,24 +1276,24 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
     pCheckTemp = new Fl_Check_Button( x1, y, 86, yy, LANGDEF_REVERSE);
     pCheckTemp->tooltip( LangStringLookup( "&GUI_PosCorr_GroupB31a=Reverse direction of edge detection 1. AOI."));
-    pCheckTemp->value( pToolData->Edge_PM.Edges[ 0].r2l_b2t);
-    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->Edge_PM.Edges[ 0].r2l_b2t);
+    pCheckTemp->value( pToolDataParam->Edge_PM.Edges[ 0].r2l_b2t);
+    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->Edge_PM.Edges[ 0].r2l_b2t);
     pR2l_b2t_1 = pCheckTemp;
 
     x1 += xx2 + 4 + xx2 + 12;
 
     pCheckTemp = new Fl_Check_Button( x1, y, 86, yy, LANGDEF_REVERSE);
     pCheckTemp->tooltip( LangStringLookup( "&GUI_PosCorr_GroupB32a=Reverse direction of edge detection 2. AOI."));
-    pCheckTemp->value( pToolData->Edge_PM.Edges[ 1].r2l_b2t);
-    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->Edge_PM.Edges[ 1].r2l_b2t);
+    pCheckTemp->value( pToolDataParam->Edge_PM.Edges[ 1].r2l_b2t);
+    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->Edge_PM.Edges[ 1].r2l_b2t);
     pR2l_b2t_2 = pCheckTemp;
 
     x1 += xx2 + 4 + xx2 + 12;
 
     pCheckTemp = new Fl_Check_Button( x1, y, 86, yy, LANGDEF_REVERSE);
     pCheckTemp->tooltip( LangStringLookup( "&GUI_PosCorr_GroupB33a=Reverse direction of edge detection 3. AOI."));
-    pCheckTemp->value( pToolData->Edge_PM.Edges[ 2].r2l_b2t);
-    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->Edge_PM.Edges[ 2].r2l_b2t);
+    pCheckTemp->value( pToolDataParam->Edge_PM.Edges[ 2].r2l_b2t);
+    pCheckTemp->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->Edge_PM.Edges[ 2].r2l_b2t);
     pR2l_b2t_3 = pCheckTemp;
 
     // Next line
@@ -1280,8 +1310,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupB35a=Minimum contrast 1. AOI in %"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->Edge_PM.Edges[ 0].minPeakConPerc);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Edge_PM.Edges[ 0].minPeakConPerc);
+    pTemp_Int->SetValue( pToolDataParam->Edge_PM.Edges[ 0].minPeakConPerc);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Edge_PM.Edges[ 0].minPeakConPerc);
     pTemp_Int->SetModifyData( 0, 100, 10, 1);
     pminPeak_1 = pTemp_Int;
 
@@ -1290,8 +1320,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupB36a=Minimum contrast 2. AOI in %"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->Edge_PM.Edges[ 1].minPeakConPerc);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Edge_PM.Edges[ 1].minPeakConPerc);
+    pTemp_Int->SetValue( pToolDataParam->Edge_PM.Edges[ 1].minPeakConPerc);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Edge_PM.Edges[ 1].minPeakConPerc);
     pTemp_Int->SetModifyData( 0, 100, 10, 1);
     pminPeak_2 = pTemp_Int;
 
@@ -1300,8 +1330,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupB37a=Minimum contrast 3. AOI in %"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->Edge_PM.Edges[ 2].minPeakConPerc);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->Edge_PM.Edges[ 2].minPeakConPerc);
+    pTemp_Int->SetValue( pToolDataParam->Edge_PM.Edges[ 2].minPeakConPerc);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->Edge_PM.Edges[ 2].minPeakConPerc);
     pTemp_Int->SetModifyData( 0, 100, 10, 1);
     pminPeak_3 = pTemp_Int;
 
@@ -1331,8 +1361,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                          "Error if the position deviation\n"
                          "in X is greater than this."));
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->Edge_PM.MaxDevX);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->Edge_PM.MaxDevX);
+    pFloatTemp->SetValue( pToolDataParam->Edge_PM.MaxDevX);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->Edge_PM.MaxDevX);
     pFloatTemp->SetModifyData( 0.0, 100.0, 1.0, 0.1);
 
     x1 += xx2;
@@ -1352,8 +1382,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                          "Error if the position deviation\n"
                          "in Y is greater than this."));
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->Edge_PM.MaxDevY);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->Edge_PM.MaxDevY);
+    pFloatTemp->SetValue( pToolDataParam->Edge_PM.MaxDevY);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->Edge_PM.MaxDevY);
     pFloatTemp->SetModifyData( 0.0, 100.0, 1.0, 0.1);
 
     // Finish things for this group
@@ -1407,7 +1437,7 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     x1 = pMyParWin->w() - 28 - 9;
 
     pTemp_Button = new Fl_Button( x1, y, 28, 28, "@+1pencil");
-    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolData->Teach_mode);
+    pTemp_Button->callback( IqeB_GUI_Misc_SetValue_Callback, &pToolDataParam->Teach_mode);
     pTemp_Button->tooltip( LANGDEF_AOI_TEACH_TOOLTIP);
     pTemp_Button->labelcolor( YAIPS_BCOL_BUTTON);
     pTemp_Button->shortcut( FL_COMMAND+'t');       // Short cut key
@@ -1452,8 +1482,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupC11a=Position left edge 1. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->PSearch_XY.AOI[ 0].AOI.XPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->PSearch_XY.AOI[ 0].AOI.XPos);
+    pTemp_Int->SetValue( pToolDataParam->PSearch_XY.AOI[ 0].AOI.XPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->PSearch_XY.AOI[ 0].AOI.XPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pPS_AOI_X[ 0] = pTemp_Int;
 
@@ -1463,8 +1493,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupC12a=Position upper edge 1. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->PSearch_XY.AOI[ 0].AOI.YPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->PSearch_XY.AOI[ 0].AOI.YPos);
+    pTemp_Int->SetValue( pToolDataParam->PSearch_XY.AOI[ 0].AOI.YPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->PSearch_XY.AOI[ 0].AOI.YPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pPS_AOI_Y[ 0] = pTemp_Int;
 
@@ -1474,8 +1504,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupC13a=Position left edge 2. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->PSearch_XY.AOI[ 1].AOI.XPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->PSearch_XY.AOI[ 1].AOI.XPos);
+    pTemp_Int->SetValue( pToolDataParam->PSearch_XY.AOI[ 1].AOI.XPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->PSearch_XY.AOI[ 1].AOI.XPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pPS_AOI_X[ 1]= pTemp_Int;
 
@@ -1485,8 +1515,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupC14a=Position upper edge 2. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->PSearch_XY.AOI[ 1].AOI.YPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->PSearch_XY.AOI[ 1].AOI.YPos);
+    pTemp_Int->SetValue( pToolDataParam->PSearch_XY.AOI[ 1].AOI.YPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->PSearch_XY.AOI[ 1].AOI.YPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pPS_AOI_Y[ 1] = pTemp_Int;
 
@@ -1496,8 +1526,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupC15a=Position left edge 3. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->PSearch_XY.AOI[ 2].AOI.XPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->PSearch_XY.AOI[ 2].AOI.XPos);
+    pTemp_Int->SetValue( pToolDataParam->PSearch_XY.AOI[ 2].AOI.XPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->PSearch_XY.AOI[ 2].AOI.XPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pPS_AOI_X[ 2] = pTemp_Int;
 
@@ -1507,8 +1537,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupC16a=Position upper edge 3. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->PSearch_XY.AOI[ 2].AOI.YPos);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->PSearch_XY.AOI[ 2].AOI.YPos);
+    pTemp_Int->SetValue( pToolDataParam->PSearch_XY.AOI[ 2].AOI.YPos);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->PSearch_XY.AOI[ 2].AOI.YPos);
     pTemp_Int->SetModifyData( 0, 4096, 10, 1);
     pPS_AOI_Y[ 2] = pTemp_Int;
 
@@ -1526,8 +1556,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupC18a=Width of the 1. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->PSearch_XY.AOI[ 0].AOI.XSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->PSearch_XY.AOI[ 0].AOI.XSize);
+    pTemp_Int->SetValue( pToolDataParam->PSearch_XY.AOI[ 0].AOI.XSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->PSearch_XY.AOI[ 0].AOI.XSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pPS_AOI_XX[ 0] = pTemp_Int;
 
@@ -1537,8 +1567,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupC19a=Height of the 1. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->PSearch_XY.AOI[ 0].AOI.YSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->PSearch_XY.AOI[ 0].AOI.YSize);
+    pTemp_Int->SetValue( pToolDataParam->PSearch_XY.AOI[ 0].AOI.YSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->PSearch_XY.AOI[ 0].AOI.YSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pPS_AOI_YY[ 0] = pTemp_Int;
 
@@ -1548,8 +1578,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupC20a=Width of the 2. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->PSearch_XY.AOI[ 1].AOI.XSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->PSearch_XY.AOI[ 1].AOI.XSize);
+    pTemp_Int->SetValue( pToolDataParam->PSearch_XY.AOI[ 1].AOI.XSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->PSearch_XY.AOI[ 1].AOI.XSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pPS_AOI_XX[ 1] = pTemp_Int;
 
@@ -1559,8 +1589,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupC21a=Height of the 2. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->PSearch_XY.AOI[ 1].AOI.YSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->PSearch_XY.AOI[ 1].AOI.YSize);
+    pTemp_Int->SetValue( pToolDataParam->PSearch_XY.AOI[ 1].AOI.YSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->PSearch_XY.AOI[ 1].AOI.YSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pPS_AOI_YY[ 1] = pTemp_Int;
 
@@ -1570,8 +1600,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupC22a=Width of the 3. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->PSearch_XY.AOI[ 2].AOI.XSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->PSearch_XY.AOI[ 2].AOI.XSize);
+    pTemp_Int->SetValue( pToolDataParam->PSearch_XY.AOI[ 2].AOI.XSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->PSearch_XY.AOI[ 2].AOI.XSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pPS_AOI_XX[ 2] = pTemp_Int;
 
@@ -1581,8 +1611,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pTemp_Int = new IqeFl_Int_Input( x1, y, xx2, yy, "");
     pTemp_Int->tooltip( LangStringLookup( "&GUI_PosCorr_GroupC23a=Height of the 3. AOI"));
     pTemp_Int->align( FL_ALIGN_LEFT);     // align for label
-    pTemp_Int->SetValue( pToolData->PSearch_XY.AOI[ 2].AOI.YSize);
-    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolData->PSearch_XY.AOI[ 2].AOI.YSize);
+    pTemp_Int->SetValue( pToolDataParam->PSearch_XY.AOI[ 2].AOI.YSize);
+    pTemp_Int->callback( IqeB_GUI_Int_SetValue_Callback, &pToolDataParam->PSearch_XY.AOI[ 2].AOI.YSize);
     pTemp_Int->SetModifyData( YAIPS_IDISP_AOI_MIN_SIZE, 1024, 10, 1);
     pPS_AOI_YY[ 2] = pTemp_Int;
 
@@ -1602,8 +1632,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_Edges_GroupC25a=Search range X."));
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->PSearch_XY.AOI[ 0].PosToleranceX);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->PSearch_XY.AOI[ 0].PosToleranceX);
+    pFloatTemp->SetValue( pToolDataParam->PSearch_XY.AOI[ 0].PosToleranceX);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->PSearch_XY.AOI[ 0].PosToleranceX);
     pFloatTemp->SetModifyData( 0.1, 10.0, 1.0, 0.1);
     pPS_SearchX[ 0] = pFloatTemp;
 
@@ -1615,8 +1645,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_Edges_GroupC26a=Search range Y."));
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->PSearch_XY.AOI[ 0].PosToleranceY);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->PSearch_XY.AOI[ 0].PosToleranceY);
+    pFloatTemp->SetValue( pToolDataParam->PSearch_XY.AOI[ 0].PosToleranceY);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->PSearch_XY.AOI[ 0].PosToleranceY);
     pFloatTemp->SetModifyData( 0.1, 10.0, 1.0, 0.1);
     pPS_SearchY[ 0] = pFloatTemp;
 
@@ -1628,8 +1658,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_Edges_GroupC25a=Search range X."));
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->PSearch_XY.AOI[ 1].PosToleranceX);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->PSearch_XY.AOI[ 1].PosToleranceX);
+    pFloatTemp->SetValue( pToolDataParam->PSearch_XY.AOI[ 1].PosToleranceX);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->PSearch_XY.AOI[ 1].PosToleranceX);
     pFloatTemp->SetModifyData( 0.1, 10.0, 1.0, 0.1);
     pPS_SearchX[ 1] = pFloatTemp;
 
@@ -1641,8 +1671,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_Edges_GroupC26a=Search range Y."));
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->PSearch_XY.AOI[ 1].PosToleranceY);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->PSearch_XY.AOI[ 1].PosToleranceY);
+    pFloatTemp->SetValue( pToolDataParam->PSearch_XY.AOI[ 1].PosToleranceY);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->PSearch_XY.AOI[ 1].PosToleranceY);
     pFloatTemp->SetModifyData( 0.1, 10.0, 1.0, 0.1);
     pPS_SearchY[ 1] = pFloatTemp;
 
@@ -1654,8 +1684,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_Edges_GroupC25a=Search range X."));
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->PSearch_XY.AOI[ 2].PosToleranceX);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->PSearch_XY.AOI[ 2].PosToleranceX);
+    pFloatTemp->SetValue( pToolDataParam->PSearch_XY.AOI[ 2].PosToleranceX);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->PSearch_XY.AOI[ 2].PosToleranceX);
     pFloatTemp->SetModifyData( 0.1, 10.0, 1.0, 0.1);
     pPS_SearchX[ 2] = pFloatTemp;
 
@@ -1667,8 +1697,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
     pFloatTemp->type( FL_FLOAT_INPUT);
     pFloatTemp->tooltip( LangStringLookup( "&GUI_Edges_GroupC26a=Search range Y."));
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->PSearch_XY.AOI[ 2].PosToleranceY);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->PSearch_XY.AOI[ 2].PosToleranceY);
+    pFloatTemp->SetValue( pToolDataParam->PSearch_XY.AOI[ 2].PosToleranceY);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->PSearch_XY.AOI[ 2].PosToleranceY);
     pFloatTemp->SetModifyData( 0.1, 10.0, 1.0, 0.1);
     pPS_SearchY[ 2] = pFloatTemp;
 
@@ -1698,8 +1728,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                          "Error if the position deviation\n"
                          "in X is greater than this."));
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->PSearch_XY.MaxDevX);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->PSearch_XY.MaxDevX);
+    pFloatTemp->SetValue( pToolDataParam->PSearch_XY.MaxDevX);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->PSearch_XY.MaxDevX);
     pFloatTemp->SetModifyData( 0.0, 100.0, 1.0, 0.1);
 
     x1 += xx2;
@@ -1719,8 +1749,8 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
                          "Error if the position deviation\n"
                          "in Y is greater than this."));
     pFloatTemp->SetFormat( "%.2f");
-    pFloatTemp->SetValue( pToolData->PSearch_XY.MaxDevY);
-    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolData->PSearch_XY.MaxDevY);
+    pFloatTemp->SetValue( pToolDataParam->PSearch_XY.MaxDevY);
+    pFloatTemp->callback( IqeB_GUI_Float_SetValue_Callback, &pToolDataParam->PSearch_XY.MaxDevY);
     pFloatTemp->SetModifyData( 0.0, 100.0, 1.0, 0.1);
 
     // Finish things for this group
@@ -1731,12 +1761,16 @@ static void YaIPS_GUI_ParameterWin( int xLeft, int yTop, int iToolData)
 
   pTemp_Tabs->end();
 
-  pTemp_Tabs->SetTabGroup( pToolData->Tab_Group_Selected);    // Select tab group from last session
+  pTemp_Tabs->SetTabGroup( pToolDataParam->Tab_Group_Selected);    // Select tab group from last session
 
     // finish up
 
   pMyParWin->end();
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  pMyParWin->set_non_modal();
+#else
   pMyParWin->set_modal();
+#endif
   pMyParWin->callback( close_Par_cb, &pMyParWin);
   pMyParWin->show();
 
@@ -1994,6 +2028,10 @@ static void close_cb( Fl_Widget *w, long int iToolData)
     return;
   }
 
+#ifdef USE_NON_MODAL_PAR_DIALOGS // Have none modal parameter dialogs
+  IqeB_GUI_ToolParCheckClose( close_Par_cb, &pMyParWin, iToolData);   // Check to close specific associated parameter dialog
+#endif
+
   YaIPS_ImageDispReleaseBeforeClose( &pToolData->YaIPS_ImageDisp);
 
   pToolData->IsOpen = false;               // Flag info data is not in use
@@ -2161,6 +2199,9 @@ static void MyWinUpdate( int iToolData, int DoEnable)
                              DoEnable &&                                    // Enable GUI elements
                              pToolData->YaIPS_ImageDisp.pImage_Img != NULL); // and have an image loaded
 
+  IqeB_GUI_WidgetActivate( pMyToolWin->pGUI_Parameter,
+                            (pMyParWin == NULL || pToolDataParam->iToolData != iToolData) && // Parameter dialog is closed
+                             DoEnable);                             // Enable GUI elements
 
   // Check input image and visualize state
   YaIPS_ToolWinInputCheck( MY_WIN_ID + iToolData, pToolData->Input1_WinIdNr, pMyToolWin->pBox_Input1);

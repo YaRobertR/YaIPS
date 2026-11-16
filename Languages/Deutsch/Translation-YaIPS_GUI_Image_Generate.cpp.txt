@@ -2,11 +2,9 @@
 ; YaIPS_GUI_Image_Generate.cpp
 ;-------------------------------------------------------
 ;
-; 62 entries
+; 60 entries
 ;
 GUI_GenImage_Title                 "Neues Bild"
-
-GUI_GenImage_TabA1                 "Größe"
 
 GUI_GenImage_TabA1a                "Bildgröße"
 
@@ -123,8 +121,6 @@ GUI_Overlay_TabB20a                "Name der geladenen Bilddatei.\n"
                                    "HINWEIS: Ist nur lesbar."
 
 GUI_Overlay_TabB21a                "Laden einer Bilddatei"
-
-GUI_GenImage_TabC1                 "Alpha"
 
 GUI_GenImage_TabC1a                "Alphakanal"
 

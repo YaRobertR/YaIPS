@@ -2,7 +2,7 @@
 ; YaIPS_GUI_Overlay.cpp
 ;-------------------------------------------------------
 ;
-; 113 entries
+; 111 entries
 ;
 GUI_Overlay_Title                  "Überlagerung"
 
@@ -62,8 +62,6 @@ GUI_Overlay_2a                     "Name für Überlagerung"
 GUI_Overlay_3                      "Einheit"
 
 GUI_Overlay_3a                     "Einheit für Lage und Größe"
-
-GUI_Overlay_4                      "Drehung"
 
 GUI_Overlay_4a                     "Drehwinkel der Überlagerung [Grad].\n"
                                    "HINWEIS: Wird das Mausrad bei gedrückter\n"
@@ -125,12 +123,6 @@ GUI_Overlay_TabA10a                "Name der geladenen Bilddatei.\n"
 
 GUI_Overlay_TabA11a                "Laden einer Bilddatei."
 
-GUI_Overlay_TabA12a                "Informationen zum Bild.\n"
-                                   "HINWEIS: Ist nur lesbar."
-
-GUI_Overlay_TabA13a                "Bildgröße auf AOI-Breite\n"
-                                   "und -Höhe kopieren."
-
 GUI_Overlay_TabA2_2                "Tool Fenster"
 
 GUI_Overlay_TabA2_2a               "Hintergrund ist ein Tool Fenster.\n"
@@ -138,6 +130,12 @@ GUI_Overlay_TabA2_2a               "Hintergrund ist ein Tool Fenster.\n"
                                    "eines Tool Fensters."
 
 GUI_Overlay_TabA20a                "Tool Fenster als Hintergrund auswählen."
+
+GUI_Overlay_TabA12a                "Informationen zum Bild.\n"
+                                   "HINWEIS: Ist nur lesbar."
+
+GUI_Overlay_TabA13a                "Bildgröße auf AOI-Breite\n"
+                                   "und -Höhe kopieren."
 
 GUI_Overlay_TabB1                  "Form"
 
@@ -177,8 +175,6 @@ GUI_Overlay_TabC2                  "Schriftart"
 GUI_Overlay_TabC2a                 "Ausgewählte Schriftart"
 
 GUI_Overlay_TabC3a                 "Eine andere Schriftart wählen"
-
-GUI_Overlay_TabC4                  "Größe"
 
 GUI_Overlay_TabC4a                 "Schriftgröße"
 
